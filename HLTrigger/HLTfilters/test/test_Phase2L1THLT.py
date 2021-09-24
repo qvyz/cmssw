@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
+import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt
 
 process = cms.Process("HLTX")
 
@@ -8,6 +9,23 @@ process = cms.Process("HLTX")
 ### GlobalTag
 # process.load("Configuration.StandardSequences.CondDBESSource_cff")
 # process.GlobalTag.globaltag = "112X_mcRun4_realistic_T15_v2"
+
+process.GTTest = cms.EDFilter(
+	"P2GTDoubleObjFilter",
+	saveTags = cms.bool(True),
+	MinPtMuon = cms.double(-1.0),
+        MinPtEle  = cms.double(-1.0),
+	inputTag1 = cms.InputTag("L1TkMuons"),
+	inputTag2 = cms.InputTag("L1TkElectronsEllipticMatchCrystal", "EG"),
+	MinEtaMuon = cms.double(-5.0),
+	MinEtaEle = cms.double(-5.4),
+	MaxEtaMuon = cms.double(5.0),
+	MaxEtaEle = cms.double(5.0),
+	MinN = cms.int32(1)
+)
+
+
+
 
 process.l1tEle7 = cms.EDFilter(
     "L1TTkEleFilter",
@@ -175,8 +193,26 @@ process.l1tPFMet90 = cms.EDFilter(
     ),
     TypeOfSum=cms.string("MET"),
     MinPt=cms.double(90.0),
+
 )
 
+
+process.filter_any_or = hlt.triggerResultsFilter.clone(
+    usePathStatus = True,
+    triggerConditions = ( 'HLT_SingleEle7', 'HLT_SingleIsoEle7'),
+    l1tResults = '',
+    throw = False
+)
+process.filter_any_oru = hlt.triggerResultsFilter.clone(
+    usePathStatus = True,
+    triggerConditions = cms.vstring('HLT_Elemuon AND HLT_Elemuon'),
+    l1tResults = '',
+    throw = False
+)
+
+
+process.HLT_Elemuon = cms.Path(process.GTTest)
+process.HLT_Elemuon2 = cms.Path(process.GTTest)
 process.HLT_SingleEle7 = cms.Path(process.l1tEle7)
 process.HLT_SingleIsoEle7 = cms.Path(process.l1tIsoEle7)
 process.HLT_SingleIsoPhoton7 = cms.Path(process.l1tIsoPho7)
@@ -188,12 +224,13 @@ process.HLT_SingleJet64 = cms.Path(process.l1tPFJet64)
 process.HLT_MHT40 = cms.Path(process.L1PFHtMht + process.l1tPFMht40)
 process.HLT_HT90 = cms.Path(process.L1PFHtMht + process.l1tPFHt90)
 process.HLT_MET90 = cms.Path(process.l1tPFMet90)
-
+process.any_or = cms.Path(process.filter_any_or)
+process.any_oru = cms.Path(process.filter_any_oru)
 process.source = cms.Source(
     "PoolSource",
     fileNames=cms.untracked.vstring(
         "/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DYToLL_M-50_TuneCP5_14TeV-pythia8/FEVT/PU200_pilot_111X_mcRun4_realistic_T15_v1-v1/270000/FF7BF0E2-1380-2D48-BB19-F79E6907CD5D.root",
-        # "/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/SingleElectron_PT2to200/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext2-v1/270000/0064D31F-F48B-3144-8CB9-17F820065E01.root",
+      #   "/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/SingleElectron_PT2to200/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext2-v1/270000/0064D31F-F48B-3144-8CB9-17F820065E01.root",
     ),
 )
 
