@@ -115,7 +115,6 @@ bool P2GTDoubleObjFilter::hltFilter(edm::Event& iEvent,
   	auto otrkmuons(tkMuons->end());
   	TkMuonCollection::const_iterator itkMuon;
   	for (itkMuon = atrkmuons; itkMuon != otrkmuons; itkMuon++) {
-  		double offlinePt_muon = this->TkMuonOfflineEt(itkMuon->pt(), itkMuon->eta());
   		if ((itkMuon->pt() >= min_Pt_Muon_) && (itkMuon->eta() <= max_Eta_Muon_) && (itkMuon->eta() >= min_Eta_Muon_)) {
       			passingMuons.push_back(l1t::TkMuonRef(tkMuons, distance(atrkmuons, itkMuon)));
    		}
@@ -128,7 +127,6 @@ bool P2GTDoubleObjFilter::hltFilter(edm::Event& iEvent,
         auto otrkeles(tkEle->end());
         TkEleCollection::const_iterator itkEle;
         for (itkEle = atrkeles; itkEle != otrkeles; itkEle++) {
-                double offlinePt_ele = this->TkEleOfflineEt(itkEle->pt(), itkEle->eta());
                 if ((itkEle->pt() >= min_Pt_Ele_) && (itkEle->eta() <= max_Eta_Ele_) && (itkEle->eta() >= min_Eta_Ele_)) {
                         passingEles.push_back(l1t::TkElectronRef(tkEle, distance(atrkeles, itkEle)));
                 }
@@ -141,11 +139,5 @@ bool P2GTDoubleObjFilter::hltFilter(edm::Event& iEvent,
 	
   	const bool accept((static_cast<int>(passingMuons.size())>=min_N_)&&(static_cast<int>(passingMuons.size()) >= min_N_));
   	return accept;
-}
-double P2GTDoubleObjFilter::TkEleOfflineEt(double Et, double Eta) const {
-    return Et;
-}
-double P2GTDoubleObjFilter::TkMuonOfflineEt(double Et, double Eta) const {
-    return Et;
 }
 

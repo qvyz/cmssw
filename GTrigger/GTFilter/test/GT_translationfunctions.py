@@ -262,8 +262,13 @@ class GlobalTrigger():
 			print(a.conddict[cond].label() + " : entity work." + jsondb["vhdl_name"])
 			print("generic map (")
 			jsongeneric = jsondb["Generic_map"]	
-			print("different_objects => true,") ###This is wrong should be  deducted from input_tag 1 and 2				
 			jsonport = jsondb["Port_map"]
+			if jsonport["inputTag1"] == jsonport["inputTag2"]:
+				 
+				print("different_objects => false,") ###This is wrong have to structure inputTag in json  better				
+			else:
+				print("different_objects => true,")
+			
 			for params in a.conddict[cond].parameterNames_():
 				if params in jsongeneric:
 					jsonpara = jsongeneric[params]

@@ -91,8 +91,12 @@ template <class T1, class T2>
 bool P2GTDoubleObjFilterT<T1,T2>::hltFilter(edm::Event& iEvent,
                                 	const edm::EventSetup& iSetup,
                                 	trigger::TriggerFilterObjectWithRefs& filterproduct) const {
-        filterproduct.addCollectionTag(l1tfirstTag_);
-        filterproduct.addCollectionTag(l1tsecondTag_);
+        
+	if(saveTags()){
+		filterproduct.addCollectionTag(l1tfirstTag_);
+        	filterproduct.addCollectionTag(l1tsecondTag_);
+	}
+	
         auto const& firstcoll_ = iEvent.getHandle(l1tfirstToken_);
         auto const& secondcoll_ = iEvent.getHandle(l1tsecondToken_);
 
