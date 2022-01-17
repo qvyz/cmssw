@@ -1,5 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt
+import HLTrigger.HLTfilters.triggerResultsFilter as hlt
 import GT_translationfunctions as gt
 process = cms.Process("HLTX")
 globtrig = gt.GlobalTrigger("test")
