@@ -1,0 +1,74 @@
+{
+	"Conditions"	:
+		{
+		"P2GTDoubleObjFilterMuEle"	:
+		{	
+			"type"		:	"condition",
+			"vhdl_name"	:	"p2gt_doubleObjCond",
+			"Generic_map"	:	
+				{
+				"MinPtfirst"	:	
+					{
+					"vhdl_name"	:	"pT1_cut",
+					"sign"		:	"unsigned",
+					"width"		:	14
+					},
+		
+
+				"MinPtsecond"	:	
+					{
+					"vhdl_name"	:	"pT2_cut",
+					"sign"		:	"unsigned",
+					"width"		:	14
+					},
+
+				"MinEtafirst"	:	
+					{
+					"vhdl_name"	:	"minEta1_cut",
+					"sign"		:	"signed",
+					"width"		:	12
+					},
+				"MinEtasecond"	:	
+					{
+					"vhdl_name"	:	"minEta2_cut",
+					"sign"		:	"signed",
+					"width"		:	12
+					},
+
+
+				"MaxEtafirst"	:	
+					{
+					"vhdl_name"	:	"maxEta1_cut",
+					"sign"		:	"signed",
+					"width"		:	12
+					},
+				"MaxEtasecond"	:	
+					{
+					"vhdl_name"	:	"maxEta2_cut",
+					"sign"		:	"signed",
+					"width"		:	12
+					}
+				},
+			"Port_map"	:
+				{
+				"inputTag1" : "object1",
+				"\"L1TkElectronsEllipticMatchCrystal\",\"EG\"" : "ELECTRON_SLOT",
+				"inputTag2" : "object2",
+				"\"L1TkMuons\"" : "MU_SLOT"
+				}
+			}
+		},
+
+	"Metafilters"	:
+		{
+		"names"	:
+			[
+			"TriggerResultsFilter"
+			]
+
+		}
+}
+
+
+
+
