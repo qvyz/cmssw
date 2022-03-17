@@ -1,10 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 import json
-import GT_vhdl_template as vhdl
-
-
-
-
+import L1Trigger.Phase2L1GT.GT_vhdl_template as vhdl
 
 
 

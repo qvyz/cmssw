@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
-import HLTrigger.HLTfilters.triggerResultsFilter as hlt
-import GT_translationfunctions as gt
+import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt
+import L1Trigger.Phase2L1GT.GT_translationfunctions as gt
 process = cms.Process("HLTX")
 globtrig = gt.GlobalTrigger("test")
 ### Load all ESSources, ESProducers and PSets
