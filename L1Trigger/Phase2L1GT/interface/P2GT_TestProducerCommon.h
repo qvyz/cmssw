@@ -34,7 +34,7 @@
 #include "DataFormats/Candidate/interface/LeafCandidate.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
-#include "P2GTCandidate.h"
+#include "DataFormats/L1Trigger/interface/P2GTCandidate.h"
 
 //
 // class declaration

@@ -19,7 +19,7 @@
 
 
 
-#include "GT_Testfilter.h"
+#include "L1Trigger/Phase2L1GT/interface/GT_Testfilter.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 
 #include "DataFormats/Common/interface/Handle.h"

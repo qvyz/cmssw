@@ -28,13 +28,13 @@
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 
 #include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
-#include "P2GTCandidate.h"
+#include "DataFormats/L1Trigger/interface/P2GTCandidate.h"
 using namespace reco;
 using namespace trigger;
 
-#include "GT_TestfilterT.h"
-#include "GT_Testfilter.h"
-#include "P2GT_TestProducerCommon.h"
+#include "L1Trigger/Phase2L1GT/interface/GT_TestfilterT.h"
+#include "L1Trigger/Phase2L1GT/interface/GT_Testfilter.h"
+#include "L1Trigger/Phase2L1GT/interface/P2GT_TestProducerCommon.h"
 typedef P2GTDoubleObjFilterT<l1t::TkMuon,l1t::TkElectron> P2GTDoubleObjFilterMuEle;
 typedef P2GT_TestProducerCommon<l1t::TkMuon> P2GT_TkmuonProd;
 
