@@ -37,7 +37,7 @@ using namespace trigger;
 #include "L1Trigger/Phase2L1GT/interface/P2GT_TestProducerCommon.h"
 typedef P2GTDoubleObjFilterT<l1t::TkMuon,l1t::TkElectron> P2GTDoubleObjFilterMuEle;
 typedef P2GT_TestProducerCommon<l1t::TkMuon> P2GT_TkmuonProd;
-
+typedef P2GT_TestProducerCommon<l1t::TkElectron> P2GT_TkeleProd;
 
 
 

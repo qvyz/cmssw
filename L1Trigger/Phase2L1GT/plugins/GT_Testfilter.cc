@@ -137,7 +137,7 @@ bool P2GTDoubleObjFilter::hltFilter(edm::Event& iEvent,
 
 
 	
-  	const bool accept((static_cast<int>(passingMuons.size())>=min_N_)&&(static_cast<int>(passingMuons.size()) >= min_N_));
+  	const bool accept((static_cast<int>(passingMuons.size())>=min_N_)&&(static_cast<int>(passingEles.size()) >= min_N_));
   	return accept;
 }
 

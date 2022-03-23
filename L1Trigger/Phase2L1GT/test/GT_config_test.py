@@ -14,16 +14,16 @@ for i in range(0,20):
 	loopkey = 'HLTtestfilt{}'.format(i)	
 	#print(loopkey)	
 	test = cms.EDFilter(
-		"P2GTDoubleObjFilterMuEle",
+		"P2GTDoubleObjFilter",
         	saveTags = cms.bool(True),
         	inputTag1 = cms.InputTag('L1TkMuons'),
         	inputTag2 = cms.InputTag("L1TkElectronsEllipticMatchCrystal", "EG"),
-        	MinPtfirst = gt.pt_to_HW(i + 5),
-        	MinPtsecond = gt.pt_to_HW(7),
-        	MinEtafirst = gt.eta_to_HW(0),
-        	MinEtasecond = gt.eta_to_HW(0),
-        	MaxEtafirst =  gt.eta_to_HW(2.4),
-        	MaxEtasecond = gt.eta_to_HW(3.4),
+        	MinPtMuon = cms.double(20+i),
+        	MinPtEle = cms.double(1),
+        	MinEtaMuon = cms.double(0),
+        	MinEtaEle = cms.double(0),
+        	MaxEtaMuon =  cms.double(5),
+        	MaxEtaEle = cms.double(5),
         	MinN = cms.int32(1)
 	)
 	setattr(process,loopkey,test)
@@ -63,11 +63,13 @@ globtrig.addAlgo(process.test_trf3)
 process.source = cms.Source(
     "PoolSource",
     fileNames=cms.untracked.vstring(
-      #  "/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DYToLL_M-50_TuneCP5_14TeV-pythia8/FEVT/PU200_pilot_111X_mcRun4_realistic_T15_v1-v1/270000/FF7BF0E2-1380-2D48-BB19-F79E6907CD5D.root",
-        "/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/SingleElectron_PT2to200/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext2-v1/270000/0064D31F-F48B-3144-8CB9-17F820065E01.root",
-    ),
+        "/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DYToLL_M-50_TuneCP5_14TeV-pythia8/FEVT/PU200_pilot_111X_mcRun4_realistic_T15_v1-v1/270000/FF7BF0E2-1380-2D48-BB19-F79E6907CD5D.root",
+        #"/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/SingleElectron_PT2to200/FEVT/PU200_111X_mcRun4_realistic_T15_v1_ext2-v1/270000/0064D31F-F48B-3144-8CB9-17F820065E01.root",
+        #"/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/DYToLL_M-50_TuneCP5_14TeV-pythia8/FEVT/PU200_pilot_111X_mcRun4_realistic_T15_v1-v1/270000/FF7BF0E2-1380-2D48-BB19-F79E6907CD5D.root",    
+
+),
 )
 
-process.maxEvents.input = cms.untracked.int32(-1)
+process.maxEvents.input = cms.untracked.int32(20)
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
 

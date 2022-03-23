@@ -16,9 +16,11 @@
 
   <class name="l1t::P2GTCandidate">
   </class>
+
+  <class name="std::vector<l1t::P2GTCandidate>"/>
+  <class name="edm::Wrapper<std::vector<l1t::P2GTCandidate>>"/>
   <class name="l1t::P2GTCandidateBxCollection"/>
   <class name="edm::Wrapper<l1t::P2GTCandidateBxCollection>"/>
-  <class name="std::vector<l1t::P2GTCandidate>"/>
   <class name="l1t::P2GTCandidateRef"/>
   <class name="edm::Wrapper<l1t::P2GTCandidateRef>"/>
   <class name="l1t::P2GTCandidateRefVector"/>
