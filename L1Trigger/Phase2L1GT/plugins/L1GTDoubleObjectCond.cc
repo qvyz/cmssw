@@ -10,6 +10,8 @@
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 
+#include "L1GTSingleInOutLUT.h"
+
 #include <cmath>
 #include <cinttypes>
 #include <memory>
@@ -208,27 +210,27 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
   res &= dZ1Max_cut_ ? (obj1.hwDZ() < dZ1Max_cut_) : true;
   res &= dZ2Min_cut_ ? (obj2.hwDZ() > dZ2Min_cut_) : true;
   res &= dZ2Max_cut_ ? (obj2.hwDZ() < dZ2Max_cut_) : true;
-  // res &= (qual1_cut_ == 0) || (obj1.qual == qual1_cut_);
-  // res &= (qual2_cut_ == 0) || (obj2.qual == qual2_cut_);
-  // TODO: Missing iso cuts!
+  res &= qual1_cut_ ? (obj1.hwQual() > qual1_cut_) : true;
+  res &= qual2_cut_ ? (obj2.hwQual() > qual2_cut_) : true;
+  res &= iso1_cut_ ? (obj1.hwIso() > iso1_cut_) : true;
+  res &= iso2_cut_ ? (obj2.hwIso() > iso2_cut_) : true;
+
   int64_t dEta{(obj1.hwEta() > obj2.hwEta()) ? obj1.hwEta() - obj2.hwEta() : obj2.hwEta() - obj1.hwEta()};
   res &= dEtaMin_cut_ ? dEta > dEtaMin_cut_ : true;
   res &= dEtaMax_cut_ ? dEta < dEtaMax_cut_ : true;
+  
   int64_t dPhi{(obj1.hwPhi() > obj2.hwPhi()) ? obj1.hwPhi() - obj2.hwPhi() : obj2.hwPhi() - obj1.hwPhi()};
   res &= dPhiMin_cut_ ? dPhi > dPhiMin_cut_ : true;
   res &= dPhiMax_cut_ ? dPhi < dPhiMax_cut_ : true;
+
   int64_t dRSquared{static_cast<int64_t>(std::pow(dEta, 2)) + static_cast<int64_t>(std::pow(dPhi, 2))};
   res &= dRSquaredMin_cut_ ? dRSquared > dRSquaredMin_cut_ : true;
   res &= dRSquaredMax_cut_ ? dRSquared < dRSquaredMax_cut_ : true;
+
   res &= os_cut_ ? obj1.hwCharge() != obj2.hwCharge() : true;
   res &= ss_cut_ ? obj1.hwCharge() == obj2.hwCharge() : true;
-  int64_t invMassDiv2{obj1.hwPT().to_int64() * obj2.hwPT().to_int64()};
-  //*(coshLUT_.get_result(dEta) - cosLUT_.get_result(dPhi))};
-  // if (invMassDiv2Max_cut_ != 999999999) {
-  //   std::cout << "mass: " << invMassDiv2 << " coshLUT: " << coshLUT_.get_result(dEta) << " cosLUT: " << cosLUT_.get_result(dPhi)
-  //             << "ptPRod: " << static_cast<int64_t>(obj1.pt) * static_cast<int64_t>(obj2.pt) << "\n";
-  //   std::cout << "cut: " << invMassDiv2Max_cut_ << " result: " << (invMassDiv2Max_cut_ == 999999999 ? true : invMassDiv2 < invMassDiv2Max_cut_) << "\n";
-  // }
+
+  int64_t invMassDiv2{obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (coshLUT[dEta] - cosLUT[dPhi])};
   res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;
   res &= invMassDiv2Max_cut_ ? invMassDiv2 < invMassDiv2Max_cut_ : true;
 
