@@ -67,11 +67,11 @@ namespace l1t {
   };
 
   // cmath functions are only constexpr in gcc, this is unfortunately not standard but might be in the future
-  constexpr L1GTSingleInOutLUT<P2GTCandidate::hwPhi_t::width - 1, 5> cosLUT(4, 0.00125, 10, 1, [](double x) {
+  constexpr L1GTSingleInOutLUT<P2GTCandidate::hwPhi_t::width - 1, 5> cosPhiLUT(4, 0.00125, 10, 1, [](double x) {
     return std::cos(x);
   });
 
-  constexpr L1GTSingleInOutLUT<P2GTCandidate::hwEta_t::width - 2, 17> coshLUT(4, 0.00020, 10, 1, [](double x) {
+  constexpr L1GTSingleInOutLUT<P2GTCandidate::hwEta_t::width - 2, 17> coshEtaLUT(4, 0.00020, 10, 1, [](double x) {
     return std::cosh(x);
   });
 }  // namespace l1t

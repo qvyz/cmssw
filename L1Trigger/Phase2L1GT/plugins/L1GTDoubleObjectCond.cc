@@ -218,7 +218,7 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
   int64_t dEta{(obj1.hwEta() > obj2.hwEta()) ? obj1.hwEta() - obj2.hwEta() : obj2.hwEta() - obj1.hwEta()};
   res &= dEtaMin_cut_ ? dEta > dEtaMin_cut_ : true;
   res &= dEtaMax_cut_ ? dEta < dEtaMax_cut_ : true;
-  
+
   int64_t dPhi{(obj1.hwPhi() > obj2.hwPhi()) ? obj1.hwPhi() - obj2.hwPhi() : obj2.hwPhi() - obj1.hwPhi()};
   res &= dPhiMin_cut_ ? dPhi > dPhiMin_cut_ : true;
   res &= dPhiMax_cut_ ? dPhi < dPhiMax_cut_ : true;
@@ -230,7 +230,7 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
   res &= os_cut_ ? obj1.hwCharge() != obj2.hwCharge() : true;
   res &= ss_cut_ ? obj1.hwCharge() == obj2.hwCharge() : true;
 
-  int64_t invMassDiv2{obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (coshLUT[dEta] - cosLUT[dPhi])};
+  int64_t invMassDiv2{obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (coshEtaLUT[dEta] - cosPhiLUT[dPhi])};
   res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;
   res &= invMassDiv2Max_cut_ ? invMassDiv2 < invMassDiv2Max_cut_ : true;
 
