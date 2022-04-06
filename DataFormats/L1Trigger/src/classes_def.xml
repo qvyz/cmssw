@@ -14,6 +14,16 @@
   <class name="l1t::L1CandidateVectorRef"/>
   <class name="edm::Wrapper<l1t::L1CandidateVectorRef>"/>
 
+  <class name="l1t::P2GTCandidate"/>
+  <class name="l1t::P2GTCandidateCollection"/>
+  <class name="edm::Wrapper<l1t::P2GTCandidateCollection>"/>
+  <class name="l1t::P2GTCandidateRef"/>
+  <class name="edm::Wrapper<l1t::P2GTCandidateRef>"/>
+  <class name="l1t::P2GTCandidateRefVector"/>
+  <class name="edm::Wrapper<l1t::P2GTCandidateRefVector>"/>
+  <class name="l1t::P2GTCandidateVectorRef"/>
+  <class name="edm::Wrapper<l1t::P2GTCandidateVectorRef>"/>
+
   <class name="l1t::Jet" ClassVersion="13">
    <version ClassVersion="13" checksum="3915457337"/>
    <version ClassVersion="12" checksum="380555501"/>
@@ -282,10 +292,22 @@
 
   <class name="edm::Ptr<l1t::L1Candidate>"/>
 
-  <class name="l1t::Vertex" ClassVersion="4">
-    <version ClassVersion="4" checksum="3366446278"/>
-    <version ClassVersion="3" checksum="514139083"/>
-  </class>
+  <class name="l1t::Vertex"/>
   <class name="std::vector<l1t::Vertex>"/>
+  <class name="edm::Wrapper<std::vector<l1t::Vertex> >"/>
+
+  <class name="l1t::VertexWord" ClassVersion="10">
+    <version ClassVersion="10" checksum="3779192820"/>
+  </class>
+  <class name="std::vector<l1t::VertexWord>"/>
+  <class name="edm::Wrapper<std::vector<l1t::VertexWord> >"/>
+  <class name="l1t::VertexWord::VertexRef"/>
+  <class name="edm::Wrapper<l1t::VertexWord::VertexRef>"/>
+
+  <class name="l1t::TkJetWord" ClassVersion="12">
+    <version ClassVersion="12" checksum="3521396532"/>
+  </class>
+  <class name="std::vector<l1t::TkJetWord>"/>
+  <class name="edm::Wrapper<std::vector<l1t::TkJetWord> >"/>
 
 </lcgdict>

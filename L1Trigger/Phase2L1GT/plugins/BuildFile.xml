@@ -1,0 +1,6 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/Utilities"/>
+<use name="L1Trigger/L1TCommon"/>
+<use name="DataFormats/L1Trigger"/>
+<flags EDM_PLUGIN="1"/>
