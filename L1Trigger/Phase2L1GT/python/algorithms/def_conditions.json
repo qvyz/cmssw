@@ -1,0 +1,165 @@
+{
+    "Conditions": {
+        "L1GTDoubleObjectCond": {
+            "vhdl_template": "p2gt_doubleObjCond.vhdl",
+            "vhdl_name": "p2gt_doubleObjCond",
+            "Cuts": {
+                "pT1_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 15
+                },
+                "pT2_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 15
+                },
+                "minEta1_cut": {
+                    "type": "signed",
+                    "bitwidth": 13
+                },
+                "minEta2_cut": {
+                    "type": "signed",
+                    "bitwidth": 13
+                },
+                "maxEta1_cut": {
+                    "type": "signed",
+                    "bitwidth": 13
+                },
+                "maxEta2_cut": {
+                    "type": "signed",
+                    "bitwidth": 13
+                },
+                "minPhi1_cut": {
+                    "type": "signed",
+                    "bitwidth": 12
+                },
+                "minPhi2_cut": {
+                    "type": "signed",
+                    "bitwidth": 12
+                },
+                "maxPhi1_cut": {
+                    "type": "signed",
+                    "bitwidth": 12
+                },
+                "maxPhi2_cut": {
+                    "type": "signed",
+                    "bitwidth": 12
+                },
+                "minDz1_cut": {
+                    "type": "signed",
+                    "bitwidth": 9
+                },
+                "minDz2_cut": {
+                    "type": "signed",
+                    "bitwidth": 9
+                },
+                "maxDz1_cut": {
+                    "type": "signed",
+                    "bitwidth": 9
+                },
+                "maxDz2_cut": {
+                    "type": "signed",
+                    "bitwidth": 9
+                },
+                "qual1_cut": {
+                    "type": "std_logic_vector",
+                    "bitwidth": 7
+                },
+                "qual2_cut": {
+                    "type": "std_logic_vector",
+                    "bitwidth": 7
+                },
+                "iso1_cut": {
+                    "type": "std_logic_vector",
+                    "bitwidth": 1
+                },
+                "iso2_cut": {
+                    "type": "std_logic_vector",
+                    "bitwidth": 1
+                },
+                "dEtaMin_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 13
+                },
+                "dEtaMax_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 13
+                },
+                "dPhiMin_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 12
+                },
+                "dPhiMax_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 12
+                },
+                "dRSquaredMin_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 28
+                },
+                "dRSquaredMax_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 28
+                },
+                "invMassDiv2Min_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 28
+                },
+                "invMassDiv2Max_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 28
+                },
+                "os_cut": {
+                    "type": "boolean"
+                },
+                "ss_cut": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "L1GTSingleObjectCond": {
+            "vhdl_template": "p2gt_singleObjCond.vhdl",
+            "vhdl_name": "p2gt_singleObjCond",
+            "Cuts": {
+                "pT_cut": {
+                    "type": "unsigned",
+                    "bitwidth": 15
+                },
+                "minEta_cut": {
+                    "type": "signed",
+                    "bitwidth": 13
+                },
+                "maxEta_cut": {
+                    "type": "signed",
+                    "bitwidth": 13
+                },
+                "minPhi_cut": {
+                    "type": "signed",
+                    "bitwidth": 12
+                },
+                "maxPhi_cut": {
+                    "type": "signed",
+                    "bitwidth": 12
+                },
+                "minDz_cut": {
+                    "type": "signed",
+                    "bitwidth": 9
+                },
+                "maxDz_cut": {
+                    "type": "signed",
+                    "bitwidth": 9
+                },
+                "qual_cut": {
+                    "type": "std_logic_vector",
+                    "bitwidth": 7
+                },
+                "iso_cut": {
+                    "type": "std_logic_vector",
+                    "bitwidth": 1
+                },
+                "chg_cut": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}
