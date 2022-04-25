@@ -145,10 +145,12 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
       os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
       ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false) {
   consumes<P2GTCandidateCollection>(col1Tag_);
-  consumes<P2GTCandidateCollection>(col2Tag_);
-
   produces<P2GTCandidateVectorRef>(col1Tag_.instance());
-  produces<P2GTCandidateVectorRef>(col2Tag_.instance());
+
+  if (!(col1Tag_ == col2Tag_)) {
+    consumes<P2GTCandidateCollection>(col2Tag_);
+    produces<P2GTCandidateVectorRef>(col2Tag_.instance());
+  }
 }
 
 void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
