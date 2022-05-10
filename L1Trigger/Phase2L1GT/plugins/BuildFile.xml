@@ -3,4 +3,5 @@
 <use name="FWCore/Utilities"/>
 <use name="L1Trigger/L1TCommon"/>
 <use name="DataFormats/L1Trigger"/>
+<use name="L1Trigger/DemonstratorTools"/>
 <flags EDM_PLUGIN="1"/>

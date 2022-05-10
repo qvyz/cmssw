@@ -179,3 +179,19 @@ process = addMonitoring(process)
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
 # End adding early deletion
+
+
+from L1Trigger.Phase2L1GT.l1GTAlgoChannelConfig import generate_channel_config 
+
+process.l1gtBoardData = cms.EDAnalyzer("L1GTBoardWriter",
+  outputFilename = cms.string("outputPatterns"),
+  format = cms.string("EMP"),
+  channelConfig = generate_channel_config({ # TODO think about whether this is the best way to configure the board writer?
+        7 : {0: "pFinalOr"},
+        9 : {2 : "pSingleObj", 65 : "pDoubleObj"}
+    })
+)
+
+process.pl1gtBoardData = cms.EndPath(process.l1gtBoardData)
+process.schedule.append(process.pl1gtBoardData)
+
