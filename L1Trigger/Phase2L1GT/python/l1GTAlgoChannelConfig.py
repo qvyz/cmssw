@@ -4,10 +4,10 @@ def generate_channel_config(algosDict: 'dict[int, dict[int, str]]') -> cms.VPSet
     config = []
     for channel, algos in algosDict.items():
         algoBits = []
-        for bit, path in algos.items():
+        for bitPos, path in algos.items():
             algoBits += [
                 cms.PSet(
-                    bit=cms.uint32(bit),
+                    bitPos=cms.uint32(bitPos),
                     path=cms.string(path)
                 )]
                 

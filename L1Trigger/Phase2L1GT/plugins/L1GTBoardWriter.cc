@@ -25,6 +25,7 @@
 #include <map>
 #include <cmath>
 #include <algorithm>
+#include <string>
 
 class L1GTBoardWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
@@ -33,7 +34,7 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
   struct AlgoBit {
-    unsigned int bit_;
+    unsigned int bitPos_;
     edm::EDGetTokenT<edm::PathStatus> token_;
 
     bool isSet(const edm::Event& event) const { return event.get(token_).accept(); }
@@ -44,6 +45,7 @@ private:
   void endJob() override;
 
   size_t framesPerBX_;
+  std::string format_;
 
   l1t::demo::BoardDataWriter boardDataWriter_;
   std::map<size_t, std::vector<AlgoBit>> algoBitMap_;
@@ -60,8 +62,7 @@ static l1t::demo::BoardDataWriter::ChannelMap_t generateChannelMap(const edm::Pa
     unsigned int maxBit = 0;
 
     for (const auto& algoBit : algoBits) {
-      unsigned int bit = algoBit.getParameter<unsigned int>("bit");
-      maxBit = std::max(bit, maxBit);
+      maxBit = std::max(algoBit.getParameter<unsigned int>("bitPos"), maxBit);
     }
 
     l1t::demo::ChannelSpec spec{
@@ -75,7 +76,8 @@ static l1t::demo::BoardDataWriter::ChannelMap_t generateChannelMap(const edm::Pa
 
 L1GTBoardWriter::L1GTBoardWriter(const edm::ParameterSet& config)
     : framesPerBX_(config.exists("framesPerBX") ? config.getParameter<unsigned int>("framesPerBX") : 9),
-      boardDataWriter_(l1t::demo::parseFileFormat(config.getParameter<std::string>("format")),
+      format_(config.exists("format") ? config.getParameter<std::string>("format") : "EMP"),
+      boardDataWriter_(l1t::demo::parseFileFormat(format_),
                        config.getParameter<std::string>("outputFilename"),
                        framesPerBX_,
                        1,
@@ -88,23 +90,23 @@ L1GTBoardWriter::L1GTBoardWriter(const edm::ParameterSet& config)
       edm::EDGetTokenT<edm::PathStatus> token =
           iC.consumes<edm::PathStatus>(edm::InputTag(algoConfig.getParameter<std::string>("path")));
 
-      algoBits.emplace_back(AlgoBit{algoConfig.getParameter<unsigned int>("bit"), token});
+      algoBits.emplace_back(AlgoBit{algoConfig.getParameter<unsigned int>("bitPos"), token});
     }
 
     std::sort(
-        algoBits.begin(), algoBits.end(), [](const AlgoBit& lhs, const AlgoBit& rhs) { return lhs.bit_ < rhs.bit_; });
+        algoBits.begin(), algoBits.end(), [](const AlgoBit& lhs, const AlgoBit& rhs) { return lhs.bitPos_ < rhs.bitPos_; });
 
-    algoBitMap_.insert({param.getParameter<unsigned int>("channel"), algoBits});
+    algoBitMap_.emplace(param.getParameter<unsigned int>("channel"), algoBits);
   }
 }
 
 void L1GTBoardWriter::analyze(const edm::Event& event, const edm::EventSetup& iSetup) {
   l1t::demo::EventData eventData;
   for (const auto& [channel, algoBits] : algoBitMap_) {
-    std::vector<ap_uint<64>> bits(std::ceil(static_cast<float>(algoBits.back().bit_ + 1) / 64));
+    std::vector<ap_uint<64>> bits(std::ceil(static_cast<float>(algoBits.back().bitPos_ + 1) / 64));
 
     for (const AlgoBit& algoBit : algoBits) {
-      bits[algoBit.bit_ / 64].set(algoBit.bit_ % 64, algoBit.isSet(event));
+      bits[algoBit.bitPos_ / 64].set(algoBit.bitPos_ % 64, algoBit.isSet(event));
     }
 
     eventData.add({"Algos", channel}, bits);
@@ -117,7 +119,7 @@ void L1GTBoardWriter::endJob() { boardDataWriter_.flush(); }
 
 void L1GTBoardWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription algoDesc;
-  algoDesc.add<unsigned int>("bit");
+  algoDesc.add<unsigned int>("bitPos");
   algoDesc.add<std::string>("path");
 
   edm::ParameterSetDescription algosDesc;
@@ -129,7 +131,7 @@ void L1GTBoardWriter::fillDescriptions(edm::ConfigurationDescriptions& descripti
   desc.addVPSet("channelConfig", algosDesc);
   desc.addOptional<unsigned int>("framesPerBX", 9);
   desc.addOptional<unsigned int>("maxLines", 1024);
-  desc.add<std::string>("format", "EMP");
+  desc.addOptional<std::string>("format", "EMP");
 
   descriptions.addDefault(desc);
 }
