@@ -86,6 +86,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         'keep *_l1gtProducer_*_*',
         'keep *_l1gtSingleObj_*_*',
         'keep *_l1gtDoubleObj_*_*',
+        'keep *_TriggerResults_*_*'
     ),
     splitLevel = cms.untracked.int32(0)
 )
