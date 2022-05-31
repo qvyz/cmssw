@@ -126,12 +126,14 @@ process.l1gtDoubleObj = l1GTDoubleObjectCond.clone(
 process.pSingleObj = cms.Path(process.l1gtSingleObj)
 process.pDoubleObj = cms.Path(process.l1gtDoubleObj)
 
+process.pCombination = cms.Path(process.l1gtDoubleObj + process.l1gtSingleObj)
+
 process.l1gtFinalOr = cms.EDFilter("PathStatusFilter",
     logicalExpression =  cms.string("pSingleObj or pDoubleObj")
 )
 process.pFinalOr = cms.Path(process.l1gtFinalOr)
 
-gt_step = process.pProd, process.pDoubleObj, process.pSingleObj, process.pFinalOr
+gt_step = process.pProd, process.pDoubleObj, process.pSingleObj, process.pCombination, process.pFinalOr
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,

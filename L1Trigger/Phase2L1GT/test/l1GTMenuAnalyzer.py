@@ -117,18 +117,26 @@ def get_objs_passing_filter(event, filter_name, process):
     return passing_objs
 
 
-def print_l1(event, l1_res, l1_name, l1_filtname, process):
+def print_l1(event, l1_res, l1_name, l1_filtnames, process):
 
     if l1_res.result(l1_name) == True:
-        l1_objs = get_objs_passing_filter(event, l1_filtname, process)
-        print("{} ({}): {}, nr objs pass {}".format(
-            l1_name, l1_filtname.split('::')[1], l1_res.result(l1_name), len(l1_objs)))
-        for key, obj in l1_objs.items():
-            print(" {} pt {:3.1f} eta {:3.2f} phi {:3.2f}".format(
-                key, obj.hwPT() * scales.kPT_lsb, obj.hwEta() * scales.kEta_lsb, obj.hwPhi() * scales.kPhi_lsb))
+        passed_objs = {}
+        for filter in l1_filtnames:
+            l1_objs = get_objs_passing_filter(event, filter, process)
+            tag = filter.split('::')[1]
+            if tag in passed_objs:
+                passed_objs[tag] = dict(l1_objs.items() & passed_objs[tag].items())
+            else:
+                passed_objs[tag] = l1_objs
+
+        print("{} : {}, nr objs pass {}".format(
+            l1_name, l1_res.result(l1_name), sum(len(v) for v in passed_objs.values())))
+        for tag, objs in passed_objs.items():
+            for key, obj in sorted(objs.items()):
+                print(" {}: {} pt {:3.1f} eta {:3.2f} phi {:3.2f}".format(
+                    tag, key, obj.hwPT() * scales.kPT_lsb, obj.hwEta() * scales.kEta_lsb, obj.hwPhi() * scales.kPhi_lsb))
     else:
-        print("{} ({}): {}, nr objs pass {}".format(
-            l1_name, l1_filtname.split('::')[1], l1_res.result(l1_name), 0))
+        print("{} : {}, nr objs pass {}".format(l1_name, l1_res.result(l1_name), 0))
 
 
 if __name__ == "__main__":
@@ -157,7 +165,6 @@ if __name__ == "__main__":
         l1_res.fill(event)
 
         for path, filters in path_filters.items():
-            for filter in filters:
-                print_l1(event, l1_res, path, filter, args.process)
+            print_l1(event, l1_res, path, filters, args.process)
 
         print('*' * 80)
