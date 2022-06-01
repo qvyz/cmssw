@@ -4,7 +4,6 @@
 
 namespace l1t {
   P2GTCandidate::P2GTCandidate() {}
-  P2GTCandidate::~P2GTCandidate() {}
 
   P2GTCandidate::P2GTCandidate(const TkElectron& obj)
       : hwPT_(std::round(obj.pt() / 0.03125) /* TEMPORARY */), hwPhi_(obj.hwPhi()), hwEta_(obj.hwEta()) /* TODO */ {}

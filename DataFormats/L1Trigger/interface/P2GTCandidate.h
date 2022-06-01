@@ -4,7 +4,6 @@
 #include <vector>
 #include <ap_int.h>
 
-#include "DataFormats/Candidate/interface/LeafCandidate.h"
 #include "DataFormats/L1Trigger/interface/BXVector.h"
 
 #include "DataFormats/L1TCorrelator/interface/TkElectron.h"
@@ -18,7 +17,7 @@ namespace l1t {
   typedef edm::RefVector<P2GTCandidateCollection> P2GTCandidateRefVector;
   typedef std::vector<P2GTCandidateRef> P2GTCandidateVectorRef;
 
-  class P2GTCandidate : public reco::LeafCandidate {
+  class P2GTCandidate {
   public:
     typedef ap_uint<16> hwPT_t;
     typedef ap_int<13> hwPhi_t;
@@ -44,8 +43,6 @@ namespace l1t {
     P2GTCandidate();
     P2GTCandidate(const TkElectron&);
     P2GTCandidate(const TkEm&);
-
-    ~P2GTCandidate() override;
 
     void setHwPT(hwPT_t hwPT) { hwPT_ = hwPT; }
     void setHwPhi(hwPhi_t hwPhi) { hwPhi_ = hwPhi; }
@@ -94,8 +91,8 @@ namespace l1t {
     hwNumber_of_tracks_in_pv_t hwNumber_of_tracks_in_pv() const { return hwNumber_of_tracks_in_pv_; }
     hwNumber_of_tracks_not_in_pv_t hwNumber_of_tracks_not_in_pv() const { return hwNumber_of_tracks_not_in_pv_; }
 
-    virtual bool operator==(const l1t::P2GTCandidate& rhs) const;
-    virtual bool operator!=(const l1t::P2GTCandidate& rhs) const;
+    bool operator==(const l1t::P2GTCandidate& rhs) const;
+    bool operator!=(const l1t::P2GTCandidate& rhs) const;
 
   private:
     int hwPT_ = 0;
