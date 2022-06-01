@@ -19,6 +19,7 @@
 #include <vector>
 #include <functional>
 #include <optional>
+#include <set>
 
 #include <ap_int.h>
 
@@ -201,8 +202,8 @@ bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
 
   bool condition_result = false;
 
-  std::unique_ptr<P2GTCandidateVectorRef> triggerCol1 = std::make_unique<P2GTCandidateVectorRef>();
-  std::unique_ptr<P2GTCandidateVectorRef> triggerCol2 = std::make_unique<P2GTCandidateVectorRef>();
+  std::set<std::size_t> triggeredIdcs1;
+  std::set<std::size_t> triggeredIdcs2;
 
   for (std::size_t idx1 = 0; idx1 < col1->size(); ++idx1) {
     for (std::size_t idx2 = 0; idx2 < col2->size(); ++idx2) {
@@ -217,17 +218,30 @@ bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
       condition_result |= pass;
 
       if (pass) {
-        triggerCol1->push_back(P2GTCandidateRef(col1, idx1));
+        triggeredIdcs1.emplace(idx1);
         if (col1.product() != col2.product()) {
-          triggerCol2->push_back(P2GTCandidateRef(col2, idx2));
+          triggeredIdcs2.emplace(idx2);
+        } else {
+          triggeredIdcs1.emplace(idx2);
         }
       }
     }
   }
 
   if (condition_result) {
+    std::unique_ptr<P2GTCandidateVectorRef> triggerCol1 = std::make_unique<P2GTCandidateVectorRef>();
+
+    for (std::size_t idx : triggeredIdcs1) {
+      triggerCol1->push_back(P2GTCandidateRef(col1, idx));
+    }
     event.put(std::move(triggerCol1), col1Tag_.instance());
+
     if (col1.product() != col2.product()) {
+      std::unique_ptr<P2GTCandidateVectorRef> triggerCol2 = std::make_unique<P2GTCandidateVectorRef>();
+
+      for (std::size_t idx : triggeredIdcs2) {
+        triggerCol2->push_back(P2GTCandidateRef(col2, idx));
+      }
       event.put(std::move(triggerCol2), col2Tag_.instance());
     }
   }
