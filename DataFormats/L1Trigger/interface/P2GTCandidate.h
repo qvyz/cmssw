@@ -4,7 +4,8 @@
 #include <vector>
 #include <ap_int.h>
 
-#include "DataFormats/L1Trigger/interface/BXVector.h"
+#include "DataFormats/Common/interface/Ref.h"
+#include "DataFormats/Common/interface/RefVector.h"
 
 #include "DataFormats/L1TCorrelator/interface/TkElectron.h"
 #include "DataFormats/L1TCorrelator/interface/TkEm.h"
