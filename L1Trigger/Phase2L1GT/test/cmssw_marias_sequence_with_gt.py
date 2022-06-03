@@ -83,10 +83,9 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:debug.root'),
     outputCommands = cms.untracked.vstring('drop *',
         'keep *_l1ctLayer1EG_*_*',
-        'keep *_l1gtProducer_*_*',
-        'keep *_l1gtSingleObj_*_*',
-        'keep *_l1gtDoubleObj_*_*',
-        'keep *_TriggerResults_*_*'
+        'keep l1tP2GTCandidatesl1tP2GTCandidatel1tP2GTCandidatesl1tP2GTCandidateedmrefhelperFindUsingAdvanceedmRefs_*_*_*',
+        'keep l1tP2GTCandidates_*_*_*',
+        'keep *_TriggerResults_*_L1'
     ),
     splitLevel = cms.untracked.int32(0)
 )
@@ -108,32 +107,32 @@ from L1Trigger.Phase2L1GT.l1GTDoubleObjectCond_cfi import l1GTDoubleObjectCond
 from L1Trigger.Phase2L1GT.l1GTSingleObjectCond_cfi import l1GTSingleObjectCond
 from L1Trigger.Phase2L1GT.l1GTProducer_cfi import l1GTProducer
 
-process.l1gtProducer = l1GTProducer.clone()
-process.pProd = cms.Path(process.l1gtProducer)
+process.GTProducer = l1GTProducer.clone()
+process.l1t_GTProducer = cms.Path(process.GTProducer)
 
-process.l1gtSingleObj = l1GTSingleObjectCond.clone(
-    colTag = cms.InputTag("l1gtProducer", "CL2Electrons"),
-    pt_cut = cms.double(10),
+process.singleTkEle12 = l1GTSingleObjectCond.clone(
+    colTag = cms.InputTag("GTProducer", "CL2Electrons"),
+    pt_cut = cms.double(12),
 )
 
-process.l1gtDoubleObj = l1GTDoubleObjectCond.clone(
-    col1Tag = cms.InputTag("l1gtProducer", "CL2Electrons"),
-    col2Tag = cms.InputTag("l1gtProducer", "CL2Photons"),
-    pt1_cut = cms.double(0.0625),
-    pt2_cut = cms.double(0.0625)
+process.doubleTkEle11TkPho11 = l1GTDoubleObjectCond.clone(
+    col1Tag = cms.InputTag("GTProducer", "CL2Electrons"),
+    col2Tag = cms.InputTag("GTProducer", "CL2Photons"),
+    pt1_cut = cms.double(11),
+    pt2_cut = cms.double(11)
 )
 
-process.pSingleObj = cms.Path(process.l1gtSingleObj)
-process.pDoubleObj = cms.Path(process.l1gtDoubleObj)
+process.l1t_singleTkEle12 = cms.Path(process.singleTkEle12)
+process.l1t_doubleTkEle11TkPho11 = cms.Path(process.doubleTkEle11TkPho11)
 
-process.pCombination = cms.Path(process.l1gtDoubleObj + process.l1gtSingleObj)
+process.l1t_doubleTkEle11TkPho11_singleTkEle12 = cms.Path(process.doubleTkEle11TkPho11 + process.singleTkEle12)
 
-process.l1gtFinalOr = cms.EDFilter("PathStatusFilter",
-    logicalExpression =  cms.string("pSingleObj or pDoubleObj")
+process.testOr = cms.EDFilter("PathStatusFilter",
+    logicalExpression =  cms.string("l1t_singleTkEle12 or l1t_doubleTkEle11TkPho11")
 )
-process.pFinalOr = cms.Path(process.l1gtFinalOr)
+process.l1t_testOr = cms.Path(process.testOr)
 
-gt_step = process.pProd, process.pDoubleObj, process.pSingleObj, process.pCombination, process.pFinalOr
+gt_step = process.l1t_GTProducer, process.l1t_singleTkEle12, process.l1t_doubleTkEle11TkPho11, process.l1t_doubleTkEle11TkPho11_singleTkEle12, process.l1t_testOr
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,
@@ -189,8 +188,8 @@ from L1Trigger.Phase2L1GT.l1GTAlgoChannelConfig import generate_channel_config
 process.l1gtBoardData = cms.EDAnalyzer("L1GTBoardWriter",
   outputFilename = cms.string("outputPatterns"),
   channelConfig = generate_channel_config({ # TODO think about whether this is the best way to configure the board writer?
-        7 : {0: "pFinalOr"},
-        9 : {2 : "pSingleObj", 65 : "pDoubleObj"}
+        7 : {0: "l1t_testOr"},
+        9 : {2 : "l1t_singleTkEle12", 65 : "l1t_doubleTkEle11TkPho11"}
     })
 )
 
