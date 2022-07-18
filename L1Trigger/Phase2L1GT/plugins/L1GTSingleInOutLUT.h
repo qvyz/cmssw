@@ -6,8 +6,8 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <sstream>
-#include <string>
+#include <fstream>
+#include <iostream>
 
 namespace l1t {
 
@@ -29,13 +29,17 @@ namespace l1t {
 
     constexpr int operator[](int in) const { return contents_[in / input_resolution_reduction_]; }
 
-    std::string get_contents_as_lut_file() const {
-      std::ostringstream os;
+    void dump(const char* fileName) const {
+      std::fstream fs(fileName, std::fstream::out);
+      if (!fs.is_open()) {
+        std::cerr << "Failed to open file." << std::endl;
+        return;
+      }
       for (std::size_t idx = 0; idx < contents_.size(); ++idx) {
         // TODO: Make sure value fits into out_width!
-        os << "@" << std::hex << idx << " " << contents_[idx] << "\n";
+        fs << "@" << std::hex << idx << " " << contents_[idx] << "\n";
       }
-      return os.str();
+      fs.close();
     }
 
   private:
