@@ -1,4 +1,5 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/ParameterSet/interface/allowedValues.h"
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -77,7 +78,16 @@ static const l1t::demo::BoardDataWriter::ChannelMap_t CHANNEL_MAP_VU9P{
     {{"GTT", 2}, {{6, 0}, vrange<std::size_t, 104, 110>()}},
     {{"GTT", 3}, {{6, 0}, vrange<std::size_t, 110, 116>()}}};
 
-static const l1t::demo::BoardDataWriter::ChannelMap_t CHANNEL_MAP_VU13P{};
+static const l1t::demo::BoardDataWriter::ChannelMap_t CHANNEL_MAP_VU13P{
+    {{"GTT", 0}, {{6, 0}, vrange<std::size_t, 0, 6>()}},
+    {{"GTT", 1}, {{6, 0}, vrange<std::size_t, 6, 12>()}},
+    {{"GCT", 0}, {{6, 0}, vrange<std::size_t, 24, 30>()}},
+    {{"CL2", 0}, {{6, 0}, vrange<std::size_t, 32, 38>()}},
+    {{"CL2", 1}, {{6, 0}, vrange<std::size_t, 38, 44>()}},
+    {{"GMT", 0}, {{18, 0}, vrange<std::size_t, 48, 66>()}},
+    {{"CL2", 2}, {{6, 0}, vrange<std::size_t, 80, 86>()}},
+    {{"GTT", 2}, {{6, 0}, vrange<std::size_t, 112, 118>()}},
+    {{"GTT", 3}, {{6, 0}, vrange<std::size_t, 118, 124>()}}};
 
 L1GTTestProducer::L1GTTestProducer(const edm::ParameterSet &config)
     : randomGenerator_(config.exists("random_seed") ? config.getParameter<unsigned int>("random_seed")
@@ -87,7 +97,7 @@ L1GTTestProducer::L1GTTestProducer(const edm::ParameterSet &config)
                        9,
                        1,
                        config.exists("maxLines") ? config.getParameter<unsigned int>("maxLines") : 1024,
-                       CHANNEL_MAP_VU9P) {
+                       config.getParameter<std::string>("platform") == "VU13P" ? CHANNEL_MAP_VU13P : CHANNEL_MAP_VU9P) {
   produces<P2GTCandidateCollection>("GCT NonIsoEg");
   produces<P2GTCandidateCollection>("GCT IsoEg");
   produces<P2GTCandidateCollection>("GCT Jets");
@@ -121,6 +131,8 @@ void L1GTTestProducer::fillDescriptions(edm::ConfigurationDescriptions &descript
   desc.addOptional<unsigned int>("random_seed");
   desc.addOptional<unsigned int>("maxLines", 1024);
   desc.addOptional<std::string>("outputFilename");
+  desc.ifValue(edm::ParameterDescription<std::string>("platform", "VU9P", true),
+               edm::allowedValues<std::string>("VU9P", "VU13P"));
   description.addWithDefaultLabel(desc);
 }
 

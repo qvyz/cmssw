@@ -57,8 +57,8 @@ L1GTProducer::L1GTProducer(const edm::ParameterSet &config)
     consumes<TkEmCollection>(tag);
   }
 
-  produces<P2GTCandidateCollection>("CL2Electrons");
-  produces<P2GTCandidateCollection>("CL2Photons");
+  produces<P2GTCandidateCollection>("CL2 Electrons");
+  produces<P2GTCandidateCollection>("CL2 Photons");
 }
 
 void L1GTProducer::fillDescriptions(edm::ConfigurationDescriptions &description) {
@@ -85,8 +85,8 @@ static void produceByTags(const std::string &productName, const std::vector<edm:
 }
 
 void L1GTProducer::produce(edm::Event &event, const edm::EventSetup &setup) {
-  produceByTags<TkElectronCollection>("CL2Electrons", cl2ElectronTags, event);
-  produceByTags<TkEmCollection>("CL2Photons", cl2PhotonTags, event);
+  produceByTags<TkElectronCollection>("CL2 Electrons", cl2ElectronTags, event);
+  produceByTags<TkEmCollection>("CL2 Photons", cl2PhotonTags, event);
 }
 
 DEFINE_FWK_MODULE(L1GTProducer);

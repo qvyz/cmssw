@@ -26,6 +26,39 @@ process.GTProducer = cms.EDProducer(
     "L1GTTestProducer",
     outputFilename=cms.string("inputPattern"),
     random_seed=cms.uint32(0),
+    platform=cms.string("VU9P")
 )
 
-process.L1T_GTProducer = cms.Path(process.GTProducer)
+process.l1t_GTProducer = cms.Path(process.GTProducer)
+from L1Trigger.Phase2L1GT.l1GTDoubleObjectCond_cfi import l1GTDoubleObjectCond
+from L1Trigger.Phase2L1GT.l1GTSingleObjectCond_cfi import l1GTSingleObjectCond
+
+
+# Conditions
+process.singleTkEle12 = l1GTSingleObjectCond.clone(
+    colTag = cms.InputTag("GTProducer", "CL2 Electrons"),
+    pt_cut = cms.double(12),
+)
+
+process.doubleTkEle11TkPho11 = l1GTDoubleObjectCond.clone(
+    col1Tag = cms.InputTag("GTProducer", "CL2 Electrons"),
+    col2Tag = cms.InputTag("GTProducer", "CL2 Photons"),
+    pt1_cut = cms.double(11),
+    pt2_cut = cms.double(11)
+)
+
+process.l1t_singleTkEle12 = cms.Path(process.singleTkEle12)
+process.l1t_doubleTkEle11TkPho11 = cms.Path(process.doubleTkEle11TkPho11)
+
+
+# Algo bits
+from L1Trigger.Phase2L1GT.l1GTAlgoChannelConfig import generate_channel_config 
+
+process.BoardData = cms.EDAnalyzer("L1GTBoardWriter",
+  outputFilename = cms.string("outputPattern"),
+  channelConfig = generate_channel_config({
+        9 : {2 : "l1t_singleTkEle12", 65 : "l1t_doubleTkEle11TkPho11"}
+    })
+)
+
+process.l1t_BoardData = cms.EndPath(process.BoardData)
