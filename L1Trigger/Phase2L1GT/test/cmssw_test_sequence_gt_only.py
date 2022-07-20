@@ -30,9 +30,9 @@ process.GTProducer = cms.EDProducer(
 )
 
 process.l1t_GTProducer = cms.Path(process.GTProducer)
-from L1Trigger.Phase2L1GT.l1GTDoubleObjectCond_cfi import l1GTDoubleObjectCond
 from L1Trigger.Phase2L1GT.l1GTSingleObjectCond_cfi import l1GTSingleObjectCond
-
+from L1Trigger.Phase2L1GT.l1GTDoubleObjectCond_cfi import l1GTDoubleObjectCond
+from L1Trigger.Phase2L1GT.l1GTTripleObjectCond_cfi import l1GTTripleObjectCond
 
 # Conditions
 process.singleTkEle12 = l1GTSingleObjectCond.clone(
@@ -47,8 +47,18 @@ process.doubleTkEle11TkPho11 = l1GTDoubleObjectCond.clone(
     pt2_cut = cms.double(11)
 )
 
+process.tripleTkEle20TkPho18Jet11 = l1GTTripleObjectCond.clone(
+    col1Tag = cms.InputTag("GTProducer", "CL2 Electrons"),
+    col2Tag = cms.InputTag("GTProducer", "CL2 Photons"),
+    col3Tag = cms.InputTag("GTProducer", "CL2 Jets"),
+    pt1_cut = cms.double(20),
+    pt2_cut = cms.double(18),
+    pt3_cut = cms.double(11),
+)
+
 process.l1t_singleTkEle12 = cms.Path(process.singleTkEle12)
 process.l1t_doubleTkEle11TkPho11 = cms.Path(process.doubleTkEle11TkPho11)
+process.l1t_tripleTkEle20TkPho18Jet11 = cms.Path(process.tripleTkEle20TkPho18Jet11)
 
 
 # Algo bits
@@ -57,7 +67,7 @@ from L1Trigger.Phase2L1GT.l1GTAlgoChannelConfig import generate_channel_config
 process.BoardData = cms.EDAnalyzer("L1GTBoardWriter",
   outputFilename = cms.string("outputPattern"),
   channelConfig = generate_channel_config({
-        9 : {2 : "l1t_singleTkEle12", 65 : "l1t_doubleTkEle11TkPho11"}
+        9 : {0: "l1t_tripleTkEle20TkPho18Jet11", 2 : "l1t_singleTkEle12", 65 : "l1t_doubleTkEle11TkPho11"}
     })
 )
 
