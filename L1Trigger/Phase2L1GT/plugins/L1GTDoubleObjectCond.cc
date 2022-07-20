@@ -13,7 +13,6 @@
 #include "L1GTSingleInOutLUT.h"
 #include "L1GTScales.h"
 
-#include <cmath>
 #include <cinttypes>
 #include <memory>
 #include <vector>
@@ -278,7 +277,7 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
   res &= dPhiMin_cut_ ? dPhi > dPhiMin_cut_ : true;
   res &= dPhiMax_cut_ ? dPhi < dPhiMax_cut_ : true;
 
-  int64_t dRSquared{static_cast<int64_t>(std::pow(dEta, 2)) + static_cast<int64_t>(std::pow(dPhi, 2))};
+  int64_t dRSquared{dEta * dEta + dPhi * dPhi};
   res &= dRSquaredMin_cut_ ? dRSquared > dRSquaredMin_cut_ : true;
   res &= dRSquaredMax_cut_ ? dRSquared < dRSquaredMax_cut_ : true;
 
