@@ -99,6 +99,8 @@ L1GTTripleObjectCond::L1GTTripleObjectCond(const edm::ParameterSet& config)
           "pt1_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
       pt2_cut_(getOptionalParam<int, double>(
           "pt2_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
+      pt3_cut_(getOptionalParam<int, double>(
+          "pt3_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
       minEta1_cut_(getOptionalParam<int, double>(
           "minEta1_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
       maxEta1_cut_(getOptionalParam<int, double>(
@@ -221,11 +223,11 @@ bool L1GTTripleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
           continue;
         }
 
-        if (col2.product() == col3.product() && idx2 == idx3) {
+        if (col1.product() == col3.product() && idx1 == idx3) {
           continue;
         }
 
-        if (col1.product() == col3.product() && idx1 == idx3) {
+        if (col2.product() == col3.product() && idx2 == idx3) {
           continue;
         }
 
@@ -241,7 +243,7 @@ bool L1GTTripleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
             triggeredIdcs1.emplace(idx2);
           }
 
-          if (col2.product() != col3.product() && col1.product() != col3.product()) {
+          if (col1.product() != col3.product() && col2.product() != col3.product()) {
             triggeredIdcs3.emplace(idx3);
           } else if (col1.product() == col3.product()) {
             triggeredIdcs1.emplace(idx3);
@@ -270,7 +272,7 @@ bool L1GTTripleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
       event.put(std::move(triggerCol2), col2Tag_.instance());
     }
 
-    if (col2.product() != col3.product() && col1.product() != col3.product()) {
+    if (col1.product() != col3.product() && col2.product() != col3.product()) {
       std::unique_ptr<P2GTCandidateVectorRef> triggerCol3 = std::make_unique<P2GTCandidateVectorRef>();
 
       for (std::size_t idx : triggeredIdcs3) {
