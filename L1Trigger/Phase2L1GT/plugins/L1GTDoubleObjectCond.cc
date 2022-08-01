@@ -10,7 +10,6 @@
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 
-#include "L1GTSingleInOutLUT.h"
 #include "L1GTScales.h"
 
 #include <cinttypes>
@@ -23,6 +22,20 @@
 #include <ap_int.h>
 
 using namespace l1t;
+
+class L1TSingleInOutLUT {
+public:
+  L1TSingleInOutLUT(const std::vector<int>& data, uint32_t unused_lsbs, uint32_t hwMax_error)
+      : data_(data), unused_lsbs_(unused_lsbs), hwMax_error_(hwMax_error) {}
+
+  int32_t operator[](int32_t i) const { return data_[(i >> unused_lsbs_) % data_.size()]; }
+  uint32_t hwMax_error() const { return hwMax_error_; }
+
+private:
+  const std::vector<int32_t> data_;
+  const uint32_t unused_lsbs_;
+  const uint32_t hwMax_error_;  // Sanity check
+};
 
 class L1GTDoubleObjectCond : public edm::stream::EDFilter<> {
 public:
@@ -38,38 +51,41 @@ private:
   const edm::InputTag col1Tag_;
   const edm::InputTag col2Tag_;
 
-  L1GTScales scales_;
+  const L1GTScales scales_;
 
-  std::optional<ap_uint<16>> pt1_cut_;
-  std::optional<ap_uint<16>> pt2_cut_;
-  std::optional<ap_int<14>> minEta1_cut_;
-  std::optional<ap_int<14>> maxEta1_cut_;
-  std::optional<ap_int<14>> minEta2_cut_;
-  std::optional<ap_int<14>> maxEta2_cut_;
-  std::optional<ap_int<13>> minPhi1_cut_;
-  std::optional<ap_int<13>> maxPhi1_cut_;
-  std::optional<ap_int<13>> minPhi2_cut_;
-  std::optional<ap_int<13>> maxPhi2_cut_;
-  std::optional<ap_int<10>> minDz1_cut_;
-  std::optional<ap_int<10>> maxDz1_cut_;
-  std::optional<ap_int<10>> minDz2_cut_;
-  std::optional<ap_int<10>> maxDz2_cut_;
-  std::optional<ap_uint<8>> qual1_cut_;
-  std::optional<ap_uint<8>> qual2_cut_;
-  std::optional<ap_uint<2>> iso1_cut_;
-  std::optional<ap_uint<2>> iso2_cut_;
-  std::optional<ap_uint<14>> dEtaMin_cut_;
-  std::optional<ap_uint<14>> dEtaMax_cut_;
-  std::optional<ap_uint<13>> dPhiMin_cut_;
-  std::optional<ap_uint<13>> dPhiMax_cut_;
+  const L1TSingleInOutLUT coshEtaLUT_;
+  const L1TSingleInOutLUT cosPhiLUT_;
 
-  std::optional<ap_uint<28>> dRSquaredMin_cut_;
-  std::optional<ap_uint<28>> dRSquaredMax_cut_;
-  std::optional<ap_uint<28>> invMassDiv2Min_cut_;
-  std::optional<ap_uint<28>> invMassDiv2Max_cut_;
+  const std::optional<ap_uint<16>> pt1_cut_;
+  const std::optional<ap_uint<16>> pt2_cut_;
+  const std::optional<ap_int<14>> minEta1_cut_;
+  const std::optional<ap_int<14>> maxEta1_cut_;
+  const std::optional<ap_int<14>> minEta2_cut_;
+  const std::optional<ap_int<14>> maxEta2_cut_;
+  const std::optional<ap_int<13>> minPhi1_cut_;
+  const std::optional<ap_int<13>> maxPhi1_cut_;
+  const std::optional<ap_int<13>> minPhi2_cut_;
+  const std::optional<ap_int<13>> maxPhi2_cut_;
+  const std::optional<ap_int<10>> minDz1_cut_;
+  const std::optional<ap_int<10>> maxDz1_cut_;
+  const std::optional<ap_int<10>> minDz2_cut_;
+  const std::optional<ap_int<10>> maxDz2_cut_;
+  const std::optional<ap_uint<8>> qual1_cut_;
+  const std::optional<ap_uint<8>> qual2_cut_;
+  const std::optional<ap_uint<2>> iso1_cut_;
+  const std::optional<ap_uint<2>> iso2_cut_;
+  const std::optional<ap_uint<14>> dEtaMin_cut_;
+  const std::optional<ap_uint<14>> dEtaMax_cut_;
+  const std::optional<ap_uint<13>> dPhiMin_cut_;
+  const std::optional<ap_uint<13>> dPhiMax_cut_;
 
-  bool os_cut_;
-  bool ss_cut_;
+  const std::optional<ap_uint<28>> dRSquaredMin_cut_;
+  const std::optional<ap_uint<28>> dRSquaredMax_cut_;
+  const std::optional<ap_uint<28>> invMassDiv2Min_cut_;
+  const std::optional<ap_uint<28>> invMassDiv2Max_cut_;
+
+  const bool os_cut_;
+  const bool ss_cut_;
 };
 
 template <typename T, typename K>
@@ -93,7 +109,16 @@ static inline std::optional<T> getOptionalParam(const std::string& name, const e
 L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
     : col1Tag_(config.getParameter<edm::InputTag>("col1Tag")),
       col2Tag_(config.getParameter<edm::InputTag>("col2Tag")),
-      scales_(config.getParameter<edm::ParameterSet>("scales")),
+      scales_(config.getParameter<edm::ParameterSet>("scales"),
+              config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("output_scale_factor")),
+      coshEtaLUT_(config.getParameterSet("cosh_eta_lut").getParameter<std::vector<int>>("lut"),
+                  config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("unused_lsbs"),
+                  std::ceil(config.getParameterSet("cosh_eta_lut").getParameter<double>("max_error") *
+                            config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("output_scale_factor"))),
+      cosPhiLUT_(config.getParameterSet("cos_phi_lut").getParameter<std::vector<int>>("lut"),
+                 config.getParameterSet("cos_phi_lut").getParameter<uint32_t>("unused_lsbs"),
+                 std::ceil(config.getParameterSet("cos_phi_lut").getParameter<double>("max_error") *
+                           config.getParameterSet("cos_phi_lut").getParameter<uint32_t>("output_scale_factor"))),
       pt1_cut_(getOptionalParam<int, double>(
           "pt1_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
       pt2_cut_(getOptionalParam<int, double>(
@@ -190,6 +215,20 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
   L1GTScales::fillDescriptions(scalesDesc);
   desc.add<edm::ParameterSetDescription>("scales", scalesDesc);
 
+  edm::ParameterSetDescription coshLUTDesc;
+  coshLUTDesc.add<std::vector<int32_t>>("lut");
+  coshLUTDesc.add<uint32_t>("output_scale_factor");
+  coshLUTDesc.add<uint32_t>("unused_lsbs");
+  coshLUTDesc.add<double>("max_error");
+  desc.add<edm::ParameterSetDescription>("cosh_eta_lut", coshLUTDesc);
+
+  edm::ParameterSetDescription cosLUTDesc;
+  cosLUTDesc.add<std::vector<int32_t>>("lut");
+  cosLUTDesc.add<uint32_t>("output_scale_factor");
+  cosLUTDesc.add<uint32_t>("unused_lsbs");
+  cosLUTDesc.add<double>("max_error");
+  desc.add<edm::ParameterSetDescription>("cos_phi_lut", cosLUTDesc);
+
   descriptions.addWithDefaultLabel(desc);
 }
 
@@ -269,22 +308,40 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
   res &= iso1_cut_ ? (obj1.hwIso() > iso1_cut_) : true;
   res &= iso2_cut_ ? (obj2.hwIso() > iso2_cut_) : true;
 
-  int64_t dEta{(obj1.hwEta() > obj2.hwEta()) ? obj1.hwEta() - obj2.hwEta() : obj2.hwEta() - obj1.hwEta()};
+  int64_t dEta = (obj1.hwEta() > obj2.hwEta()) ? obj1.hwEta().to_int64() - obj2.hwEta().to_int64()
+                                               : obj2.hwEta().to_int64() - obj1.hwEta().to_int64();
   res &= dEtaMin_cut_ ? dEta > dEtaMin_cut_ : true;
   res &= dEtaMax_cut_ ? dEta < dEtaMax_cut_ : true;
 
-  int64_t dPhi{(obj1.hwPhi() > obj2.hwPhi()) ? obj1.hwPhi() - obj2.hwPhi() : obj2.hwPhi() - obj1.hwPhi()};
+  int64_t dPhi = (obj1.hwPhi() > obj2.hwPhi()) ? obj1.hwPhi().to_int() - obj2.hwPhi().to_int()
+                                               : obj2.hwPhi().to_int() - obj1.hwPhi().to_int();
   res &= dPhiMin_cut_ ? dPhi > dPhiMin_cut_ : true;
   res &= dPhiMax_cut_ ? dPhi < dPhiMax_cut_ : true;
 
-  int64_t dRSquared{dEta * dEta + dPhi * dPhi};
+  int64_t dRSquared = dEta * dEta + dPhi * dPhi;
   res &= dRSquaredMin_cut_ ? dRSquared > dRSquaredMin_cut_ : true;
   res &= dRSquaredMax_cut_ ? dRSquared < dRSquaredMax_cut_ : true;
 
   res &= os_cut_ ? obj1.hwCharge() != obj2.hwCharge() : true;
   res &= ss_cut_ ? obj1.hwCharge() == obj2.hwCharge() : true;
 
-  int64_t invMassDiv2{obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (coshEtaLUT[dEta] - cosPhiLUT[dPhi])};
+  int32_t lutCoshDEta = coshEtaLUT_[dEta];
+  int32_t lutCosDPhi = cosPhiLUT_[dPhi];
+
+  int64_t invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
+
+  if (std::abs(lutCoshDEta - scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb())) > coshEtaLUT_.hwMax_error()) {
+    edm::LogError("COSH LUT") << "Difference larger than max LUT error: " << coshEtaLUT_.hwMax_error()
+                              << ", lut: " << lutCoshDEta
+                              << ", calc: " << scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb());
+  }
+
+  if (std::abs(lutCosDPhi - scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb())) > cosPhiLUT_.hwMax_error()) {
+    edm::LogError("COS LUT") << "Difference larger than max LUT error: " << cosPhiLUT_.hwMax_error()
+                             << ", lut: " << lutCosDPhi
+                             << ", calc: " << scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb());
+  }
+
   res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;
   res &= invMassDiv2Max_cut_ ? invMassDiv2 < invMassDiv2Max_cut_ : true;
 

@@ -17,7 +17,6 @@
 #include "L1Trigger/DemonstratorTools/interface/utilities.h"
 
 #include "L1GTTestInterface.h"
-#include "L1GTSingleInOutLUT.h"
 
 #include <vector>
 #include <array>
@@ -295,10 +294,6 @@ void L1GTTestProducer::produce(edm::Event &event, const edm::EventSetup &setup) 
   }
 }
 
-void L1GTTestProducer::endJob() {
-  boardDataWriter_.flush();
-  coshEtaLUT.dump("coshEtaLUT.mem");
-  cosPhiLUT.dump("cosPhiLUT.mem");
-}
+void L1GTTestProducer::endJob() { boardDataWriter_.flush(); }
 
 DEFINE_FWK_MODULE(L1GTTestProducer);

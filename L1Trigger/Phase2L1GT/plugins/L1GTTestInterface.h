@@ -76,7 +76,7 @@ namespace l1t {
       P2GTCandidate gt_object;
       gt_object.setHwPT(pT);
       gt_object.setHwPhi(phi);
-      gt_object.setHwEta(eta);
+      gt_object.setHwEta(eta.to_int() & 0xFFF);  // Only allow eta [-pi, pi]
 
       return gt_object;
     }

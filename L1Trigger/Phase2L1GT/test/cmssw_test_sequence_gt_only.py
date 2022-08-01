@@ -30,6 +30,12 @@ process.GTProducer = cms.EDProducer(
 )
 
 process.l1t_GTProducer = cms.Path(process.GTProducer)
+
+from L1Trigger.Phase2L1GT.l1GTSingleInOutLUT import COSH_ETA_LUT, COS_PHI_LUT
+
+COSH_ETA_LUT.export("coshEtaLUT.mem")
+COS_PHI_LUT.export("cosPhiLUT.mem")
+
 from L1Trigger.Phase2L1GT.l1GTSingleObjectCond_cfi import l1GTSingleObjectCond
 from L1Trigger.Phase2L1GT.l1GTDoubleObjectCond_cfi import l1GTDoubleObjectCond
 from L1Trigger.Phase2L1GT.l1GTTripleObjectCond_cfi import l1GTTripleObjectCond

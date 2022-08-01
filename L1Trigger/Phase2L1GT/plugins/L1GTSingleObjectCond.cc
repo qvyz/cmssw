@@ -34,17 +34,17 @@ private:
 
   const edm::InputTag colTag_;
 
-  L1GTScales scales_;
+  const L1GTScales scales_;
 
-  std::optional<ap_uint<16>> pt_cut_;
-  std::optional<ap_int<14>> minEta_cut_;
-  std::optional<ap_int<14>> maxEta_cut_;
-  std::optional<ap_int<13>> minPhi_cut_;
-  std::optional<ap_int<13>> maxPhi_cut_;
-  std::optional<ap_int<10>> minDz_cut_;
-  std::optional<ap_int<10>> maxDz_cut_;
-  std::optional<ap_uint<8>> qual_cut_;
-  std::optional<ap_uint<2>> iso_cut_;
+  const std::optional<ap_uint<16>> pt_cut_;
+  const std::optional<ap_int<14>> minEta_cut_;
+  const std::optional<ap_int<14>> maxEta_cut_;
+  const std::optional<ap_int<13>> minPhi_cut_;
+  const std::optional<ap_int<13>> maxPhi_cut_;
+  const std::optional<ap_int<10>> minDz_cut_;
+  const std::optional<ap_int<10>> maxDz_cut_;
+  const std::optional<ap_uint<8>> qual_cut_;
+  const std::optional<ap_uint<2>> iso_cut_;
 };
 
 template <typename T, typename K>
