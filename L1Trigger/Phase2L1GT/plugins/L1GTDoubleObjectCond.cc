@@ -86,6 +86,8 @@ private:
 
   const bool os_cut_;
   const bool ss_cut_;
+
+  const bool enable_sanity_checks_;
 };
 
 template <typename T, typename K>
@@ -168,7 +170,8 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
       invMassDiv2Max_cut_(getOptionalParam<int, double>(
           "invMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_InvMass, scales_, std::placeholders::_1))),
       os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
-      ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false) {
+      ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false),
+      enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")) {
   consumes<P2GTCandidateCollection>(col1Tag_);
   produces<P2GTCandidateVectorRef>(col1Tag_.instance());
 
@@ -228,6 +231,8 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
   cosLUTDesc.add<uint32_t>("unused_lsbs");
   cosLUTDesc.add<double>("max_error");
   desc.add<edm::ParameterSetDescription>("cos_phi_lut", cosLUTDesc);
+
+  desc.addUntracked<bool>("sanity_checks");
 
   descriptions.addWithDefaultLabel(desc);
 }
@@ -330,16 +335,20 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
 
   int64_t invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
 
-  if (std::abs(lutCoshDEta - scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb())) > coshEtaLUT_.hwMax_error()) {
-    edm::LogError("COSH LUT") << "Difference larger than max LUT error: " << coshEtaLUT_.hwMax_error()
-                              << ", lut: " << lutCoshDEta
-                              << ", calc: " << scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb());
-  }
+  if (enable_sanity_checks_) {
+    // Check whether the LUT error is smaller or equal than the expected maximum LUT error
 
-  if (std::abs(lutCosDPhi - scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb())) > cosPhiLUT_.hwMax_error()) {
-    edm::LogError("COS LUT") << "Difference larger than max LUT error: " << cosPhiLUT_.hwMax_error()
-                             << ", lut: " << lutCosDPhi
-                             << ", calc: " << scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb());
+    if (std::abs(lutCoshDEta - scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb())) > coshEtaLUT_.hwMax_error()) {
+      edm::LogError("COSH LUT") << "Difference larger than max LUT error: " << coshEtaLUT_.hwMax_error()
+                                << ", lut: " << lutCoshDEta
+                                << ", calc: " << scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb());
+    }
+
+    if (std::abs(lutCosDPhi - scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb())) > cosPhiLUT_.hwMax_error()) {
+      edm::LogError("COS LUT") << "Difference larger than max LUT error: " << cosPhiLUT_.hwMax_error()
+                               << ", lut: " << lutCosDPhi
+                               << ", calc: " << scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb());
+    }
   }
 
   res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;

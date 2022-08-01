@@ -41,6 +41,8 @@ from L1Trigger.Phase2L1GT.l1GTDoubleObjectCond_cfi import l1GTDoubleObjectCond
 from L1Trigger.Phase2L1GT.l1GTTripleObjectCond_cfi import l1GTTripleObjectCond
 from L1Trigger.Phase2L1GT.l1GTQuadObjectCond_cfi import l1GTQuadObjectCond
 
+l1GTDoubleObjectCond.sanity_checks = cms.untracked.bool(True)
+
 # Conditions
 process.singleTkEle12 = l1GTSingleObjectCond.clone(
     colTag = cms.InputTag("GTProducer", "CL2 Electrons"),

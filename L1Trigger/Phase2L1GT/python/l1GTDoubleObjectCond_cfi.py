@@ -21,5 +21,6 @@ l1GTDoubleObjectCond = cms.EDFilter(
         neg_chg=cms.int32(kNeg_chg)
     ),
     cosh_eta_lut = COSH_ETA_LUT.config(),
-    cos_phi_lut = COS_PHI_LUT.config()
+    cos_phi_lut = COS_PHI_LUT.config(),
+    sanity_checks = cms.untracked.bool(False)
 )
