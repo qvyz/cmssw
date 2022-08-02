@@ -83,6 +83,8 @@ private:
   const std::optional<ap_uint<28>> dRSquaredMax_cut_;
   const std::optional<ap_uint<28>> invMassDiv2Min_cut_;
   const std::optional<ap_uint<28>> invMassDiv2Max_cut_;
+  const std::optional<ap_uint<28>> transMassDiv2Min_cut_;
+  const std::optional<ap_uint<28>> transMassDiv2Max_cut_;
 
   const bool os_cut_;
   const bool ss_cut_;
@@ -169,6 +171,10 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
           "invMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_InvMass, scales_, std::placeholders::_1))),
       invMassDiv2Max_cut_(getOptionalParam<int, double>(
           "invMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_InvMass, scales_, std::placeholders::_1))),
+      transMassDiv2Min_cut_(getOptionalParam<int, double>(
+          "transMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
+      transMassDiv2Max_cut_(getOptionalParam<int, double>(
+          "transMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
       os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
       ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false),
       enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")) {
@@ -211,6 +217,8 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addOptional<double>("dRSquaredMax_cut");
   desc.addOptional<double>("invMassDiv2Min_cut");
   desc.addOptional<double>("invMassDiv2Max_cut");
+  desc.addOptional<double>("transMassDiv2Min_cut");
+  desc.addOptional<double>("transMassDiv2Max_cut");
   desc.addOptional<bool>("os_cut", false);
   desc.addOptional<bool>("ss_cut", false);
 
@@ -334,6 +342,7 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
   int32_t lutCosDPhi = cosPhiLUT_[dPhi];
 
   int64_t invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
+  int64_t transMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (scales_.lut_scale() - lutCosDPhi);
 
   if (enable_sanity_checks_) {
     // Check whether the LUT error is smaller or equal than the expected maximum LUT error
@@ -353,6 +362,9 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
 
   res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;
   res &= invMassDiv2Max_cut_ ? invMassDiv2 < invMassDiv2Max_cut_ : true;
+
+  res &= transMassDiv2Min_cut_ ? transMassDiv2 > transMassDiv2Min_cut_ : true;
+  res &= transMassDiv2Max_cut_ ? transMassDiv2 < transMassDiv2Max_cut_ : true;
 
   return res;
 }

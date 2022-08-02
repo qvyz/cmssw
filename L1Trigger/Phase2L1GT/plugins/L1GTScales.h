@@ -46,7 +46,7 @@ namespace l1t {
     int to_hw_RSquared(double value) const { return std::round(value / (eta_lsb_ * eta_lsb_ + phi_lsb_ * phi_lsb_)); }
 
     int to_hw_InvMass(double value) const { return std::round(value / (pT_lsb_ * pT_lsb_)) * lut_scale_; }
-    int to_hw_transMass(double value) const { return std::round(value / (pT_lsb_ * pT_lsb_)) * lut_scale_; }
+    int to_hw_TransMass(double value) const { return std::round(value / (pT_lsb_ * pT_lsb_)) * lut_scale_; }
 
     double pT_lsb() const { return pT_lsb_; }
     double phi_lsb() const { return phi_lsb_; }
