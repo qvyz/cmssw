@@ -30,7 +30,7 @@ class L1TSingleInOutLUT:
         self.input_scale_factor = input_scale_factor
         self.operation = operation
         self.lut = cms.vint32(
-            *[round(output_scale_factor * operation(input_scale_factor * i)) for i in range(2**width_in)])
+            *[round(output_scale_factor * operation(input_scale_factor * (i + 0.5))) for i in range(2**width_in)])
 
         self.print_error()
 
