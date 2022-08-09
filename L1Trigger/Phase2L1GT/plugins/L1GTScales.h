@@ -10,6 +10,7 @@
 namespace l1t {
   class L1GTScales {
   public:
+    L1GTScales();
     L1GTScales(double pT_lsb,
                double phi_lsb,
                double eta_lsb,
@@ -30,18 +31,18 @@ namespace l1t {
 
     static void fillDescriptions(edm::ParameterSetDescription &);
 
-    int to_hw_pT(double value) const { return std::round(value / pT_lsb_); };
-    int to_hw_phi(double value) const { return std::round(value / phi_lsb_); };
-    int to_hw_eta(double value) const { return std::round(value / eta_lsb_); };
-    int to_hw_dZ(double value) const { return std::round(value / dZ_lsb_); };
-    //int to_hw_dD(double value) const { return std::round(value / dD_lsb_); };
-    int to_hw_beta(double value) const { return std::round(value / beta_lsb_); };
-    int to_hw_mass(double value) const { return std::round(value / mass_lsb_); };
-    int to_hw_seed_pT(double value) const { return std::round(value / seed_pT_lsb_); };
-    int to_hw_seed_dZ(double value) const { return std::round(value / seed_dZ_lsb_); };
-    int to_hw_sca_sum(double value) const { return std::round(value / sca_sum_lsb_); };
-    int to_hw_primvertdz(double value) const { return std::round(value / primvertdz_lsb_); };
-    int to_hw_sum_pT_pv(double value) const { return std::round(value / sum_pT_pv_lsb_); };
+   int to_hw_pT(double value) const { return std::round(value / pT_lsb_); };
+   int to_hw_phi(double value) const { return std::round(value / phi_lsb_); };
+   int to_hw_eta(double value) const { return std::round(value / eta_lsb_); };
+   int to_hw_dZ(double value) const { return std::round(value / dZ_lsb_); };
+    // int to_hw_dD(double value) const { return std::round(value / dD_lsb_); };
+   int to_hw_beta(double value) const { return std::round(value / beta_lsb_); };
+   int to_hw_mass(double value) const { return std::round(value / mass_lsb_); };
+   int to_hw_seed_pT(double value) const { return std::round(value / seed_pT_lsb_); };
+   int to_hw_seed_dZ(double value) const { return std::round(value / seed_dZ_lsb_); };
+   int to_hw_sca_sum(double value) const { return std::round(value / sca_sum_lsb_); };
+   int to_hw_primvertdz(double value) const { return std::round(value / primvertdz_lsb_); };
+   int to_hw_sum_pT_pv(double value) const { return std::round(value / sum_pT_pv_lsb_); };
 
     int to_hw_RSquared(double value) const { return std::round(value / (eta_lsb_ * eta_lsb_ + phi_lsb_ * phi_lsb_)); }
 
@@ -65,21 +66,20 @@ namespace l1t {
     uint32_t lut_scale() const { return lut_scale_; }
 
   private:
-    const double pT_lsb_;
-    const double phi_lsb_;
-    const double eta_lsb_;
-    const double dZ_lsb_;
-    //const double dD_lsb_;
-    const double beta_lsb_;
-    const double mass_lsb_;
-    const double seed_pT_lsb_;
-    const double seed_dZ_lsb_;
-    const double sca_sum_lsb_;
-    const double primvertdz_lsb_;
-    const double sum_pT_pv_lsb_;
-    const int pos_chg_;
-    const int neg_chg_;
-    const uint32_t lut_scale_;
+    const double pT_lsb_ =  0.03125;
+    const double phi_lsb_ =   M_PI / pow(2,12);
+    const double eta_lsb_ =   M_PI / pow(2,12);
+    const double dZ_lsb_ =  30. / pow(2,9);
+    const double beta_lsb_ =  1. / pow(2,4)       ;
+    const double mass_lsb_ =  0.25;
+    const double seed_pT_lsb_ =  0.25;
+    const double seed_dZ_lsb_ =  30. / pow(2,9)   ;
+    const double sca_sum_lsb_ =  0.03125;
+    const double primvertdz_lsb_ =  1. / pow(2,9) ;
+    const double sum_pT_pv_lsb_ =  0.25;
+    const int pos_chg_ =  1;
+    const int neg_chg_ =  0;  
+    const uint32_t lut_scale_ = 2048;
   };
 }  // namespace l1t
 

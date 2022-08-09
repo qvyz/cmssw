@@ -1,6 +1,10 @@
 #include "L1GTScales.h"
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
 
 namespace l1t {
+    L1GTScales::L1GTScales(){}
   L1GTScales::L1GTScales(double pT_lsb,
                          double phi_lsb,
                          double eta_lsb,
@@ -47,7 +51,7 @@ namespace l1t {
         sum_pT_pv_lsb_(config.getParameter<double>("sum_pT_pv_lsb")),
         pos_chg_(config.getParameter<int>("pos_chg")),
         neg_chg_(config.getParameter<int>("neg_chg")),
-        lut_scale_(lut_scale) {}
+        G(lut_scale) {}
 
   void L1GTScales::fillDescriptions(edm::ParameterSetDescription& desc) {
     desc.add<double>("pT_lsb");
@@ -66,4 +70,24 @@ namespace l1t {
     desc.add<int>("neg_chg");
   }
 
+
+    PYBIND11_MODULE(pluginL1GTScales, m) {
+  py::class_<L1GTScales>(m,"L1GTScales")
+  .def(py::init<>())
+  .def("to_hw_pT",&L1GTScales::to_hw_pT)
+  .def("to_hw_phi",&L1GTScales::to_hw_phi)
+  .def("to_hw_eta",&L1GTScales::to_hw_eta)
+  .def("to_hw_dZ",&L1GTScales::to_hw_dZ)
+  .def("to_hw_beta",&L1GTScales::to_hw_beta)
+  .def("to_hw_mass",&L1GTScales::to_hw_mass)
+  .def("to_hw_seed_pT",&L1GTScales::to_hw_seed_pT)
+  .def("to_hw_seed_dZ",&L1GTScales::to_hw_seed_dZ)
+  .def("to_hw_sca_sum",&L1GTScales::to_hw_sca_sum)
+  .def("to_hw_primvertdz",&L1GTScales::to_hw_primvertdz)
+  .def("to_hw_sum_pT_pv",&L1GTScales::to_hw_sum_pT_pv)
+  .def("to_hw_RSquared",&L1GTScales::to_hw_RSquared)
+  .def("to_hw_InvMass",&L1GTScales::to_hw_InvMass)
+  .def("neg_chg",&L1GTScales::neg_chg)
+  .def("pos_chg",&L1GTScales::pos_chg);
+    }
 }  // namespace l1t

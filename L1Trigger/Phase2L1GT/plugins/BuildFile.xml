@@ -5,3 +5,10 @@
 <use name="DataFormats/L1Trigger"/>
 <use name="L1Trigger/DemonstratorTools"/>
 <flags EDM_PLUGIN="1"/>
+<library file="L1GTScales.cc" name="L1GTScales">
+  <flags EDM_PLUGIN="1"/>
+  <use name="py3-pybind11"/>
+  <use name="python3"/>
+</library>
+<flags EDM_PLUGIN="1"/>
+
