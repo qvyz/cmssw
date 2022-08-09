@@ -9,7 +9,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/Ref.h"
 
-#include "L1GTScales.h"
+#include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 
 #include <cmath>
 #include <cinttypes>

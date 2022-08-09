@@ -1,7 +1,7 @@
 import argparse
 
 import ROOT
-import L1Trigger.Phase2L1GT.l1GTScales as scales
+from L1Trigger.Phase2L1GT.l1GTScaleParameter import scale_parameter
 
 from DataFormats.FWLite import Events, Handle
 
@@ -134,7 +134,8 @@ def print_l1(event, l1_res, l1_name, l1_filtnames, process):
         for tag, objs in passed_objs.items():
             for key, obj in sorted(objs.items()):
                 print(" {}: {} pt {:3.1f} eta {:3.2f} phi {:3.2f}".format(
-                    tag, key, obj.hwPT() * scales.kPT_lsb, obj.hwEta() * scales.kEta_lsb, obj.hwPhi() * scales.kPhi_lsb))
+                    tag, key, obj.hwPT() * scale_parameter.pT_lsb.value(),
+                    obj.hwEta() * scale_parameter.eta_lsb.value(), obj.hwPhi() * scale_parameter.phi_lsb.value()))
     else:
         print("{} : {}, nr objs pass {}".format(l1_name, l1_res.result(l1_name), 0))
 

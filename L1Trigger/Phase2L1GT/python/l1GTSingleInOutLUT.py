@@ -5,7 +5,7 @@ generated LUT.
 """
 
 import FWCore.ParameterSet.Config as cms
-from L1Trigger.Phase2L1GT.l1GTScales import *
+from L1Trigger.Phase2L1GT.l1GTScaleParameter import scale_parameter
 from statistics import mean, median, stdev
 import math
 
@@ -56,7 +56,8 @@ class L1TSingleInOutLUT:
     def optimal_scale_factor(width_in, max_width_out, unused_lsbs, lsb, operation, start_value=0):
         input_scale_factor = 2**unused_lsbs * lsb
         scale_factor = (2**max_width_out - 1) / \
-            max([abs(operation(input_scale_factor * (i + 0.5) + start_value)) for i in range(2**width_in)])
+            max([abs(operation(input_scale_factor * (i + 0.5) + start_value))
+                for i in range(2**width_in)])
         if 'DEBUG' in globals() and DEBUG == True:
             print("{} LUT optimal scale factor:".format(operation.__name__), scale_factor)
         return scale_factor
@@ -80,22 +81,22 @@ COS_PHI_IN_WIDTH = 11  # not using 2 lsb
 COSH_ETA_IN_WIDTH = 11  # not using 2 lsb and 1 msb (splitted LUT)
 
 # Since we calculate cosh(dEta) - cos(dPhi); both must be on the same scale
-optimal_scale_factor = math.floor(min(L1TSingleInOutLUT.optimal_scale_factor(COS_PHI_IN_WIDTH, 17, 2, kPhi_lsb, math.cos),
-                                      L1TSingleInOutLUT.optimal_scale_factor(COSH_ETA_IN_WIDTH, 17, 2, kEta_lsb, math.cosh)))
+optimal_scale_factor = math.floor(min(L1TSingleInOutLUT.optimal_scale_factor(COS_PHI_IN_WIDTH, 17, 2, scale_parameter.phi_lsb.value(), math.cos),
+                                      L1TSingleInOutLUT.optimal_scale_factor(COSH_ETA_IN_WIDTH, 17, 2, scale_parameter.eta_lsb.value(), math.cosh)))
 
 if 'DEBUG' in globals() and DEBUG == True:
     print("LUT combined optimal scale factor: ", optimal_scale_factor)
 
 COS_PHI_LUT = L1TSingleInOutLUT(
-    COS_PHI_IN_WIDTH, 2, kPhi_lsb, optimal_scale_factor, math.cos)
+    COS_PHI_IN_WIDTH, 2, scale_parameter.phi_lsb.value(), optimal_scale_factor, math.cos)
 
 # eta in [0, 2pi)
 COSH_ETA_LUT = L1TSingleInOutLUT(
-    COSH_ETA_IN_WIDTH, 2, kEta_lsb, optimal_scale_factor, math.cosh, 0, "[0, 2pi)")
+    COSH_ETA_IN_WIDTH, 2, scale_parameter.eta_lsb.value(), optimal_scale_factor, math.cosh, 0, "[0, 2pi)")
 
 # eta in [2pi, 4pi)
 COSH_ETA_LUT_2 = L1TSingleInOutLUT(
-    COSH_ETA_IN_WIDTH, 2, kEta_lsb,
+    COSH_ETA_IN_WIDTH, 2, scale_parameter.eta_lsb.value(),
     L1TSingleInOutLUT.optimal_scale_factor(
-        COSH_ETA_IN_WIDTH, 17, 2, kEta_lsb, math.cosh, 2**13 * kEta_lsb),
-    math.cosh, 2**13 * kEta_lsb, "[2pi, 4pi)")
+        COSH_ETA_IN_WIDTH, 17, 2, scale_parameter.eta_lsb.value(), math.cosh, 2**13 * scale_parameter.eta_lsb.value()),
+    math.cosh, 2**13 * scale_parameter.eta_lsb.value(), "[2pi, 4pi)")

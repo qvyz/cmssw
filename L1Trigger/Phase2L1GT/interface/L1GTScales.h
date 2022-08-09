@@ -31,18 +31,18 @@ namespace l1t {
 
     static void fillDescriptions(edm::ParameterSetDescription &);
 
-    int to_hw_pT(double value) const { return std::round(value / pT_lsb_); };
-    int to_hw_phi(double value) const { return std::round(value / phi_lsb_); };
-    int to_hw_eta(double value) const { return std::round(value / eta_lsb_); };
-    int to_hw_dZ(double value) const { return std::round(value / dZ_lsb_); };
-    //int to_hw_dD(double value) const { return std::round(value / dD_lsb_); };
-    int to_hw_beta(double value) const { return std::round(value / beta_lsb_); };
-    int to_hw_mass(double value) const { return std::round(value / mass_lsb_); };
-    int to_hw_seed_pT(double value) const { return std::round(value / seed_pT_lsb_); };
-    int to_hw_seed_dZ(double value) const { return std::round(value / seed_dZ_lsb_); };
-    int to_hw_sca_sum(double value) const { return std::round(value / sca_sum_lsb_); };
-    int to_hw_primvertdz(double value) const { return std::round(value / primvertdz_lsb_); };
-    int to_hw_sum_pT_pv(double value) const { return std::round(value / sum_pT_pv_lsb_); };
+   int to_hw_pT(double value) const { return std::round(value / pT_lsb_); };
+   int to_hw_phi(double value) const { return std::round(value / phi_lsb_); };
+   int to_hw_eta(double value) const { return std::round(value / eta_lsb_); };
+   int to_hw_dZ(double value) const { return std::round(value / dZ_lsb_); };
+    // int to_hw_dD(double value) const { return std::round(value / dD_lsb_); };
+   int to_hw_beta(double value) const { return std::round(value / beta_lsb_); };
+   int to_hw_mass(double value) const { return std::round(value / mass_lsb_); };
+   int to_hw_seed_pT(double value) const { return std::round(value / seed_pT_lsb_); };
+   int to_hw_seed_dZ(double value) const { return std::round(value / seed_dZ_lsb_); };
+   int to_hw_sca_sum(double value) const { return std::round(value / sca_sum_lsb_); };
+   int to_hw_primvertdz(double value) const { return std::round(value / primvertdz_lsb_); };
+   int to_hw_sum_pT_pv(double value) const { return std::round(value / sum_pT_pv_lsb_); };
 
     int to_hw_RSquared(double value) const { return std::round(value / (eta_lsb_ * eta_lsb_)); }
 

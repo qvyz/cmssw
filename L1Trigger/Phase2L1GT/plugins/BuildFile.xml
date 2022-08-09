@@ -4,4 +4,5 @@
 <use name="L1Trigger/L1TCommon"/>
 <use name="DataFormats/L1Trigger"/>
 <use name="L1Trigger/DemonstratorTools"/>
+<use name="L1Trigger/Phase2L1GT"/>
 <flags EDM_PLUGIN="1"/>

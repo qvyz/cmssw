@@ -12,7 +12,7 @@
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 
-#include "L1GTScales.h"
+#include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 
 #include <cinttypes>
 #include <memory>
