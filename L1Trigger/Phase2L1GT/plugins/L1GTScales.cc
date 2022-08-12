@@ -15,7 +15,8 @@ namespace l1t {
                          double sum_pT_pv_lsb,
                          int pos_chg,
                          int neg_chg,
-                         uint32_t lut_scale)
+                         double lut_scale,
+                         double lut_scale2)
       : pT_lsb_(pT_lsb),
         phi_lsb_(phi_lsb),
         eta_lsb_(eta_lsb),
@@ -30,9 +31,10 @@ namespace l1t {
         sum_pT_pv_lsb_(sum_pT_pv_lsb),
         pos_chg_(pos_chg),
         neg_chg_(neg_chg),
-        lut_scale_(lut_scale) {}
+        lut_scale_(lut_scale),
+        lut_scale2_(lut_scale2) {}
 
-  L1GTScales::L1GTScales(const edm::ParameterSet& config, uint32_t lut_scale)
+  L1GTScales::L1GTScales(const edm::ParameterSet& config, double lut_scale, double lut_scale2)
       : pT_lsb_(config.getParameter<double>("pT_lsb")),
         phi_lsb_(config.getParameter<double>("phi_lsb")),
         eta_lsb_(config.getParameter<double>("eta_lsb")),
@@ -47,7 +49,8 @@ namespace l1t {
         sum_pT_pv_lsb_(config.getParameter<double>("sum_pT_pv_lsb")),
         pos_chg_(config.getParameter<int>("pos_chg")),
         neg_chg_(config.getParameter<int>("neg_chg")),
-        lut_scale_(lut_scale) {}
+        lut_scale_(lut_scale),
+        lut_scale2_(lut_scale2) {}
 
   void L1GTScales::fillDescriptions(edm::ParameterSetDescription& desc) {
     desc.add<double>("pT_lsb");

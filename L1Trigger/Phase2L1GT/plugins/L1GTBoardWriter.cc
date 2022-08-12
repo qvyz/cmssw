@@ -1,5 +1,5 @@
 /**
- * BoardDataWriter for validation with hardware. Currently only writting the algo bits is implemented.
+ * BoardDataWriter for validation with hardware. Currently only writing the algo bits is implemented.
  **/
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"

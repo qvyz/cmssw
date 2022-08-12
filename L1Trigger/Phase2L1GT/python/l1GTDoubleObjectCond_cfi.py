@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from L1Trigger.Phase2L1GT.l1GTScales import *
-from L1Trigger.Phase2L1GT.l1GTSingleInOutLUT import COS_PHI_LUT, COSH_ETA_LUT
+from L1Trigger.Phase2L1GT.l1GTSingleInOutLUT import COS_PHI_LUT, COSH_ETA_LUT, COSH_ETA_LUT_2
+
 
 l1GTDoubleObjectCond = cms.EDFilter(
     "L1GTDoubleObjectCond",
@@ -20,7 +21,9 @@ l1GTDoubleObjectCond = cms.EDFilter(
         pos_chg=cms.int32(kPos_chg),
         neg_chg=cms.int32(kNeg_chg)
     ),
-    cosh_eta_lut = COSH_ETA_LUT.config(),
-    cos_phi_lut = COS_PHI_LUT.config(),
-    sanity_checks = cms.untracked.bool(False)
+    cosh_eta_lut=COSH_ETA_LUT.config(),
+    cosh_eta_lut2=COSH_ETA_LUT_2.config(),
+    cos_phi_lut=COS_PHI_LUT.config(),
+    sanity_checks=cms.untracked.bool(False),
+    inv_mass_checks=cms.untracked.bool(False)
 )

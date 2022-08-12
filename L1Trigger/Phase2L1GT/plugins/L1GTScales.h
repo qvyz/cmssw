@@ -24,9 +24,10 @@ namespace l1t {
                double sum_pT_pv_lsb,
                int pos_chg,
                int neg_chg,
-               uint32_t lut_scale);
+               double lut_scale,
+               double lut_scale2);
 
-    L1GTScales(const edm::ParameterSet &, uint32_t lut_scale = 1);
+    L1GTScales(const edm::ParameterSet &, double lut_scale = 1, double lut_scale2 = 1);
 
     static void fillDescriptions(edm::ParameterSetDescription &);
 
@@ -48,6 +49,8 @@ namespace l1t {
     int to_hw_InvMass(double value) const { return std::round(value * value / (2 * pT_lsb_ * pT_lsb_)) * lut_scale_; }
     int to_hw_TransMass(double value) const { return std::round(value * value / (2 * pT_lsb_ * pT_lsb_)) * lut_scale_; }
 
+    int to_hw_InvMass2(double value) const { return std::round(value * value / (2 * pT_lsb_ * pT_lsb_)) * lut_scale2_; }
+
     double pT_lsb() const { return pT_lsb_; }
     double phi_lsb() const { return phi_lsb_; }
     double eta_lsb() const { return eta_lsb_; }
@@ -62,7 +65,8 @@ namespace l1t {
     double sum_pT_pv_lsb() const { return sum_pT_pv_lsb_; }
     int pos_chg() const { return pos_chg_; }
     int neg_chg() const { return neg_chg_; }
-    uint32_t lut_scale() const { return lut_scale_; }
+    double lut_scale() const { return lut_scale_; }
+    double lut_scale2() const { return lut_scale2_; }
 
   private:
     const double pT_lsb_;
@@ -79,7 +83,8 @@ namespace l1t {
     const double sum_pT_pv_lsb_;
     const int pos_chg_;
     const int neg_chg_;
-    const uint32_t lut_scale_;
+    const double lut_scale_;
+    const double lut_scale2_;
   };
 }  // namespace l1t
 

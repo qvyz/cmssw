@@ -31,9 +31,10 @@ process.GTProducer = cms.EDProducer(
 
 process.l1t_GTProducer = cms.Path(process.GTProducer)
 
-from L1Trigger.Phase2L1GT.l1GTSingleInOutLUT import COSH_ETA_LUT, COS_PHI_LUT
+from L1Trigger.Phase2L1GT.l1GTSingleInOutLUT import COSH_ETA_LUT, COSH_ETA_LUT_2, COS_PHI_LUT
 
 COSH_ETA_LUT.export("coshEtaLUT.mem")
+COSH_ETA_LUT_2.export("coshEtaLUT2.mem")
 COS_PHI_LUT.export("cosPhiLUT.mem")
 
 from L1Trigger.Phase2L1GT.l1GTSingleObjectCond_cfi import l1GTSingleObjectCond
@@ -42,6 +43,7 @@ from L1Trigger.Phase2L1GT.l1GTTripleObjectCond_cfi import l1GTTripleObjectCond
 from L1Trigger.Phase2L1GT.l1GTQuadObjectCond_cfi import l1GTQuadObjectCond
 
 l1GTDoubleObjectCond.sanity_checks = cms.untracked.bool(True)
+l1GTDoubleObjectCond.inv_mass_checks = cms.untracked.bool(True)
 
 # Conditions
 process.singleTkEle12 = l1GTSingleObjectCond.clone(
@@ -93,3 +95,11 @@ process.BoardData = cms.EDAnalyzer("L1GTBoardWriter",
 )
 
 process.l1t_BoardData = cms.EndPath(process.BoardData)
+
+process.output = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string('file:test_output.root'),
+    outputCommands = cms.untracked.vstring('keep *'),
+    splitLevel = cms.untracked.int32(0)
+)
+
+process.output_step = cms.EndPath(process.output)

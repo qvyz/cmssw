@@ -8,6 +8,8 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/Ref.h"
 
+#include "L1Trigger/Phase2L1GT/interface/L1GTInvariantMassError.h"
+
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "L1GTScales.h"
@@ -25,16 +27,16 @@ using namespace l1t;
 
 class L1TSingleInOutLUT {
 public:
-  L1TSingleInOutLUT(const std::vector<int>& data, uint32_t unused_lsbs, uint32_t hwMax_error)
+  L1TSingleInOutLUT(const std::vector<int>& data, uint32_t unused_lsbs, double hwMax_error)
       : data_(data), unused_lsbs_(unused_lsbs), hwMax_error_(hwMax_error) {}
 
   int32_t operator[](int32_t i) const { return data_[(i >> unused_lsbs_) % data_.size()]; }
-  uint32_t hwMax_error() const { return hwMax_error_; }
+  double hwMax_error() const { return hwMax_error_; }
 
 private:
   const std::vector<int32_t> data_;
   const uint32_t unused_lsbs_;
-  const uint32_t hwMax_error_;  // Sanity check
+  const double hwMax_error_;  // Sanity check
 };
 
 class L1GTDoubleObjectCond : public edm::stream::EDFilter<> {
@@ -46,14 +48,17 @@ public:
 
 private:
   bool filter(edm::Event&, edm::EventSetup const&) override;
-  bool checkObjects(const P2GTCandidate&, const P2GTCandidate&) const;
+  bool checkObjects(const P2GTCandidate&, const P2GTCandidate&, InvariantMassErrorCollection&) const;
 
   const edm::InputTag col1Tag_;
   const edm::InputTag col2Tag_;
 
   const L1GTScales scales_;
 
-  const L1TSingleInOutLUT coshEtaLUT_;
+  static constexpr uint32_t DETA_LUT_SPLIT = 1 << 13;  // hw 2pi
+
+  const L1TSingleInOutLUT coshEtaLUT_;   // [0, 2pi)
+  const L1TSingleInOutLUT coshEtaLUT2_;  // [2pi, 4pi)
   const L1TSingleInOutLUT cosPhiLUT_;
 
   const std::optional<ap_uint<16>> pt1_cut_;
@@ -81,15 +86,20 @@ private:
 
   const std::optional<ap_uint<28>> dRSquaredMin_cut_;
   const std::optional<ap_uint<28>> dRSquaredMax_cut_;
+
   const std::optional<ap_uint<28>> invMassDiv2Min_cut_;
   const std::optional<ap_uint<28>> invMassDiv2Max_cut_;
   const std::optional<ap_uint<28>> transMassDiv2Min_cut_;
   const std::optional<ap_uint<28>> transMassDiv2Max_cut_;
 
+  const std::optional<ap_uint<28>> invMassDiv2Min2_cut_;
+  const std::optional<ap_uint<28>> invMassDiv2Max2_cut_;
+
   const bool os_cut_;
   const bool ss_cut_;
 
   const bool enable_sanity_checks_;
+  const bool inv_mass_checks_;
 };
 
 template <typename T, typename K>
@@ -114,15 +124,20 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
     : col1Tag_(config.getParameter<edm::InputTag>("col1Tag")),
       col2Tag_(config.getParameter<edm::InputTag>("col2Tag")),
       scales_(config.getParameter<edm::ParameterSet>("scales"),
-              config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("output_scale_factor")),
+              config.getParameterSet("cosh_eta_lut").getParameter<double>("output_scale_factor"),
+              config.getParameterSet("cosh_eta_lut2").getParameter<double>("output_scale_factor")),
       coshEtaLUT_(config.getParameterSet("cosh_eta_lut").getParameter<std::vector<int>>("lut"),
                   config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("unused_lsbs"),
                   std::ceil(config.getParameterSet("cosh_eta_lut").getParameter<double>("max_error") *
-                            config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("output_scale_factor"))),
+                            config.getParameterSet("cosh_eta_lut").getParameter<double>("output_scale_factor"))),
+      coshEtaLUT2_(config.getParameterSet("cosh_eta_lut2").getParameter<std::vector<int>>("lut"),
+                   config.getParameterSet("cosh_eta_lut2").getParameter<uint32_t>("unused_lsbs"),
+                   std::ceil(config.getParameterSet("cosh_eta_lut2").getParameter<double>("max_error") *
+                             config.getParameterSet("cosh_eta_lut2").getParameter<double>("output_scale_factor"))),
       cosPhiLUT_(config.getParameterSet("cos_phi_lut").getParameter<std::vector<int>>("lut"),
                  config.getParameterSet("cos_phi_lut").getParameter<uint32_t>("unused_lsbs"),
                  std::ceil(config.getParameterSet("cos_phi_lut").getParameter<double>("max_error") *
-                           config.getParameterSet("cos_phi_lut").getParameter<uint32_t>("output_scale_factor"))),
+                           config.getParameterSet("cos_phi_lut").getParameter<double>("output_scale_factor"))),
       pt1_cut_(getOptionalParam<int, double>(
           "pt1_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
       pt2_cut_(getOptionalParam<int, double>(
@@ -175,15 +190,24 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
           "transMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
       transMassDiv2Max_cut_(getOptionalParam<int, double>(
           "transMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
+      invMassDiv2Min2_cut_(getOptionalParam<int, double>(
+          "invMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_InvMass2, scales_, std::placeholders::_1))),
+      invMassDiv2Max2_cut_(getOptionalParam<int, double>(
+          "invMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_InvMass2, scales_, std::placeholders::_1))),
       os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
       ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false),
-      enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")) {
+      enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
+      inv_mass_checks_(config.getUntrackedParameter<bool>("inv_mass_checks")) {
   consumes<P2GTCandidateCollection>(col1Tag_);
   produces<P2GTCandidateVectorRef>(col1Tag_.instance());
 
   if (!(col1Tag_ == col2Tag_)) {
     consumes<P2GTCandidateCollection>(col2Tag_);
     produces<P2GTCandidateVectorRef>(col2Tag_.instance());
+  }
+
+  if (inv_mass_checks_) {
+    produces<InvariantMassErrorCollection>();
   }
 }
 
@@ -228,19 +252,27 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
 
   edm::ParameterSetDescription coshLUTDesc;
   coshLUTDesc.add<std::vector<int32_t>>("lut");
-  coshLUTDesc.add<uint32_t>("output_scale_factor");
+  coshLUTDesc.add<double>("output_scale_factor");
   coshLUTDesc.add<uint32_t>("unused_lsbs");
   coshLUTDesc.add<double>("max_error");
   desc.add<edm::ParameterSetDescription>("cosh_eta_lut", coshLUTDesc);
 
+  edm::ParameterSetDescription coshLUT2Desc;
+  coshLUT2Desc.add<std::vector<int32_t>>("lut");
+  coshLUT2Desc.add<double>("output_scale_factor");
+  coshLUT2Desc.add<uint32_t>("unused_lsbs");
+  coshLUT2Desc.add<double>("max_error");
+  desc.add<edm::ParameterSetDescription>("cosh_eta_lut2", coshLUT2Desc);
+
   edm::ParameterSetDescription cosLUTDesc;
   cosLUTDesc.add<std::vector<int32_t>>("lut");
-  cosLUTDesc.add<uint32_t>("output_scale_factor");
+  cosLUTDesc.add<double>("output_scale_factor");
   cosLUTDesc.add<uint32_t>("unused_lsbs");
   cosLUTDesc.add<double>("max_error");
   desc.add<edm::ParameterSetDescription>("cos_phi_lut", cosLUTDesc);
 
   desc.addUntracked<bool>("sanity_checks");
+  desc.addUntracked<bool>("inv_mass_checks");
 
   descriptions.addWithDefaultLabel(desc);
 }
@@ -256,6 +288,13 @@ bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
   std::set<std::size_t> triggeredIdcs1;
   std::set<std::size_t> triggeredIdcs2;
 
+  InvariantMassErrorCollection massErrors;
+
+  if (inv_mass_checks_) {
+    massErrors.reserve(col1.product() == col2.product() ? col1->size() * (col2->size() - 1)
+                                                        : col1->size() * col2->size());
+  }
+
   for (std::size_t idx1 = 0; idx1 < col1->size(); ++idx1) {
     for (std::size_t idx2 = 0; idx2 < col2->size(); ++idx2) {
       // If we're looking at the same collection then we shouldn't use the same object in one comparison.
@@ -265,7 +304,7 @@ bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
         }
       }
 
-      bool pass{checkObjects(col1->at(idx1), col2->at(idx2))};
+      bool pass{checkObjects(col1->at(idx1), col2->at(idx2), massErrors)};
       condition_result |= pass;
 
       if (pass) {
@@ -295,12 +334,18 @@ bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
       }
       event.put(std::move(triggerCol2), col2Tag_.instance());
     }
+
+    if (inv_mass_checks_) {
+      event.put(std::move(std::make_unique<InvariantMassErrorCollection>(std::move(massErrors))), "");
+    }
   }
 
   return condition_result;
 }
 
-bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCandidate& obj2) const {
+bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
+                                        const P2GTCandidate& obj2,
+                                        InvariantMassErrorCollection& massErrors) const {
   bool res{true};
   res &= pt1_cut_ ? (obj1.hwPT() > pt1_cut_) : true;
   res &= pt2_cut_ ? (obj2.hwPT() > pt2_cut_) : true;
@@ -338,19 +383,18 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
   res &= os_cut_ ? obj1.hwCharge() != obj2.hwCharge() : true;
   res &= ss_cut_ ? obj1.hwCharge() == obj2.hwCharge() : true;
 
-  int32_t lutCoshDEta = coshEtaLUT_[dEta];
+  int32_t lutCoshDEta = dEta < DETA_LUT_SPLIT ? coshEtaLUT_[dEta] : coshEtaLUT2_[dEta - DETA_LUT_SPLIT];
   int32_t lutCosDPhi = cosPhiLUT_[dPhi];
-
-  int64_t invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
-  int64_t transMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (scales_.lut_scale() - lutCosDPhi);
 
   if (enable_sanity_checks_) {
     // Check whether the LUT error is smaller or equal than the expected maximum LUT error
+    uint32_t coshEtaLUTMax = dEta < DETA_LUT_SPLIT ? coshEtaLUT_.hwMax_error() : coshEtaLUT2_.hwMax_error();
+    double etaLUTScale = dEta < DETA_LUT_SPLIT ? scales_.lut_scale() : scales_.lut_scale2();
 
-    if (std::abs(lutCoshDEta - scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb())) > coshEtaLUT_.hwMax_error()) {
-      edm::LogError("COSH LUT") << "Difference larger than max LUT error: " << coshEtaLUT_.hwMax_error()
-                                << ", lut: " << lutCoshDEta
-                                << ", calc: " << scales_.lut_scale() * std::cosh(dEta * scales_.eta_lsb());
+    if (std::abs(lutCoshDEta - etaLUTScale * std::cosh(dEta * scales_.eta_lsb())) > coshEtaLUTMax) {
+      edm::LogError("COSH LUT") << "Difference larger than max LUT error: " << coshEtaLUTMax << ", lut: " << lutCoshDEta
+                                << ", calc: " << etaLUTScale * std::cosh(dEta * scales_.eta_lsb())
+                                << ", scale: " << etaLUTScale;
     }
 
     if (std::abs(lutCosDPhi - scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb())) > cosPhiLUT_.hwMax_error()) {
@@ -360,9 +404,33 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1, const P2GTCan
     }
   }
 
-  res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;
-  res &= invMassDiv2Max_cut_ ? invMassDiv2 < invMassDiv2Max_cut_ : true;
+  int64_t invMassDiv2;
+  if (dEta < DETA_LUT_SPLIT) {
+    // dEta [0, 2pi)
+    invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
+    res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;
+    res &= invMassDiv2Max_cut_ ? invMassDiv2 < invMassDiv2Max_cut_ : true;
+  } else {
+    // dEta [2pi, 4pi), ignore cos
+    invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * lutCoshDEta;
+    res &= invMassDiv2Min2_cut_ ? invMassDiv2 > invMassDiv2Min2_cut_ : true;
+    res &= invMassDiv2Max2_cut_ ? invMassDiv2 < invMassDiv2Max2_cut_ : true;
+  }
 
+  if (inv_mass_checks_) {
+    double precInvMass =
+        scales_.pT_lsb() * std::sqrt(2 * obj1.hwPT().to_double() * obj2.hwPT().to_double() *
+                                     (std::cosh(dEta * scales_.eta_lsb()) - std::cos(dPhi * scales_.phi_lsb())));
+
+    double lutInvMass =
+        scales_.pT_lsb() * std::sqrt(2 * static_cast<double>(invMassDiv2) /
+                                     (dEta < DETA_LUT_SPLIT ? scales_.lut_scale() : scales_.lut_scale2()));
+
+    double error = std::abs(precInvMass - lutInvMass);
+    massErrors.emplace_back(InvariantMassError{error, error / precInvMass, precInvMass});
+  }
+
+  int64_t transMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (scales_.lut_scale() - lutCosDPhi);
   res &= transMassDiv2Min_cut_ ? transMassDiv2 > transMassDiv2Min_cut_ : true;
   res &= transMassDiv2Max_cut_ ? transMassDiv2 < transMassDiv2Max_cut_ : true;
 
