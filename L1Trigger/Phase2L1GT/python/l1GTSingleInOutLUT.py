@@ -5,7 +5,7 @@ generated LUT.
 """
 
 import FWCore.ParameterSet.Config as cms
-from L1Trigger.Phase2L1GT.l1GTScaleParameter import scale_parameter
+from L1Trigger.Phase2L1GT.l1GTScales import scale_parameter
 from statistics import mean, median, stdev
 import math
 
@@ -27,7 +27,8 @@ class L1TSingleInOutLUT:
 
         if not "l1GTDoubleObjectCond_cfi" in __name__:
             print("***************************** {} LUT {} *****************************".format(operation.__name__, label))
-            print("LUT depth: {} x {} (addr x data)".format(width_in, self.width_out))
+            print("Depth: {} x {} (addr x data)".format(width_in, self.width_out))
+            print("Scale: {}".format(output_scale_factor))
 
         self.width_in = width_in
         self.output_scale_factor = output_scale_factor
@@ -58,8 +59,6 @@ class L1TSingleInOutLUT:
         scale_factor = (2**max_width_out - 1) / \
             max([abs(operation(input_scale_factor * (i + 0.5) + start_value))
                 for i in range(2**width_in)])
-        if 'DEBUG' in globals() and DEBUG == True:
-            print("{} LUT optimal scale factor:".format(operation.__name__), scale_factor)
         return scale_factor
 
     def print_error(self):
@@ -69,7 +68,7 @@ class L1TSingleInOutLUT:
         self.max_error = max(errors)
 
         if not "l1GTDoubleObjectCond_cfi" in __name__:
-            print("LUT error: {:.5f} +/- {:.5f}, max: {:.5f}, total: {:.5f}, median: {:.5f}".format(
+            print("Error: {:.5f} +/- {:.5f}, max: {:.5f}, total: {:.5f}, median: {:.5f}".format(
                 mean(errors), stdev(errors), self.max_error, sum(errors), median(errors)))
 
         # mass_errors = [errors[i]/(2*self.operation(i * self.lsb + self.start_value)) for i in range(2**(self.width_in + self.unused_lsbs)) ]
@@ -83,9 +82,6 @@ COSH_ETA_IN_WIDTH = 11  # not using 2 lsb and 1 msb (splitted LUT)
 # Since we calculate cosh(dEta) - cos(dPhi); both must be on the same scale
 optimal_scale_factor = math.floor(min(L1TSingleInOutLUT.optimal_scale_factor(COS_PHI_IN_WIDTH, 17, 2, scale_parameter.phi_lsb.value(), math.cos),
                                       L1TSingleInOutLUT.optimal_scale_factor(COSH_ETA_IN_WIDTH, 17, 2, scale_parameter.eta_lsb.value(), math.cosh)))
-
-if 'DEBUG' in globals() and DEBUG == True:
-    print("LUT combined optimal scale factor: ", optimal_scale_factor)
 
 COS_PHI_LUT = L1TSingleInOutLUT(
     COS_PHI_IN_WIDTH, 2, scale_parameter.phi_lsb.value(), optimal_scale_factor, math.cos)

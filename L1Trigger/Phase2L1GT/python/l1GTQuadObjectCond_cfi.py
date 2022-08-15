@@ -1,5 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-from L1Trigger.Phase2L1GT.l1GTScaleParameter import scale_parameter
+from L1Trigger.Phase2L1GT.l1GTScales import scale_parameter
 
 l1GTQuadObjectCond = cms.EDFilter(
     "L1GTQuadObjectCond",

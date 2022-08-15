@@ -27,15 +27,21 @@ using namespace l1t;
 
 class L1TSingleInOutLUT {
 public:
-  L1TSingleInOutLUT(const std::vector<int>& data, uint32_t unused_lsbs, double hwMax_error)
-      : data_(data), unused_lsbs_(unused_lsbs), hwMax_error_(hwMax_error) {}
+  L1TSingleInOutLUT(const std::vector<int32_t>& data, uint32_t unused_lsbs, double output_scale, double max_error)
+      : data_(data),
+        unused_lsbs_(unused_lsbs),
+        output_scale_(output_scale),
+        // I guess ceil is required due to small differences in C++ and python's cos/cosh implementation.
+        hwMax_error_(std::ceil(max_error * output_scale)) {}
 
   int32_t operator[](int32_t i) const { return data_[(i >> unused_lsbs_) % data_.size()]; }
   double hwMax_error() const { return hwMax_error_; }
+  double output_scale() const { return output_scale_; }
 
 private:
   const std::vector<int32_t> data_;
   const uint32_t unused_lsbs_;
+  const double output_scale_;
   const double hwMax_error_;  // Sanity check
 };
 
@@ -61,39 +67,36 @@ private:
   const L1TSingleInOutLUT coshEtaLUT2_;  // [2pi, 4pi)
   const L1TSingleInOutLUT cosPhiLUT_;
 
-  const std::optional<ap_uint<16>> pt1_cut_;
-  const std::optional<ap_uint<16>> pt2_cut_;
-  const std::optional<ap_int<14>> minEta1_cut_;
-  const std::optional<ap_int<14>> maxEta1_cut_;
-  const std::optional<ap_int<14>> minEta2_cut_;
-  const std::optional<ap_int<14>> maxEta2_cut_;
-  const std::optional<ap_int<13>> minPhi1_cut_;
-  const std::optional<ap_int<13>> maxPhi1_cut_;
-  const std::optional<ap_int<13>> minPhi2_cut_;
-  const std::optional<ap_int<13>> maxPhi2_cut_;
-  const std::optional<ap_int<10>> minDz1_cut_;
-  const std::optional<ap_int<10>> maxDz1_cut_;
-  const std::optional<ap_int<10>> minDz2_cut_;
-  const std::optional<ap_int<10>> maxDz2_cut_;
-  const std::optional<ap_uint<8>> qual1_cut_;
-  const std::optional<ap_uint<8>> qual2_cut_;
-  const std::optional<ap_uint<2>> iso1_cut_;
-  const std::optional<ap_uint<2>> iso2_cut_;
-  const std::optional<ap_uint<14>> dEtaMin_cut_;
-  const std::optional<ap_uint<14>> dEtaMax_cut_;
-  const std::optional<ap_uint<13>> dPhiMin_cut_;
-  const std::optional<ap_uint<13>> dPhiMax_cut_;
+  const std::optional<int> pt1_cut_;
+  const std::optional<int> pt2_cut_;
+  const std::optional<int> minEta1_cut_;
+  const std::optional<int> maxEta1_cut_;
+  const std::optional<int> minEta2_cut_;
+  const std::optional<int> maxEta2_cut_;
+  const std::optional<int> minPhi1_cut_;
+  const std::optional<int> maxPhi1_cut_;
+  const std::optional<int> minPhi2_cut_;
+  const std::optional<int> maxPhi2_cut_;
+  const std::optional<int> minDz1_cut_;
+  const std::optional<int> maxDz1_cut_;
+  const std::optional<int> minDz2_cut_;
+  const std::optional<int> maxDz2_cut_;
+  const std::optional<int> qual1_cut_;
+  const std::optional<int> qual2_cut_;
+  const std::optional<int> iso1_cut_;
+  const std::optional<int> iso2_cut_;
+  const std::optional<int> dEtaMin_cut_;
+  const std::optional<int> dEtaMax_cut_;
+  const std::optional<int> dPhiMin_cut_;
+  const std::optional<int> dPhiMax_cut_;
 
-  const std::optional<ap_uint<28>> dRSquaredMin_cut_;
-  const std::optional<ap_uint<28>> dRSquaredMax_cut_;
+  const std::optional<int> dRSquaredMin_cut_;
+  const std::optional<int> dRSquaredMax_cut_;
 
-  const std::optional<ap_uint<28>> invMassDiv2Min_cut_;
-  const std::optional<ap_uint<28>> invMassDiv2Max_cut_;
-  const std::optional<ap_uint<28>> transMassDiv2Min_cut_;
-  const std::optional<ap_uint<28>> transMassDiv2Max_cut_;
-
-  const std::optional<ap_uint<28>> invMassDiv2Min2_cut_;
-  const std::optional<ap_uint<28>> invMassDiv2Max2_cut_;
+  const std::optional<double> invMassDiv2Min_cut_;
+  const std::optional<double> invMassDiv2Max_cut_;
+  const std::optional<double> transMassDiv2Min_cut_;
+  const std::optional<double> transMassDiv2Max_cut_;
 
   const bool os_cut_;
   const bool ss_cut_;
@@ -123,21 +126,19 @@ static inline std::optional<T> getOptionalParam(const std::string& name, const e
 L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
     : col1Tag_(config.getParameter<edm::InputTag>("col1Tag")),
       col2Tag_(config.getParameter<edm::InputTag>("col2Tag")),
-      scales_(config.getParameter<edm::ParameterSet>("scales"),
-              config.getParameterSet("cosh_eta_lut").getParameter<double>("output_scale_factor"),
-              config.getParameterSet("cosh_eta_lut2").getParameter<double>("output_scale_factor")),
+      scales_(config.getParameter<edm::ParameterSet>("scales")),
       coshEtaLUT_(config.getParameterSet("cosh_eta_lut").getParameter<std::vector<int>>("lut"),
                   config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("unused_lsbs"),
-                  std::ceil(config.getParameterSet("cosh_eta_lut").getParameter<double>("max_error") *
-                            config.getParameterSet("cosh_eta_lut").getParameter<double>("output_scale_factor"))),
+                  config.getParameterSet("cosh_eta_lut").getParameter<double>("output_scale_factor"),
+                  config.getParameterSet("cosh_eta_lut").getParameter<double>("max_error")),
       coshEtaLUT2_(config.getParameterSet("cosh_eta_lut2").getParameter<std::vector<int>>("lut"),
                    config.getParameterSet("cosh_eta_lut2").getParameter<uint32_t>("unused_lsbs"),
-                   std::ceil(config.getParameterSet("cosh_eta_lut2").getParameter<double>("max_error") *
-                             config.getParameterSet("cosh_eta_lut2").getParameter<double>("output_scale_factor"))),
+                   config.getParameterSet("cosh_eta_lut2").getParameter<double>("output_scale_factor"),
+                   config.getParameterSet("cosh_eta_lut2").getParameter<double>("max_error")),
       cosPhiLUT_(config.getParameterSet("cos_phi_lut").getParameter<std::vector<int>>("lut"),
                  config.getParameterSet("cos_phi_lut").getParameter<uint32_t>("unused_lsbs"),
-                 std::ceil(config.getParameterSet("cos_phi_lut").getParameter<double>("max_error") *
-                           config.getParameterSet("cos_phi_lut").getParameter<double>("output_scale_factor"))),
+                 config.getParameterSet("cos_phi_lut").getParameter<double>("output_scale_factor"),
+                 config.getParameterSet("cos_phi_lut").getParameter<double>("max_error")),
       pt1_cut_(getOptionalParam<int, double>(
           "pt1_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
       pt2_cut_(getOptionalParam<int, double>(
@@ -190,10 +191,6 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
           "transMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
       transMassDiv2Max_cut_(getOptionalParam<int, double>(
           "transMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
-      invMassDiv2Min2_cut_(getOptionalParam<int, double>(
-          "invMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_InvMass2, scales_, std::placeholders::_1))),
-      invMassDiv2Max2_cut_(getOptionalParam<int, double>(
-          "invMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_InvMass2, scales_, std::placeholders::_1))),
       os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
       ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false),
       enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
@@ -388,19 +385,20 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
 
   if (enable_sanity_checks_) {
     // Check whether the LUT error is smaller or equal than the expected maximum LUT error
-    uint32_t coshEtaLUTMax = dEta < DETA_LUT_SPLIT ? coshEtaLUT_.hwMax_error() : coshEtaLUT2_.hwMax_error();
-    double etaLUTScale = dEta < DETA_LUT_SPLIT ? scales_.lut_scale() : scales_.lut_scale2();
+    double coshEtaLUTMax = dEta < DETA_LUT_SPLIT ? coshEtaLUT_.hwMax_error() : coshEtaLUT2_.hwMax_error();
+    double etaLUTScale = dEta < DETA_LUT_SPLIT ? coshEtaLUT_.output_scale() : coshEtaLUT2_.output_scale();
 
     if (std::abs(lutCoshDEta - etaLUTScale * std::cosh(dEta * scales_.eta_lsb())) > coshEtaLUTMax) {
       edm::LogError("COSH LUT") << "Difference larger than max LUT error: " << coshEtaLUTMax << ", lut: " << lutCoshDEta
-                                << ", calc: " << etaLUTScale * std::cosh(dEta * scales_.eta_lsb())
+                                << ", calc: " << etaLUTScale * std::cosh(dEta * scales_.eta_lsb()) << ", dEta: " << dEta
                                 << ", scale: " << etaLUTScale;
     }
 
-    if (std::abs(lutCosDPhi - scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb())) > cosPhiLUT_.hwMax_error()) {
+    if (std::abs(lutCosDPhi - cosPhiLUT_.output_scale() * std::cos(dPhi * scales_.phi_lsb())) >
+        cosPhiLUT_.hwMax_error()) {
       edm::LogError("COS LUT") << "Difference larger than max LUT error: " << cosPhiLUT_.hwMax_error()
                                << ", lut: " << lutCosDPhi
-                               << ", calc: " << scales_.lut_scale() * std::cos(dPhi * scales_.phi_lsb());
+                               << ", calc: " << cosPhiLUT_.output_scale() * std::cos(dPhi * scales_.phi_lsb());
     }
   }
 
@@ -408,13 +406,17 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
   if (dEta < DETA_LUT_SPLIT) {
     // dEta [0, 2pi)
     invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
-    res &= invMassDiv2Min_cut_ ? invMassDiv2 > invMassDiv2Min_cut_ : true;
-    res &= invMassDiv2Max_cut_ ? invMassDiv2 < invMassDiv2Max_cut_ : true;
+    res &=
+        invMassDiv2Min_cut_ ? invMassDiv2 > std::round(invMassDiv2Min_cut_.value() * coshEtaLUT_.output_scale()) : true;
+    res &=
+        invMassDiv2Max_cut_ ? invMassDiv2 < std::round(invMassDiv2Max_cut_.value() * coshEtaLUT_.output_scale()) : true;
   } else {
     // dEta [2pi, 4pi), ignore cos
     invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * lutCoshDEta;
-    res &= invMassDiv2Min2_cut_ ? invMassDiv2 > invMassDiv2Min2_cut_ : true;
-    res &= invMassDiv2Max2_cut_ ? invMassDiv2 < invMassDiv2Max2_cut_ : true;
+    res &= invMassDiv2Min_cut_ ? invMassDiv2 > std::round(invMassDiv2Min_cut_.value() * coshEtaLUT2_.output_scale())
+                               : true;
+    res &= invMassDiv2Max_cut_ ? invMassDiv2 < std::round(invMassDiv2Max_cut_.value() * coshEtaLUT2_.output_scale())
+                               : true;
   }
 
   if (inv_mass_checks_) {
@@ -422,17 +424,20 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
         scales_.pT_lsb() * std::sqrt(2 * obj1.hwPT().to_double() * obj2.hwPT().to_double() *
                                      (std::cosh(dEta * scales_.eta_lsb()) - std::cos(dPhi * scales_.phi_lsb())));
 
-    double lutInvMass =
-        scales_.pT_lsb() * std::sqrt(2 * static_cast<double>(invMassDiv2) /
-                                     (dEta < DETA_LUT_SPLIT ? scales_.lut_scale() : scales_.lut_scale2()));
+    double lutInvMass = scales_.pT_lsb() *
+                        std::sqrt(2 * static_cast<double>(invMassDiv2) /
+                                  (dEta < DETA_LUT_SPLIT ? coshEtaLUT_.output_scale() : coshEtaLUT2_.output_scale()));
 
     double error = std::abs(precInvMass - lutInvMass);
     massErrors.emplace_back(InvariantMassError{error, error / precInvMass, precInvMass});
   }
 
-  int64_t transMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (scales_.lut_scale() - lutCosDPhi);
-  res &= transMassDiv2Min_cut_ ? transMassDiv2 > transMassDiv2Min_cut_ : true;
-  res &= transMassDiv2Max_cut_ ? transMassDiv2 < transMassDiv2Max_cut_ : true;
+  int64_t transMassDiv2 =
+      obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (static_cast<int64_t>(coshEtaLUT_.output_scale()) - lutCosDPhi);
+  res &= transMassDiv2Min_cut_ ? transMassDiv2 > std::round(transMassDiv2Min_cut_.value() * coshEtaLUT_.output_scale())
+                               : true;
+  res &= transMassDiv2Max_cut_ ? transMassDiv2 < std::round(transMassDiv2Max_cut_.value() * coshEtaLUT_.output_scale())
+                               : true;
 
   return res;
 }

@@ -1,3 +1,4 @@
+from libL1TriggerPhase2L1GT import L1GTScales as CppScales
 import FWCore.ParameterSet.Config as cms
 import math
 
@@ -17,3 +18,5 @@ scale_parameter = cms.PSet(
     pos_chg=cms.int32(1),
     neg_chg=cms.int32(0)
 )
+
+l1GTScales = CppScales(*[param.value() for param in scale_parameter.parameters_().values()])

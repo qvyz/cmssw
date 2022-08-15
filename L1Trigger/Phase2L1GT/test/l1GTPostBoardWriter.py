@@ -1,7 +1,7 @@
 import argparse
 
 import ROOT
-from L1Trigger.Phase2L1GT.l1GTScales import scale_parameter
+import L1Trigger.Phase2L1GT.l1GTScales as scales
 
 from DataFormats.FWLite import Events, Handle
 
@@ -105,67 +105,18 @@ class TrigResults:
         else:
             return False
 
-
-def get_objs_passing_filter(event, filter_name, process):
-    trig_res = Handle("l1t::P2GTCandidateVectorRef")
-    event.getByLabel(*filter_name.split('::'), process, trig_res)
-
-    passing_objs = {}
-    for obj in trig_res.product():
-        passing_objs[obj.key()] = obj.get()
-
-    return passing_objs
-
-
-def print_l1(event, l1_res, l1_name, l1_filtnames, process):
-
-    if l1_res.result(l1_name) == True:
-        passed_objs = {}
-        for filter in l1_filtnames:
-            l1_objs = get_objs_passing_filter(event, filter, process)
-            tag = filter.split('::')[1]
-            if tag in passed_objs:
-                passed_objs[tag] = dict(l1_objs.items() & passed_objs[tag].items())
-            else:
-                passed_objs[tag] = l1_objs
-
-        print("{} : {}, nr objs pass {}".format(
-            l1_name, l1_res.result(l1_name), sum(len(v) for v in passed_objs.values())))
-        for tag, objs in passed_objs.items():
-            for key, obj in sorted(objs.items()):
-                print(" {}: {} pt {:3.1f} eta {:3.2f} phi {:3.2f}".format(
-                    tag, key, obj.hwPT() * scale_parameter.pT_lsb.value(),
-                    obj.hwEta() * scale_parameter.eta_lsb.value(), obj.hwPhi() * scale_parameter.phi_lsb.value()))
-    else:
-        print("{} : {}, nr objs pass {}".format(l1_name, l1_res.result(l1_name), 0))
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description='L1GT analyzer')
-    parser.add_argument('in_filename', nargs="+", help='input filename')
-    parser.add_argument('--prefix', '-p', default='file:', help='file prefix')
-    parser.add_argument('--process', '-P', default='L1', help='Process to analyze')
-
-    args = parser.parse_args()
-
-    in_filenames_with_prefix = ['{}{}'.format(args.prefix, x) for x in args.in_filename]
-    events = Events(in_filenames_with_prefix)
-
-    print("number of events", events.size())
-    print('*' * 80)
+def writeBoardData(config, fileNames, process):
+    events = Events(fileNames)
 
     l1_res = None
-    for idx, event in enumerate(events):
-        print('Event:', idx)
+    for event in events:
 
         if l1_res == None:
-            path_filters, pathnames = get_pathfilters(event, args.process)
-            l1_res = TrigResults(path_filters.keys(), args.process, pathnames)
+            path_filters, pathnames = get_pathfilters(event, process)
+            l1_res = TrigResults(path_filters.keys(), process, pathnames)
 
         l1_res.fill(event)
 
         for path, filters in path_filters.items():
-            print_l1(event, l1_res, path, filters, args.process)
-
-        print('*' * 80)
+            # TODO
+            pass

@@ -1,6 +1,4 @@
-from libL1TriggerPhase2L1GT import L1GTScales
-from L1Trigger.Phase2L1GT.l1GTScaleParameter import scale_parameter
-from L1Trigger.Phase2L1GT.l1GTSingleInOutLUT import COSH_ETA_LUT, COSH_ETA_LUT_2
+from L1Trigger.Phase2L1GT.l1GTScales import l1GTScales
 
 class Condition:
     _ObjectNameConversions = {
@@ -34,8 +32,6 @@ class Condition:
 
 
     def __init__(self):
-        self.l1GTScales = L1GTScales(*[param.value() for param in scale_parameter.parameters_().values()], 
-            COSH_ETA_LUT.output_scale_factor, COSH_ETA_LUT_2.output_scale_factor)
         self._PossibleCuts = []
         self.Cuts = {}
         self.InputObjects = {}
@@ -112,25 +108,25 @@ class DoubleObjCond(Condition):
         )
         self._setHWConversionFunctions(
         {
-        "pt1_cut": self.l1GTScales.to_hw_pT,
-        "pt2_cut": self.l1GTScales.to_hw_pT,
-        "minEta1_cut": self.l1GTScales.to_hw_eta,
-        "maxEta1_cut": self.l1GTScales.to_hw_eta,
-        "minEta2_cut": self.l1GTScales.to_hw_eta,
-        "maxEta2_cut": self.l1GTScales.to_hw_eta,
-        "minPhi1_cut": self.l1GTScales.to_hw_phi,
-        "maxPhi1_cut": self.l1GTScales.to_hw_phi,
-        "minPhi2_cut": self.l1GTScales.to_hw_phi,
-        "maxPhi2_cut": self.l1GTScales.to_hw_phi,
-        "minDz1_cut": self.l1GTScales.to_hw_dZ,
-        "maxDz1_cut": self.l1GTScales.to_hw_dZ,
-        "minDz2_cut": self.l1GTScales.to_hw_dZ,
-        "maxDz2_cut": self.l1GTScales.to_hw_dZ,
-        "dEtaMin_cut": self.l1GTScales.to_hw_eta,
-        "dPhiMin_cut": self.l1GTScales.to_hw_phi,
-        "dRSquaredMin_cut": self.l1GTScales.to_hw_RSquared,
-        "invMassDiv2Min_cut": self.l1GTScales.to_hw_InvMass,
-        "invMassDiv2Max_cut": self.l1GTScales.to_hw_InvMass
+        "pt1_cut": l1GTScales.to_hw_pT,
+        "pt2_cut": l1GTScales.to_hw_pT,
+        "minEta1_cut": l1GTScales.to_hw_eta,
+        "maxEta1_cut": l1GTScales.to_hw_eta,
+        "minEta2_cut": l1GTScales.to_hw_eta,
+        "maxEta2_cut": l1GTScales.to_hw_eta,
+        "minPhi1_cut": l1GTScales.to_hw_phi,
+        "maxPhi1_cut": l1GTScales.to_hw_phi,
+        "minPhi2_cut": l1GTScales.to_hw_phi,
+        "maxPhi2_cut": l1GTScales.to_hw_phi,
+        "minDz1_cut": l1GTScales.to_hw_dZ,
+        "maxDz1_cut": l1GTScales.to_hw_dZ,
+        "minDz2_cut": l1GTScales.to_hw_dZ,
+        "maxDz2_cut": l1GTScales.to_hw_dZ,
+        "dEtaMin_cut": l1GTScales.to_hw_eta,
+        "dPhiMin_cut": l1GTScales.to_hw_phi,
+        "dRSquaredMin_cut": l1GTScales.to_hw_RSquared,
+        "invMassDiv2Min_cut": l1GTScales.to_hw_InvMass,
+        "invMassDiv2Max_cut": l1GTScales.to_hw_InvMass
         }
         )
 
@@ -156,13 +152,13 @@ class SingleObjCond(Condition):
         )
         self._setHWConversionFunctions(
         {
-        "pt_cut": self.l1GTScales.to_hw_pT,
-        "minEta_cut": self.l1GTScales.to_hw_eta,
-        "maxEta_cut": self.l1GTScales.to_hw_eta,
-        "minPhi_cut": self.l1GTScales.to_hw_phi,
-        "maxPhi_cut": self.l1GTScales.to_hw_phi,
-        "minDz_cut": self.l1GTScales.to_hw_dZ,
-        "maxDz_cut": self.l1GTScales.to_hw_dZ,
+        "pt_cut": l1GTScales.to_hw_pT,
+        "minEta_cut": l1GTScales.to_hw_eta,
+        "maxEta_cut": l1GTScales.to_hw_eta,
+        "minPhi_cut": l1GTScales.to_hw_phi,
+        "maxPhi_cut": l1GTScales.to_hw_phi,
+        "minDz_cut": l1GTScales.to_hw_dZ,
+        "maxDz_cut": l1GTScales.to_hw_dZ,
         }
         )
         self._setInputTags(
