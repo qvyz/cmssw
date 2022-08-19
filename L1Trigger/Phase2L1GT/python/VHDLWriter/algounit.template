@@ -1,5 +1,3 @@
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
@@ -35,18 +33,17 @@ entity p2gt_algos is
 end p2gt_algos;
 
 architecture rtl of p2gt_algos is
-  signal algo_bits_int2 : std_logic_vector(NUM_ALGOS_IN_SRL - 1 downto 0) := (others => '0');
+  signal algo_bits_int : std_logic_vector(NUM_ALGOS_IN_SRL - 1 downto 0) := (others => '0');
   signal algo_bits_srl1_int : std_logic_vector(NUM_ALGOS_IN_SRL - 1 downto 0);
   signal algo_bits_srl2_int : std_logic_vector(NUM_ALGOS_IN_SRL - 1 downto 0);
 
   signal delayed_valid_to_payload : std_logic_vector(ALGO_REPLICATION_IN_SRL - 1 downto 0);
   signal delayed_valid_buffer : std_logic_vector(BX_ZERO_IN_BUF + 1 + ALGO_LATENCY - 1 downto 0); -- One additional tick used in delay line to register objects & valid bits.
- -------- SIGNALS ---------
- {% for key,value in algobits.items() %}
- signal {{key}} : std_logic := '0';
- {% endfor %}
--------- SIGNALS end ---------
-
+  -------- SIGNALS ---------
+  {% for key,value in algobits.items() %}
+  signal {{key}} : std_logic := '0';
+  {% endfor %}
+  -------- SIGNALS end ---------
 
 begin
   ipb_out <= IPB_RBUS_NULL;
@@ -57,22 +54,21 @@ begin
       delayed_valid_buffer <= delayed_valid_buffer(delayed_valid_buffer'high - 1 downto 0) & objects_valid;
     end if;
   end process;
--------- ALGORITHMS:---------- 
 
-{{Conditions}}
-
--------- ALGORITHMS end---------- 
-
+  -------- ALGORITHMS ---------- 
+  {{Conditions | indent(2)}}
+  -------- ALGORITHMS end ---------- 
 
   reg_outputs : process (clk_algo) -- Register on algo clk for one BX
   begin
     if rising_edge(clk_algo) then
       {% for key,value in algobits.items() %}
-      algo_bits_int2({{value}}) <= {{key}};
+      algo_bits_int({{value}}) <= {{key}};
       {% endfor %}
-      algo_bits_out <= algo_bits_int2;
+      algo_bits_out <= algo_bits_int;
     end if;
   end process;
   algo_bits_valid_out <= delayed_valid_buffer(delayed_valid_buffer'high);
 
 end rtl;
+

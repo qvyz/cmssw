@@ -42,10 +42,10 @@ namespace l1t {
     int to_hw_primvertdz(double value) const { return std::round(value / primvertdz_lsb_); };
     int to_hw_sum_pT_pv(double value) const { return std::round(value / sum_pT_pv_lsb_); };
 
-    int to_hw_RSquared(double value) const { return std::round(value / (eta_lsb_ * eta_lsb_)); }
+    int to_hw_dRSquared(double value) const { return std::round(value * value / (eta_lsb_ * eta_lsb_)); }
 
-    double to_hw_InvMass(double value) const { return value * value / (2 * pT_lsb_ * pT_lsb_); }
-    double to_hw_TransMass(double value) const { return value * value / (2 * pT_lsb_ * pT_lsb_); }
+    double to_hw_InvMassSqrDiv2(double value) const { return value * value / (2 * pT_lsb_ * pT_lsb_); }
+    double to_hw_TransMassSqrDiv2(double value) const { return value * value / (2 * pT_lsb_ * pT_lsb_); }
 
     double pT_lsb() const { return pT_lsb_; }
     double phi_lsb() const { return phi_lsb_; }

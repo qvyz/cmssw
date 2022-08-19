@@ -23,7 +23,7 @@ namespace l1t {
     typedef ap_uint<16> hwPT_t;
     typedef ap_int<13> hwPhi_t;
     typedef ap_int<14> hwEta_t;
-    typedef ap_uint<10> hwDZ_t;
+    typedef ap_int<10> hwDZ_t;
     typedef ap_uint<11> hwIso_t;
     typedef ap_uint<8> hwQual_t;
     typedef ap_uint<1> hwCharge_t;

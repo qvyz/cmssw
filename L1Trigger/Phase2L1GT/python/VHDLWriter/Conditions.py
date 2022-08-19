@@ -2,31 +2,31 @@ from L1Trigger.Phase2L1GT.l1GTScales import l1GTScales
 
 class Condition:
     _ObjectNameConversions = {
-        "GTT Prompt Jets" : "GTT_PROMPT_JETS_SLOT",
-        "GTT Displaced Jets" : "GTT_DISPLACED_JETS_SLOT",
-        "GTT Ht Miss Prompt" : "GTT_HT_MISS_PROMPT_SLOT",
-        "GTT Ht Miss Displaced" : "GTT_HT_MISS_DISPLACED_SLOT",
-        "GTT Et Miss" : "GTT_ET_MISS_SLOT",
+        "GTT PromptJets" : "GTT_PROMPT_JETS_SLOT",
+        "GTT DisplacedJets" : "GTT_DISPLACED_JETS_SLOT",
+        "GTT PromptHtSum" : "GTT_HT_MISS_PROMPT_SLOT",
+        "GTT DisplacedHtSum" : "GTT_HT_MISS_DISPLACED_SLOT",
+        "GTT EtSum" : "GTT_ET_MISS_SLOT",
         "GTT Taus" : "GTT_TAUS_SLOT",
-        "GTT Phi Candidates" : "GTT_PHI_CANDIDATE_SLOT",
-        "GTT Rho Candidates" : "GTT_RHO_CANDIDATE_SLOT",
-        "GTT Bs Candidates" : "GTT_BS_CANDIDATE_SLOT",
+        "GTT PhiCandidates" : "GTT_PHI_CANDIDATE_SLOT",
+        "GTT RhoCandidates" : "GTT_RHO_CANDIDATE_SLOT",
+        "GTT BsCandidates" : "GTT_BS_CANDIDATE_SLOT",
         "GTT Prim Vert" : "GTT_PRIM_VERT_SLOT",
         "CL2 Jets" : "CL2_JET_SLOT",
-        "CL2 Ht Miss" : "CL2_HT_MISS_SLOT",
-        "CL2 Et Miss" : "CL2_ET_MISS_SLOT",
+        "CL2 HtSum" : "CL2_HT_MISS_SLOT",
+        "CL2 EtSum" : "CL2_ET_MISS_SLOT",
         "CL2 Taus" : "CL2_TAU_SLOT",
         "CL2 Electrons" : "CL2_ELECTRON_SLOT",
         "CL2 Photons" : "CL2_PHOTON_SLOT",
-        "GCT Non Iso Eg" : "GCT_NON_ISO_EG_SLOT",
-        "GCT Iso Eg" : "GCT_ISO_EG_SLOT",
+        "GCT NonIsoEg" : "GCT_NON_ISO_EG_SLOT",
+        "GCT IsoEg" : "GCT_ISO_EG_SLOT",
         "GCT Jets" : "GCT_JETS_SLOT",
         "GCT Taus" : "GCT_TAUS_SLOT",
-        "GCT Ht Miss" : "GCT_HT_MISS_SLOT",
-        "GCT Et Miss" : "GCT_ET_MISS_SLOT",
-        "GMT Sa Prompt" : "GMT_SA_PROMPT_SLOT", 
-        "GMT Sa Displaced" : "GMT_SA_DISPLACED_SLOT", 
-        "GMT Tk Muon" : "GMT_TK_MUON_SLOT", 
+        "GCT HtSum" : "GCT_HT_MISS_SLOT",
+        "GCT EtSum" : "GCT_ET_MISS_SLOT",
+        "GMT SaPromptMuons" : "GMT_SA_PROMPT_SLOT", 
+        "GMT SaDisplacedMuons" : "GMT_SA_DISPLACED_SLOT", 
+        "GMT TkMuons" : "GMT_TK_MUON_SLOT", 
         "GMT Topo" : "GMT_TOPO_SLOT"
         }
 
@@ -36,6 +36,7 @@ class Condition:
         self.Cuts = {}
         self.InputObjects = {}
         self._HWConversionFunctions ={}
+        self._cut_aliases = {}
 
     def _setInputObject(self,condition,value):
         self.InputObjects[condition] = self._ObjectNameConversions.get(value)
@@ -58,6 +59,10 @@ class Condition:
     def setName(self,name):
         self.Name = name
 
+    def getCMSSWCut(self, cut):
+        if cut in self._cut_aliases:
+            return self._cut_aliases[cut]
+        return cut
 
     def _setInputTags(self, tags):
         self._InputTags = tags
@@ -79,8 +84,8 @@ class DoubleObjCond(Condition):
         Condition.__init__(self)
         self._setPosibleCuts(
             [
-            "pt1_cut",
-            "pt2_cut",
+            "pT1_cut",
+            "pT2_cut",
             "minEta1_cut",
             "maxEta1_cut",
             "minEta2_cut",
@@ -100,16 +105,19 @@ class DoubleObjCond(Condition):
             "dEtaMin_cut",
             "dPhiMin_cut",
             "dRSquaredMin_cut",
-            "invMassDiv2Min_cut",
-            "invMassDiv2Max_cut",
+            "dRSquaredMax_cut",
+            "invMassSqrDiv2Min_cut",
+            "invMassSqrDiv2Max_cut",
+            "transMassSqrDiv2Min_cut",
+            "transMassSqrDiv2Max_cut",
             "os_cut",
             "ss_cut"
             ]
         )
         self._setHWConversionFunctions(
         {
-        "pt1_cut": l1GTScales.to_hw_pT,
-        "pt2_cut": l1GTScales.to_hw_pT,
+        "pT1_cut": l1GTScales.to_hw_pT,
+        "pT2_cut": l1GTScales.to_hw_pT,
         "minEta1_cut": l1GTScales.to_hw_eta,
         "maxEta1_cut": l1GTScales.to_hw_eta,
         "minEta2_cut": l1GTScales.to_hw_eta,
@@ -123,10 +131,15 @@ class DoubleObjCond(Condition):
         "minDz2_cut": l1GTScales.to_hw_dZ,
         "maxDz2_cut": l1GTScales.to_hw_dZ,
         "dEtaMin_cut": l1GTScales.to_hw_eta,
+        "dEtaMax_cut": l1GTScales.to_hw_eta,
         "dPhiMin_cut": l1GTScales.to_hw_phi,
-        "dRSquaredMin_cut": l1GTScales.to_hw_RSquared,
-        "invMassDiv2Min_cut": l1GTScales.to_hw_InvMass,
-        "invMassDiv2Max_cut": l1GTScales.to_hw_InvMass
+        "dPhiMax_cut": l1GTScales.to_hw_phi,
+        "dRSquaredMin_cut": l1GTScales.to_hw_dRSquared,
+        "dRSquaredMax_cut": l1GTScales.to_hw_dRSquared,
+        "invMassSqrDiv2Min_cut": l1GTScales.to_hw_InvMassSqrDiv2,
+        "invMassSqrDiv2Max_cut": l1GTScales.to_hw_InvMassSqrDiv2,
+        "transMassSqrDiv2Min_cut": l1GTScales.to_hw_TransMassSqrDiv2,
+        "transMassSqrDiv2Max_cut": l1GTScales.to_hw_TransMassSqrDiv2,
         }
         )
 
@@ -135,13 +148,24 @@ class DoubleObjCond(Condition):
             ["col1Tag",
              "col2Tag"]
         )
+        self._cut_aliases = {'pT1_cut': 'pt1_cut',
+        'pT2_cut': 'pt2_cut', 
+        'invMassSqrDiv2Min_cut' : 'invMassMin_cut', 
+        'invMassSqrDiv2Max_cut' : 'invMassMax_cut',
+        'transMassSqrDiv2Min_cut' : 'transMassMin_cut', 
+        'transMassSqrDiv2Max_cut' : 'transMassMax_cut',
+        'dRSquaredMin_cut': 'dRMin_cut',
+        'dRSquaredMax_cut': 'dRMax_cut',
+        }
+
+
 class SingleObjCond(Condition):
     Label = "L1GTSingleObjectCond"
     Template = "single.template"
     def __init__(self):
         Condition.__init__(self)
         self._setPosibleCuts(
-            ["pt_cut",
+            ["pT_cut",
              "minEta_cut",
              "maxEta_cut",
              "minPhi_cut",
@@ -152,7 +176,7 @@ class SingleObjCond(Condition):
         )
         self._setHWConversionFunctions(
         {
-        "pt_cut": l1GTScales.to_hw_pT,
+        "pT_cut": l1GTScales.to_hw_pT,
         "minEta_cut": l1GTScales.to_hw_eta,
         "maxEta_cut": l1GTScales.to_hw_eta,
         "minPhi_cut": l1GTScales.to_hw_phi,
@@ -164,6 +188,7 @@ class SingleObjCond(Condition):
         self._setInputTags(
             ["colTag"]
         )
+        self._cut_aliases = {'pT_cut': 'pt_cut'}
 
 
 class DefineAlgoBits:

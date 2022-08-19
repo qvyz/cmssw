@@ -180,17 +180,17 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
       dPhiMax_cut_(getOptionalParam<int, double>(
           "dPhiMax_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
       dRSquaredMin_cut_(getOptionalParam<int, double>(
-          "dRSquaredMin_cut", config, std::bind(&L1GTScales::to_hw_RSquared, scales_, std::placeholders::_1))),
+          "dRMin_cut", config, std::bind(&L1GTScales::to_hw_dRSquared, scales_, std::placeholders::_1))),
       dRSquaredMax_cut_(getOptionalParam<int, double>(
-          "dRSquaredMax_cut", config, std::bind(&L1GTScales::to_hw_RSquared, scales_, std::placeholders::_1))),
+          "dRMax_cut", config, std::bind(&L1GTScales::to_hw_dRSquared, scales_, std::placeholders::_1))),
       invMassDiv2Min_cut_(getOptionalParam<int, double>(
-          "invMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_InvMass, scales_, std::placeholders::_1))),
+          "invMassMin_cut", config, std::bind(&L1GTScales::to_hw_InvMassSqrDiv2, scales_, std::placeholders::_1))),
       invMassDiv2Max_cut_(getOptionalParam<int, double>(
-          "invMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_InvMass, scales_, std::placeholders::_1))),
+          "invMassMax_cut", config, std::bind(&L1GTScales::to_hw_InvMassSqrDiv2, scales_, std::placeholders::_1))),
       transMassDiv2Min_cut_(getOptionalParam<int, double>(
-          "transMassDiv2Min_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
+          "transMassMin_cut", config, std::bind(&L1GTScales::to_hw_TransMassSqrDiv2, scales_, std::placeholders::_1))),
       transMassDiv2Max_cut_(getOptionalParam<int, double>(
-          "transMassDiv2Max_cut", config, std::bind(&L1GTScales::to_hw_TransMass, scales_, std::placeholders::_1))),
+          "transMassMax_cut", config, std::bind(&L1GTScales::to_hw_TransMassSqrDiv2, scales_, std::placeholders::_1))),
       os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
       ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false),
       enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
@@ -234,12 +234,12 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addOptional<double>("dEtaMax_cut");
   desc.addOptional<double>("dPhiMin_cut");
   desc.addOptional<double>("dPhiMax_cut");
-  desc.addOptional<double>("dRSquaredMin_cut");
-  desc.addOptional<double>("dRSquaredMax_cut");
-  desc.addOptional<double>("invMassDiv2Min_cut");
-  desc.addOptional<double>("invMassDiv2Max_cut");
-  desc.addOptional<double>("transMassDiv2Min_cut");
-  desc.addOptional<double>("transMassDiv2Max_cut");
+  desc.addOptional<double>("dRMin_cut");
+  desc.addOptional<double>("dRMax_cut");
+  desc.addOptional<double>("invMassMin_cut");
+  desc.addOptional<double>("invMassMax_cut");
+  desc.addOptional<double>("transMassMin_cut");
+  desc.addOptional<double>("transMassMax_cut");
   desc.addOptional<bool>("os_cut", false);
   desc.addOptional<bool>("ss_cut", false);
 

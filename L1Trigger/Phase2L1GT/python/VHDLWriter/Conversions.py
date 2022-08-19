@@ -10,7 +10,8 @@ def checkFilter(obj):
         try:
             if obj.type_() == Condition.Label:
                 Condit = Condition()
-        except:
+        except Exception as ex:
+            print(ex)
             pass
     
 
@@ -18,8 +19,9 @@ def checkFilter(obj):
         return 0
     knowncuts = Condit.getPossibleCuts()
     for knowncut in knowncuts:
-        if obj.hasParameter(knowncut):
-            Condit.setCut(knowncut,obj.getParameter(knowncut).value())
+        cmssw_cut = Condit.getCMSSWCut(knowncut)
+        if obj.hasParameter(cmssw_cut):
+            Condit.setCut(knowncut,obj.getParameter(cmssw_cut).value())
     for Collection in Condit._InputTags:
         param = obj.getParameter(Collection)
         Condit._setInputObject(Collection,param.productInstanceLabel)

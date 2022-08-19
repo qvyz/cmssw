@@ -10,6 +10,8 @@ from statistics import mean, median, stdev
 import math
 
 
+print_info = True
+
 class L1TSingleInOutLUT:
 
     def __init__(self, width_in, unused_lsbs, lsb, output_scale_factor, operation, start_value=0, label=""):
@@ -25,7 +27,7 @@ class L1TSingleInOutLUT:
         if signed_output:
             self.width_out += 1
 
-        if not "l1GTDoubleObjectCond_cfi" in __name__:
+        if print_info:
             print("***************************** {} LUT {} *****************************".format(operation.__name__, label))
             print("Depth: {} x {} (addr x data)".format(width_in, self.width_out))
             print("Scale: {}".format(output_scale_factor))
@@ -67,7 +69,7 @@ class L1TSingleInOutLUT:
 
         self.max_error = max(errors)
 
-        if not "l1GTDoubleObjectCond_cfi" in __name__:
+        if print_info:
             print("Error: {:.5f} +/- {:.5f}, max: {:.5f}, total: {:.5f}, median: {:.5f}".format(
                 mean(errors), stdev(errors), self.max_error, sum(errors), median(errors)))
 

@@ -94,8 +94,9 @@ namespace l1t {
         .def("to_hw_sca_sum", &L1GTScales::to_hw_sca_sum)
         .def("to_hw_primvertdz", &L1GTScales::to_hw_primvertdz)
         .def("to_hw_sum_pT_pv", &L1GTScales::to_hw_sum_pT_pv)
-        .def("to_hw_RSquared", &L1GTScales::to_hw_RSquared)
-        .def("to_hw_InvMass", &L1GTScales::to_hw_InvMass)
+        .def("to_hw_dRSquared", &L1GTScales::to_hw_dRSquared)
+        .def("to_hw_InvMassSqrDiv2", &L1GTScales::to_hw_InvMassSqrDiv2)
+        .def("to_hw_TransMassSqrDiv2", &L1GTScales::to_hw_TransMassSqrDiv2)
         .def("neg_chg", &L1GTScales::neg_chg)
         .def("pos_chg", &L1GTScales::pos_chg);
   }

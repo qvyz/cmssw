@@ -212,10 +212,10 @@ namespace l1t {
     P2GTCandidate to_GTObject() const override {
       P2GTCandidate gt_object(L1TGT_Common3Vector::to_GTObject());
       gt_object.setHwDZ(dZ);
-      gt_object.setHwDD(dD);
+      gt_object.setHwDD(static_cast<int>(dD) << 2);
       gt_object.setHwCharge(charge);
       gt_object.setHwQual(qual);
-      gt_object.setHwIso(iso);
+      gt_object.setHwIso(static_cast<int>(iso) << 7);
       gt_object.setHwBeta(beta);
 
       return gt_object;
