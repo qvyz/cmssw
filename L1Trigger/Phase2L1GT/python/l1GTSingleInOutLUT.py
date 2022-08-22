@@ -1,5 +1,5 @@
 """
-This computes the most optimal COS_PHI_LUT and COSH_ETA_LUT. Call 
+This computes the most optimal COS_PHI_LUT and COSH_ETA_LUT. Call
 :func:`~l1GTSingleInOutLUT.L1TSingleInOutLUT.export` to export the
 generated LUT.
 """
@@ -12,6 +12,7 @@ import math
 
 print_info = True
 
+
 class L1TSingleInOutLUT:
 
     def __init__(self, width_in, unused_lsbs, lsb, output_scale_factor, operation, start_value=0, label=""):
@@ -22,7 +23,7 @@ class L1TSingleInOutLUT:
                             for i in range(2**width_in)]) < 0
 
         self.width_out = math.ceil(math.log2(output_scale_factor *
-                                             max([abs(operation(input_scale_factor * (i + 0.5) + start_value)) for i in range(2**width_in)])))
+                                             max([abs(operation(input_scale_factor * i + start_value)) for i in range(2**width_in)])))
 
         if signed_output:
             self.width_out += 1
@@ -38,7 +39,8 @@ class L1TSingleInOutLUT:
         self.operation = operation
         self.start_value = start_value
         self.lut = cms.vint32(
-            *[round(output_scale_factor * operation(input_scale_factor * (i + 0.5) + start_value)) for i in range(2**width_in)])
+            * ([round(output_scale_factor * operation(input_scale_factor * (i + 0.5) + start_value)) for i in range(2**width_in - 1)]
+               + [round(output_scale_factor * operation(input_scale_factor * (2 ** width_in - 1) + start_value))]))
 
         self.print_error()
 
@@ -55,12 +57,11 @@ class L1TSingleInOutLUT:
             for address, value in enumerate(self.lut):
                 file.write("@{:x} {:x}\n".format(address, int(value) & ((1 << self.width_out) - 1)))
 
-    @staticmethod
+    @ staticmethod
     def optimal_scale_factor(width_in, max_width_out, unused_lsbs, lsb, operation, start_value=0):
         input_scale_factor = 2**unused_lsbs * lsb
-        scale_factor = (2**max_width_out - 1) / \
-            max([abs(operation(input_scale_factor * (i + 0.5) + start_value))
-                for i in range(2**width_in)])
+        scale_factor = (2**max_width_out - 1) / max([abs(operation(input_scale_factor * (i + 0.5) + start_value))
+                                                     for i in range(2**width_in)])
         return scale_factor
 
     def print_error(self):
@@ -81,9 +82,8 @@ class L1TSingleInOutLUT:
 COS_PHI_IN_WIDTH = 11  # not using 2 lsb
 COSH_ETA_IN_WIDTH = 11  # not using 2 lsb and 1 msb (splitted LUT)
 
-# Since we calculate cosh(dEta) - cos(dPhi); both must be on the same scale
-optimal_scale_factor = math.floor(min(L1TSingleInOutLUT.optimal_scale_factor(COS_PHI_IN_WIDTH, 17, 2, scale_parameter.phi_lsb.value(), math.cos),
-                                      L1TSingleInOutLUT.optimal_scale_factor(COSH_ETA_IN_WIDTH, 17, 2, scale_parameter.eta_lsb.value(), math.cosh)))
+# Since we calculate cosh(dEta) - cos(dPhi); both must be on the same scale the difference should fit into 17 bits for the DSP
+optimal_scale_factor = math.floor((2**17 - 1) / (math.cosh((2**(COSH_ETA_IN_WIDTH + 2) - 1)*scale_parameter.eta_lsb.value()) + 1))
 
 COS_PHI_LUT = L1TSingleInOutLUT(
     COS_PHI_IN_WIDTH, 2, scale_parameter.phi_lsb.value(), optimal_scale_factor, math.cos)
