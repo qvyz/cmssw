@@ -7,9 +7,9 @@ def conditionwriter(filter, path):
     templateEnv = jinja2.Environment(loader=templateLoader,trim_blocks=True,lstrip_blocks=True)
     template = templateEnv.get_template(filter.Template,)
     if(filter.Label == 'L1GTDoubleObjectCond'):
-        outputText = template.render(condition_name = filter.Name, dict_item = filter.Cuts,objects_first = filter.InputObjects.get('col1Tag'),objects_second = filter.InputObjects.get('col2Tag'), algo_bit_name = path) 
+        outputText = template.render(condition_name = filter.Name, dict_item = filter.Cuts,objects_first = filter.InputObjects.get(1),objects_second = filter.InputObjects.get(2), algo_bit_name = path) 
     elif(filter.Label == 'L1GTSingleObjectCond'):
-        outputText = template.render(condition_name = filter.Name, dict_item = filter.Cuts,object = filter.InputObjects.get('colTag'), algo_bit_name = path) 
+        outputText = template.render(condition_name = filter.Name, dict_item = filter.Cuts,object = filter.InputObjects.get(1), algo_bit_name = path) 
     return outputText
 
 def algounitWriter(obj,conditions):

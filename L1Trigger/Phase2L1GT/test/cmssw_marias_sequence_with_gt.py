@@ -111,15 +111,19 @@ process.GTProducer = l1GTProducer.clone()
 process.l1t_GTProducer = cms.Path(process.GTProducer)
 
 process.singleTkEle12 = l1GTSingleObjectCond.clone(
-    colTag = cms.InputTag("GTProducer", "CL2 Electrons"),
-    pt_cut = cms.double(12),
+    tag = cms.InputTag("GTProducer", "CL2 Electrons"),
+    minPt = cms.double(12),
 )
 
 process.doubleTkEle11TkPho11 = l1GTDoubleObjectCond.clone(
-    col1Tag = cms.InputTag("GTProducer", "CL2 Electrons"),
-    col2Tag = cms.InputTag("GTProducer", "CL2 Photons"),
-    pt1_cut = cms.double(11),
-    pt2_cut = cms.double(11)
+    collection1 = cms.PSet(
+        tag = cms.InputTag("GTProducer", "CL2 Electrons"),
+        minPt = cms.double(11),
+    ),
+    collection2 = cms.PSet(
+        tag = cms.InputTag("GTProducer", "CL2 Photons"),
+        minPt = cms.double(11),
+    ),
 )
 
 process.l1t_singleTkEle12 = cms.Path(process.singleTkEle12)

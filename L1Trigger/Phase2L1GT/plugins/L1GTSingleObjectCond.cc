@@ -10,12 +10,10 @@
 #include "DataFormats/Common/interface/Ref.h"
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
+#include "L1GTSingleCollectionCut.h"
 
 #include <cmath>
 #include <cinttypes>
-#include <memory>
-#include <vector>
-#include <optional>
 
 #include <ap_int.h>
 
@@ -30,77 +28,20 @@ public:
 
 private:
   bool filter(edm::Event&, edm::EventSetup const&) override;
-  bool checkObject(const P2GTCandidate&) const;
-
-  const edm::InputTag colTag_;
 
   const L1GTScales scales_;
-
-  const std::optional<int> pt_cut_;
-  const std::optional<int> minEta_cut_;
-  const std::optional<int> maxEta_cut_;
-  const std::optional<int> minPhi_cut_;
-  const std::optional<int> maxPhi_cut_;
-  const std::optional<int> minDz_cut_;
-  const std::optional<int> maxDz_cut_;
-  const std::optional<int> qual_cut_;
-  const std::optional<int> iso_cut_;
+  const L1GTSingleCollectionCut collection;
 };
 
-template <typename T, typename K>
-static inline std::optional<T> getOptionalParam(const std::string& name,
-                                                const edm::ParameterSet& config,
-                                                std::function<T(K)> conv) {
-  if (config.exists(name)) {
-    return std::optional<T>(conv(config.getParameter<K>(name)));
-  }
-  return std::optional<T>();
-}
-
-template <typename T>
-static inline std::optional<T> getOptionalParam(const std::string& name, const edm::ParameterSet& config) {
-  if (config.exists(name)) {
-    return std::optional<T>(config.getParameter<T>(name));
-  }
-  return std::optional<T>();
-}
-
 L1GTSingleObjectCond::L1GTSingleObjectCond(const edm::ParameterSet& config)
-    : colTag_(config.getParameter<edm::InputTag>("colTag")),
-      scales_(config.getParameter<edm::ParameterSet>("scales")),
-      pt_cut_(getOptionalParam<int, double>(
-          "pt_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
-      minEta_cut_(getOptionalParam<int, double>(
-          "minEta_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      maxEta_cut_(getOptionalParam<int, double>(
-          "maxEta_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      minPhi_cut_(getOptionalParam<int, double>(
-          "minPhi_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      maxPhi_cut_(getOptionalParam<int, double>(
-          "maxPhi_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      minDz_cut_(getOptionalParam<int, double>(
-          "minDz_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      maxDz_cut_(getOptionalParam<int, double>(
-          "maxDz_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      qual_cut_(getOptionalParam<unsigned int>("qual_cut", config)),
-      iso_cut_(getOptionalParam<unsigned int>("iso_cut", config)) {
-  consumes<P2GTCandidateCollection>(colTag_);
-
-  produces<P2GTCandidateVectorRef>(colTag_.instance());
+    : scales_(config.getParameter<edm::ParameterSet>("scales")), collection(config, scales_) {
+  consumes<P2GTCandidateCollection>(collection.tag());
+  produces<P2GTCandidateVectorRef>(collection.tag().instance());
 }
 
 void L1GTSingleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("colTag");
-  desc.addOptional<double>("pt_cut");
-  desc.addOptional<double>("minEta_cut");
-  desc.addOptional<double>("maxEta_cut");
-  desc.addOptional<double>("minPhi_cut");
-  desc.addOptional<double>("maxPhi_cut");
-  desc.addOptional<double>("minDz_cut");
-  desc.addOptional<double>("maxDz_cut");
-  desc.addOptional<unsigned int>("qual_cut");
-  desc.addOptional<unsigned int>("iso_cut");
+  L1GTSingleCollectionCut::fillDescriptions(desc);
 
   edm::ParameterSetDescription scalesDesc;
   L1GTScales::fillDescriptions(scalesDesc);
@@ -111,14 +52,14 @@ void L1GTSingleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
 
 bool L1GTSingleObjectCond::filter(edm::Event& event, const edm::EventSetup& setup) {
   edm::Handle<P2GTCandidateCollection> col;
-  event.getByLabel(colTag_, col);
+  event.getByLabel(collection.tag(), col);
 
   bool condition_result = false;
 
   std::unique_ptr<P2GTCandidateVectorRef> triggerCol = std::make_unique<P2GTCandidateVectorRef>();
 
   for (std::size_t idx = 0; idx < col->size(); ++idx) {
-    bool pass{checkObject(col->at(idx))};
+    bool pass{collection.checkObject(col->at(idx))};
     condition_result |= pass;
 
     if (pass) {
@@ -127,25 +68,10 @@ bool L1GTSingleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
   }
 
   if (condition_result) {
-    event.put(std::move(triggerCol), colTag_.instance());
+    event.put(std::move(triggerCol), collection.tag().instance());
   }
 
   return condition_result;
-}
-
-bool L1GTSingleObjectCond::checkObject(const P2GTCandidate& obj) const {
-  bool res{true};
-  res &= pt_cut_ ? (obj.hwPT() > pt_cut_) : true;
-  res &= minEta_cut_ ? (obj.hwEta() > minEta_cut_) : true;
-  res &= maxEta_cut_ ? (obj.hwEta() < maxEta_cut_) : true;
-  res &= minPhi_cut_ ? (obj.hwPhi() > minPhi_cut_) : true;
-  res &= maxPhi_cut_ ? (obj.hwPhi() < maxPhi_cut_) : true;
-  res &= minDz_cut_ ? (obj.hwDZ() > minDz_cut_) : true;
-  res &= maxDz_cut_ ? (obj.hwDZ() < maxDz_cut_) : true;
-  res &= qual_cut_ ? (obj.hwQual() > qual_cut_) : true;
-  res &= iso_cut_ ? (obj.hwIso() > iso_cut_) : true;
-
-  return res;
 }
 
 DEFINE_FWK_MODULE(L1GTSingleObjectCond);

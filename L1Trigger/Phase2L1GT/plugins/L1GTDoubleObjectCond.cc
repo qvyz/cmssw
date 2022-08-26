@@ -14,11 +14,12 @@
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 
+#include "L1GTOptionalParam.h"
+#include "L1GTSingleCollectionCut.h"
+
 #include <cinttypes>
 #include <memory>
 #include <vector>
-#include <functional>
-#include <optional>
 #include <set>
 
 #include <ap_int.h>
@@ -56,9 +57,6 @@ private:
   bool filter(edm::Event&, edm::EventSetup const&) override;
   bool checkObjects(const P2GTCandidate&, const P2GTCandidate&, InvariantMassErrorCollection&) const;
 
-  const edm::InputTag col1Tag_;
-  const edm::InputTag col2Tag_;
-
   const L1GTScales scales_;
 
   static constexpr uint32_t DETA_LUT_SPLIT = 1 << 13;  // hw 2pi
@@ -67,66 +65,31 @@ private:
   const L1TSingleInOutLUT coshEtaLUT2_;  // [2pi, 4pi)
   const L1TSingleInOutLUT cosPhiLUT_;
 
-  const std::optional<int> pt1_cut_;
-  const std::optional<int> pt2_cut_;
-  const std::optional<int> minEta1_cut_;
-  const std::optional<int> maxEta1_cut_;
-  const std::optional<int> minEta2_cut_;
-  const std::optional<int> maxEta2_cut_;
-  const std::optional<int> minPhi1_cut_;
-  const std::optional<int> maxPhi1_cut_;
-  const std::optional<int> minPhi2_cut_;
-  const std::optional<int> maxPhi2_cut_;
-  const std::optional<int> minDz1_cut_;
-  const std::optional<int> maxDz1_cut_;
-  const std::optional<int> minDz2_cut_;
-  const std::optional<int> maxDz2_cut_;
-  const std::optional<int> qual1_cut_;
-  const std::optional<int> qual2_cut_;
-  const std::optional<int> iso1_cut_;
-  const std::optional<int> iso2_cut_;
-  const std::optional<int> dEtaMin_cut_;
-  const std::optional<int> dEtaMax_cut_;
-  const std::optional<int> dPhiMin_cut_;
-  const std::optional<int> dPhiMax_cut_;
+  const L1GTSingleCollectionCut collection1_;
+  const L1GTSingleCollectionCut collection2_;
 
-  const std::optional<int> dRSquaredMin_cut_;
-  const std::optional<int> dRSquaredMax_cut_;
+  const std::optional<int> minDEta_;
+  const std::optional<int> maxDEta_;
+  const std::optional<int> minDPhi_;
+  const std::optional<int> maxDPhi_;
 
-  const std::optional<double> invMassDiv2Min_cut_;
-  const std::optional<double> invMassDiv2Max_cut_;
-  const std::optional<double> transMassDiv2Min_cut_;
-  const std::optional<double> transMassDiv2Max_cut_;
+  const std::optional<int> minDRSquared_;
+  const std::optional<int> maxDRSquared_;
 
-  const bool os_cut_;
-  const bool ss_cut_;
+  const std::optional<double> minInvMassSqrDiv2_;
+  const std::optional<double> maxInvMassSqrDiv2_;
+  const std::optional<double> minTransMassSqrDiv2_;
+  const std::optional<double> maxTransMassSqrDiv2_;
+
+  const bool os_;  // Opposite sign
+  const bool ss_;  // Same sign
 
   const bool enable_sanity_checks_;
   const bool inv_mass_checks_;
 };
 
-template <typename T, typename K>
-static inline std::optional<T> getOptionalParam(const std::string& name,
-                                                const edm::ParameterSet& config,
-                                                std::function<T(K)> conv) {
-  if (config.exists(name)) {
-    return std::optional<T>(conv(config.getParameter<K>(name)));
-  }
-  return std::optional<T>();
-}
-
-template <typename T>
-static inline std::optional<T> getOptionalParam(const std::string& name, const edm::ParameterSet& config) {
-  if (config.exists(name)) {
-    return std::optional<T>(config.getParameter<T>(name));
-  }
-  return std::optional<T>();
-}
-
 L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
-    : col1Tag_(config.getParameter<edm::InputTag>("col1Tag")),
-      col2Tag_(config.getParameter<edm::InputTag>("col2Tag")),
-      scales_(config.getParameter<edm::ParameterSet>("scales")),
+    : scales_(config.getParameter<edm::ParameterSet>("scales")),
       coshEtaLUT_(config.getParameterSet("cosh_eta_lut").getParameter<std::vector<int>>("lut"),
                   config.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("unused_lsbs"),
                   config.getParameterSet("cosh_eta_lut").getParameter<double>("output_scale_factor"),
@@ -139,68 +102,38 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
                  config.getParameterSet("cos_phi_lut").getParameter<uint32_t>("unused_lsbs"),
                  config.getParameterSet("cos_phi_lut").getParameter<double>("output_scale_factor"),
                  config.getParameterSet("cos_phi_lut").getParameter<double>("max_error")),
-      pt1_cut_(getOptionalParam<int, double>(
-          "pt1_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
-      pt2_cut_(getOptionalParam<int, double>(
-          "pt2_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
-      minEta1_cut_(getOptionalParam<int, double>(
-          "minEta1_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      maxEta1_cut_(getOptionalParam<int, double>(
-          "maxEta1_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      minEta2_cut_(getOptionalParam<int, double>(
-          "minEta2_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      maxEta2_cut_(getOptionalParam<int, double>(
-          "maxEta2_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      minPhi1_cut_(getOptionalParam<int, double>(
-          "minPhi1_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      maxPhi1_cut_(getOptionalParam<int, double>(
-          "maxPhi1_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      minPhi2_cut_(getOptionalParam<int, double>(
-          "minPhi2_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      maxPhi2_cut_(getOptionalParam<int, double>(
-          "maxPhi2_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      minDz1_cut_(getOptionalParam<int, double>(
-          "minDz1_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      maxDz1_cut_(getOptionalParam<int, double>(
-          "maxDz1_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      minDz2_cut_(getOptionalParam<int, double>(
-          "minDz2_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      maxDz2_cut_(getOptionalParam<int, double>(
-          "maxDz2_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      qual1_cut_(getOptionalParam<unsigned int>("qual1_cut", config)),
-      qual2_cut_(getOptionalParam<unsigned int>("qual2_cut", config)),
-      iso1_cut_(getOptionalParam<unsigned int>("iso1_cut", config)),
-      iso2_cut_(getOptionalParam<unsigned int>("iso2_cut", config)),
-      dEtaMin_cut_(getOptionalParam<int, double>(
-          "dEtaMin_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      dEtaMax_cut_(getOptionalParam<int, double>(
-          "dEtaMax_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      dPhiMin_cut_(getOptionalParam<int, double>(
-          "dPhiMin_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      dPhiMax_cut_(getOptionalParam<int, double>(
-          "dPhiMax_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      dRSquaredMin_cut_(getOptionalParam<int, double>(
-          "dRMin_cut", config, std::bind(&L1GTScales::to_hw_dRSquared, scales_, std::placeholders::_1))),
-      dRSquaredMax_cut_(getOptionalParam<int, double>(
-          "dRMax_cut", config, std::bind(&L1GTScales::to_hw_dRSquared, scales_, std::placeholders::_1))),
-      invMassDiv2Min_cut_(getOptionalParam<int, double>(
-          "invMassMin_cut", config, std::bind(&L1GTScales::to_hw_InvMassSqrDiv2, scales_, std::placeholders::_1))),
-      invMassDiv2Max_cut_(getOptionalParam<int, double>(
-          "invMassMax_cut", config, std::bind(&L1GTScales::to_hw_InvMassSqrDiv2, scales_, std::placeholders::_1))),
-      transMassDiv2Min_cut_(getOptionalParam<int, double>(
-          "transMassMin_cut", config, std::bind(&L1GTScales::to_hw_TransMassSqrDiv2, scales_, std::placeholders::_1))),
-      transMassDiv2Max_cut_(getOptionalParam<int, double>(
-          "transMassMax_cut", config, std::bind(&L1GTScales::to_hw_TransMassSqrDiv2, scales_, std::placeholders::_1))),
-      os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
-      ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false),
+      collection1_(config.getParameterSet("collection1"), scales_),
+      collection2_(config.getParameterSet("collection2"), scales_),
+      minDEta_(getOptionalParam<int, double>(
+          "minDEta", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
+      maxDEta_(getOptionalParam<int, double>(
+          "maxDEta", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
+      minDPhi_(getOptionalParam<int, double>(
+          "minDPhi", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
+      maxDPhi_(getOptionalParam<int, double>(
+          "maxDPhi", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
+      minDRSquared_(getOptionalParam<int, double>(
+          "minDR", config, std::bind(&L1GTScales::to_hw_dRSquared, scales_, std::placeholders::_1))),
+      maxDRSquared_(getOptionalParam<int, double>(
+          "maxDR", config, std::bind(&L1GTScales::to_hw_dRSquared, scales_, std::placeholders::_1))),
+      minInvMassSqrDiv2_(getOptionalParam<int, double>(
+          "minInvMass", config, std::bind(&L1GTScales::to_hw_InvMassSqrDiv2, scales_, std::placeholders::_1))),
+      maxInvMassSqrDiv2_(getOptionalParam<int, double>(
+          "maxInvMass", config, std::bind(&L1GTScales::to_hw_InvMassSqrDiv2, scales_, std::placeholders::_1))),
+      minTransMassSqrDiv2_(getOptionalParam<int, double>(
+          "minTransMass", config, std::bind(&L1GTScales::to_hw_TransMassSqrDiv2, scales_, std::placeholders::_1))),
+      maxTransMassSqrDiv2_(getOptionalParam<int, double>(
+          "maxTransMass", config, std::bind(&L1GTScales::to_hw_TransMassSqrDiv2, scales_, std::placeholders::_1))),
+      os_(config.exists("os") ? config.getParameter<bool>("os") : false),
+      ss_(config.exists("ss") ? config.getParameter<bool>("ss") : false),
       enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
       inv_mass_checks_(config.getUntrackedParameter<bool>("inv_mass_checks")) {
-  consumes<P2GTCandidateCollection>(col1Tag_);
-  produces<P2GTCandidateVectorRef>(col1Tag_.instance());
+  consumes<P2GTCandidateCollection>(collection1_.tag());
+  produces<P2GTCandidateVectorRef>(collection1_.tag().instance());
 
-  if (!(col1Tag_ == col2Tag_)) {
-    consumes<P2GTCandidateCollection>(col2Tag_);
-    produces<P2GTCandidateVectorRef>(col2Tag_.instance());
+  if (!(collection1_.tag() == collection2_.tag())) {
+    consumes<P2GTCandidateCollection>(collection2_.tag());
+    produces<P2GTCandidateVectorRef>(collection2_.tag().instance());
   }
 
   if (inv_mass_checks_) {
@@ -210,38 +143,27 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
 
 void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("col1Tag");
-  desc.add<edm::InputTag>("col2Tag");
-  desc.addOptional<double>("pt1_cut");
-  desc.addOptional<double>("pt2_cut");
-  desc.addOptional<double>("minEta1_cut");
-  desc.addOptional<double>("maxEta1_cut");
-  desc.addOptional<double>("minEta2_cut");
-  desc.addOptional<double>("maxEta2_cut");
-  desc.addOptional<double>("minPhi1_cut");
-  desc.addOptional<double>("maxPhi1_cut");
-  desc.addOptional<double>("minPhi2_cut");
-  desc.addOptional<double>("maxPhi2_cut");
-  desc.addOptional<double>("minDz1_cut");
-  desc.addOptional<double>("maxDz1_cut");
-  desc.addOptional<double>("minDz2_cut");
-  desc.addOptional<double>("maxDz2_cut");
-  desc.addOptional<unsigned int>("qual1_cut");
-  desc.addOptional<unsigned int>("qual2_cut");
-  desc.addOptional<unsigned int>("iso1_cut");
-  desc.addOptional<unsigned int>("iso2_cut");
-  desc.addOptional<double>("dEtaMin_cut");
-  desc.addOptional<double>("dEtaMax_cut");
-  desc.addOptional<double>("dPhiMin_cut");
-  desc.addOptional<double>("dPhiMax_cut");
-  desc.addOptional<double>("dRMin_cut");
-  desc.addOptional<double>("dRMax_cut");
-  desc.addOptional<double>("invMassMin_cut");
-  desc.addOptional<double>("invMassMax_cut");
-  desc.addOptional<double>("transMassMin_cut");
-  desc.addOptional<double>("transMassMax_cut");
-  desc.addOptional<bool>("os_cut", false);
-  desc.addOptional<bool>("ss_cut", false);
+
+  edm::ParameterSetDescription collection1Desc;
+  L1GTSingleCollectionCut::fillDescriptions(collection1Desc);
+  desc.add<edm::ParameterSetDescription>("collection1", collection1Desc);
+
+  edm::ParameterSetDescription collection2Desc;
+  L1GTSingleCollectionCut::fillDescriptions(collection2Desc);
+  desc.add<edm::ParameterSetDescription>("collection2", collection2Desc);
+
+  desc.addOptional<double>("minDEta");
+  desc.addOptional<double>("maxDEta");
+  desc.addOptional<double>("minDPhi");
+  desc.addOptional<double>("maxDPhi");
+  desc.addOptional<double>("minDR");
+  desc.addOptional<double>("maxDR");
+  desc.addOptional<double>("minInvMass");
+  desc.addOptional<double>("maxInvMass");
+  desc.addOptional<double>("minTransMass");
+  desc.addOptional<double>("maxTransMass");
+  desc.addOptional<bool>("os", false);
+  desc.addOptional<bool>("ss", false);
 
   edm::ParameterSetDescription scalesDesc;
   L1GTScales::fillDescriptions(scalesDesc);
@@ -277,8 +199,8 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
 bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setup) {
   edm::Handle<P2GTCandidateCollection> col1;
   edm::Handle<P2GTCandidateCollection> col2;
-  event.getByLabel(col1Tag_, col1);
-  event.getByLabel(col2Tag_, col2);
+  event.getByLabel(collection1_.tag(), col1);
+  event.getByLabel(collection2_.tag(), col2);
 
   bool condition_result = false;
 
@@ -321,7 +243,7 @@ bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
     for (std::size_t idx : triggeredIdcs1) {
       triggerCol1->push_back(P2GTCandidateRef(col1, idx));
     }
-    event.put(std::move(triggerCol1), col1Tag_.instance());
+    event.put(std::move(triggerCol1), collection1_.tag().instance());
 
     if (col1.product() != col2.product()) {
       std::unique_ptr<P2GTCandidateVectorRef> triggerCol2 = std::make_unique<P2GTCandidateVectorRef>();
@@ -329,7 +251,7 @@ bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
       for (std::size_t idx : triggeredIdcs2) {
         triggerCol2->push_back(P2GTCandidateRef(col2, idx));
       }
-      event.put(std::move(triggerCol2), col2Tag_.instance());
+      event.put(std::move(triggerCol2), collection2_.tag().instance());
     }
 
     if (inv_mass_checks_) {
@@ -344,41 +266,26 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
                                         const P2GTCandidate& obj2,
                                         InvariantMassErrorCollection& massErrors) const {
   bool res{true};
-  res &= pt1_cut_ ? (obj1.hwPT() > pt1_cut_) : true;
-  res &= pt2_cut_ ? (obj2.hwPT() > pt2_cut_) : true;
-  res &= minEta1_cut_ ? (obj1.hwEta() > minEta1_cut_) : true;
-  res &= maxEta1_cut_ ? (obj1.hwEta() < maxEta1_cut_) : true;
-  res &= minEta2_cut_ ? (obj2.hwEta() > minEta2_cut_) : true;
-  res &= maxEta2_cut_ ? (obj2.hwEta() < maxEta2_cut_) : true;
-  res &= minPhi1_cut_ ? (obj1.hwPhi() > minPhi1_cut_) : true;
-  res &= maxPhi1_cut_ ? (obj1.hwPhi() < maxPhi1_cut_) : true;
-  res &= minPhi2_cut_ ? (obj2.hwPhi() > minPhi2_cut_) : true;
-  res &= maxPhi2_cut_ ? (obj2.hwPhi() < maxPhi2_cut_) : true;
-  res &= minDz1_cut_ ? (obj1.hwDZ() > minDz1_cut_) : true;
-  res &= maxDz1_cut_ ? (obj1.hwDZ() < maxDz1_cut_) : true;
-  res &= minDz2_cut_ ? (obj2.hwDZ() > minDz2_cut_) : true;
-  res &= maxDz2_cut_ ? (obj2.hwDZ() < maxDz2_cut_) : true;
-  res &= qual1_cut_ ? (obj1.hwQual() > qual1_cut_) : true;
-  res &= qual2_cut_ ? (obj2.hwQual() > qual2_cut_) : true;
-  res &= iso1_cut_ ? (obj1.hwIso() > iso1_cut_) : true;
-  res &= iso2_cut_ ? (obj2.hwIso() > iso2_cut_) : true;
+
+  res &= collection1_.checkObject(obj1);
+  res &= collection2_.checkObject(obj2);
 
   int64_t dEta = (obj1.hwEta() > obj2.hwEta()) ? obj1.hwEta().to_int64() - obj2.hwEta().to_int64()
                                                : obj2.hwEta().to_int64() - obj1.hwEta().to_int64();
-  res &= dEtaMin_cut_ ? dEta > dEtaMin_cut_ : true;
-  res &= dEtaMax_cut_ ? dEta < dEtaMax_cut_ : true;
+  res &= minDEta_ ? dEta > minDEta_ : true;
+  res &= maxDEta_ ? dEta < maxDEta_ : true;
 
   int64_t dPhi = (obj1.hwPhi() > obj2.hwPhi()) ? obj1.hwPhi().to_int() - obj2.hwPhi().to_int()
                                                : obj2.hwPhi().to_int() - obj1.hwPhi().to_int();
-  res &= dPhiMin_cut_ ? dPhi > dPhiMin_cut_ : true;
-  res &= dPhiMax_cut_ ? dPhi < dPhiMax_cut_ : true;
+  res &= minDPhi_ ? dPhi > minDPhi_ : true;
+  res &= maxDPhi_ ? dPhi < maxDPhi_ : true;
 
   int64_t dRSquared = dEta * dEta + dPhi * dPhi;
-  res &= dRSquaredMin_cut_ ? dRSquared > dRSquaredMin_cut_ : true;
-  res &= dRSquaredMax_cut_ ? dRSquared < dRSquaredMax_cut_ : true;
+  res &= minDRSquared_ ? dRSquared > minDRSquared_ : true;
+  res &= maxDRSquared_ ? dRSquared < maxDRSquared_ : true;
 
-  res &= os_cut_ ? obj1.hwCharge() != obj2.hwCharge() : true;
-  res &= ss_cut_ ? obj1.hwCharge() == obj2.hwCharge() : true;
+  res &= os_ ? obj1.hwCharge() != obj2.hwCharge() : true;
+  res &= ss_ ? obj1.hwCharge() == obj2.hwCharge() : true;
 
   int32_t lutCoshDEta = dEta < DETA_LUT_SPLIT ? coshEtaLUT_[dEta] : coshEtaLUT2_[dEta - DETA_LUT_SPLIT];
   int32_t lutCosDPhi = cosPhiLUT_[dPhi];
@@ -402,21 +309,17 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
     }
   }
 
-  int64_t invMassDiv2;
+  int64_t invMassSqrDiv2;
   if (dEta < DETA_LUT_SPLIT) {
     // dEta [0, 2pi)
-    invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
-    res &=
-        invMassDiv2Min_cut_ ? invMassDiv2 > std::round(invMassDiv2Min_cut_.value() * coshEtaLUT_.output_scale()) : true;
-    res &=
-        invMassDiv2Max_cut_ ? invMassDiv2 < std::round(invMassDiv2Max_cut_.value() * coshEtaLUT_.output_scale()) : true;
+    invMassSqrDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
+    res &= minInvMassSqrDiv2_ ? invMassSqrDiv2 > std::round(minInvMassSqrDiv2_.value() * coshEtaLUT_.output_scale()) : true;
+    res &= maxInvMassSqrDiv2_ ? invMassSqrDiv2 < std::round(maxInvMassSqrDiv2_.value() * coshEtaLUT_.output_scale()) : true;
   } else {
     // dEta [2pi, 4pi), ignore cos
-    invMassDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * lutCoshDEta;
-    res &= invMassDiv2Min_cut_ ? invMassDiv2 > std::round(invMassDiv2Min_cut_.value() * coshEtaLUT2_.output_scale())
-                               : true;
-    res &= invMassDiv2Max_cut_ ? invMassDiv2 < std::round(invMassDiv2Max_cut_.value() * coshEtaLUT2_.output_scale())
-                               : true;
+    invMassSqrDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * lutCoshDEta;
+    res &= minInvMassSqrDiv2_ ? invMassSqrDiv2 > std::round(minInvMassSqrDiv2_.value() * coshEtaLUT2_.output_scale()) : true;
+    res &= maxInvMassSqrDiv2_ ? invMassSqrDiv2 < std::round(maxInvMassSqrDiv2_.value() * coshEtaLUT2_.output_scale()) : true;
   }
 
   if (inv_mass_checks_) {
@@ -425,7 +328,7 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
                                      (std::cosh(dEta * scales_.eta_lsb()) - std::cos(dPhi * scales_.phi_lsb())));
 
     double lutInvMass = scales_.pT_lsb() *
-                        std::sqrt(2 * static_cast<double>(invMassDiv2) /
+                        std::sqrt(2 * static_cast<double>(invMassSqrDiv2) /
                                   (dEta < DETA_LUT_SPLIT ? coshEtaLUT_.output_scale() : coshEtaLUT2_.output_scale()));
 
     double error = std::abs(precInvMass - lutInvMass);
@@ -434,10 +337,8 @@ bool L1GTDoubleObjectCond::checkObjects(const P2GTCandidate& obj1,
 
   int64_t transMassDiv2 =
       obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (static_cast<int64_t>(coshEtaLUT_.output_scale()) - lutCosDPhi);
-  res &= transMassDiv2Min_cut_ ? transMassDiv2 > std::round(transMassDiv2Min_cut_.value() * coshEtaLUT_.output_scale())
-                               : true;
-  res &= transMassDiv2Max_cut_ ? transMassDiv2 < std::round(transMassDiv2Max_cut_.value() * coshEtaLUT_.output_scale())
-                               : true;
+  res &= minTransMassSqrDiv2_ ? transMassDiv2 > std::round(minTransMassSqrDiv2_.value() * coshEtaLUT_.output_scale()) : true;
+  res &= maxTransMassSqrDiv2_ ? transMassDiv2 < std::round(maxTransMassSqrDiv2_.value() * coshEtaLUT_.output_scale()) : true;
 
   return res;
 }

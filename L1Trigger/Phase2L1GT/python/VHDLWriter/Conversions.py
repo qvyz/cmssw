@@ -17,14 +17,21 @@ def checkFilter(obj):
 
     if Condit == None:
         return 0
-    knowncuts = Condit.getPossibleCuts()
+
+    for idx, col in Condit.getCollections(obj).items():
+        knowncuts = Condit._cut_aliases.keys()
+        for knowncut in knowncuts:
+            if col.hasParameter(knowncut):
+                Condit.setCut(knowncut,col.getParameter(knowncut).value(), idx)
+    
+    knowncuts = Condit._cut_aliases.keys()
     for knowncut in knowncuts:
-        cmssw_cut = Condit.getCMSSWCut(knowncut)
-        if obj.hasParameter(cmssw_cut):
-            Condit.setCut(knowncut,obj.getParameter(cmssw_cut).value())
-    for Collection in Condit._InputTags:
-        param = obj.getParameter(Collection)
-        Condit._setInputObject(Collection,param.productInstanceLabel)
+        if obj.hasParameter(knowncut):
+            Condit.setCut(knowncut, obj.getParameter(knowncut).value())
+
+    for idx, tag in enumerate(Condit._InputTags):
+        Condit._setInputObject(idx + 1, tag.productInstanceLabel)
+
     return Condit
 
 

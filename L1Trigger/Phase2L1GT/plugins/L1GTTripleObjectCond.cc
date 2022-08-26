@@ -11,12 +11,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
+#include "L1GTSingleCollectionCut.h"
 
-#include <cinttypes>
-#include <memory>
-#include <vector>
-#include <functional>
-#include <optional>
 #include <set>
 
 #include <ap_int.h>
@@ -34,165 +30,54 @@ private:
   bool filter(edm::Event&, edm::EventSetup const&) override;
   bool checkObjects(const P2GTCandidate&, const P2GTCandidate&, const P2GTCandidate&) const;
 
-  const edm::InputTag col1Tag_;
-  const edm::InputTag col2Tag_;
-  const edm::InputTag col3Tag_;
-
   const L1GTScales scales_;
 
-  const std::optional<int> pt1_cut_;
-  const std::optional<int> pt2_cut_;
-  const std::optional<int> pt3_cut_;
-  const std::optional<int> minEta1_cut_;
-  const std::optional<int> maxEta1_cut_;
-  const std::optional<int> minEta2_cut_;
-  const std::optional<int> maxEta2_cut_;
-  const std::optional<int> minEta3_cut_;
-  const std::optional<int> maxEta3_cut_;
-  const std::optional<int> minPhi1_cut_;
-  const std::optional<int> maxPhi1_cut_;
-  const std::optional<int> minPhi2_cut_;
-  const std::optional<int> maxPhi2_cut_;
-  const std::optional<int> minPhi3_cut_;
-  const std::optional<int> maxPhi3_cut_;
-  const std::optional<int> minDz1_cut_;
-  const std::optional<int> maxDz1_cut_;
-  const std::optional<int> minDz2_cut_;
-  const std::optional<int> maxDz2_cut_;
-  const std::optional<int> minDz3_cut_;
-  const std::optional<int> maxDz3_cut_;
-  const std::optional<int> qual1_cut_;
-  const std::optional<int> qual2_cut_;
-  const std::optional<int> qual3_cut_;
-  const std::optional<int> iso1_cut_;
-  const std::optional<int> iso2_cut_;
-  const std::optional<int> iso3_cut_;
+  const L1GTSingleCollectionCut collection1_;
+  const L1GTSingleCollectionCut collection2_;
+  const L1GTSingleCollectionCut collection3_;
 
-  const bool os_cut_;
-  const bool ss_cut_;
+  const bool os_;  // Opposite sign
+  const bool ss_;  // Same sign
 };
 
-template <typename T, typename K>
-static inline std::optional<T> getOptionalParam(const std::string& name,
-                                                const edm::ParameterSet& config,
-                                                std::function<T(K)> conv) {
-  if (config.exists(name)) {
-    return std::optional<T>(conv(config.getParameter<K>(name)));
-  }
-  return std::optional<T>();
-}
-
-template <typename T>
-static inline std::optional<T> getOptionalParam(const std::string& name, const edm::ParameterSet& config) {
-  if (config.exists(name)) {
-    return std::optional<T>(config.getParameter<T>(name));
-  }
-  return std::optional<T>();
-}
-
 L1GTTripleObjectCond::L1GTTripleObjectCond(const edm::ParameterSet& config)
-    : col1Tag_(config.getParameter<edm::InputTag>("col1Tag")),
-      col2Tag_(config.getParameter<edm::InputTag>("col2Tag")),
-      col3Tag_(config.getParameter<edm::InputTag>("col3Tag")),
-      scales_(config.getParameter<edm::ParameterSet>("scales")),
-      pt1_cut_(getOptionalParam<int, double>(
-          "pt1_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
-      pt2_cut_(getOptionalParam<int, double>(
-          "pt2_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
-      pt3_cut_(getOptionalParam<int, double>(
-          "pt3_cut", config, std::bind(&L1GTScales::to_hw_pT, scales_, std::placeholders::_1))),
-      minEta1_cut_(getOptionalParam<int, double>(
-          "minEta1_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      maxEta1_cut_(getOptionalParam<int, double>(
-          "maxEta1_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      minEta2_cut_(getOptionalParam<int, double>(
-          "minEta2_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      maxEta2_cut_(getOptionalParam<int, double>(
-          "maxEta2_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      minEta3_cut_(getOptionalParam<int, double>(
-          "minEta3_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      maxEta3_cut_(getOptionalParam<int, double>(
-          "maxEta3_cut", config, std::bind(&L1GTScales::to_hw_eta, scales_, std::placeholders::_1))),
-      minPhi1_cut_(getOptionalParam<int, double>(
-          "minPhi1_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      maxPhi1_cut_(getOptionalParam<int, double>(
-          "maxPhi1_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      minPhi2_cut_(getOptionalParam<int, double>(
-          "minPhi2_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      maxPhi2_cut_(getOptionalParam<int, double>(
-          "maxPhi2_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      minPhi3_cut_(getOptionalParam<int, double>(
-          "minPhi3_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      maxPhi3_cut_(getOptionalParam<int, double>(
-          "maxPhi3_cut", config, std::bind(&L1GTScales::to_hw_phi, scales_, std::placeholders::_1))),
-      minDz1_cut_(getOptionalParam<int, double>(
-          "minDz1_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      maxDz1_cut_(getOptionalParam<int, double>(
-          "maxDz1_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      minDz2_cut_(getOptionalParam<int, double>(
-          "minDz2_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      maxDz2_cut_(getOptionalParam<int, double>(
-          "maxDz2_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      minDz3_cut_(getOptionalParam<int, double>(
-          "minDz3_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      maxDz3_cut_(getOptionalParam<int, double>(
-          "maxDz3_cut", config, std::bind(&L1GTScales::to_hw_dZ, scales_, std::placeholders::_1))),
-      qual1_cut_(getOptionalParam<unsigned int>("qual1_cut", config)),
-      qual2_cut_(getOptionalParam<unsigned int>("qual2_cut", config)),
-      qual3_cut_(getOptionalParam<unsigned int>("qual3_cut", config)),
-      iso1_cut_(getOptionalParam<unsigned int>("iso1_cut", config)),
-      iso2_cut_(getOptionalParam<unsigned int>("iso2_cut", config)),
-      iso3_cut_(getOptionalParam<unsigned int>("iso3_cut", config)),
-      os_cut_(config.exists("os_cut") ? config.getParameter<bool>("os_cut") : false),
-      ss_cut_(config.exists("ss_cut") ? config.getParameter<bool>("ss_cut") : false) {
-  consumes<P2GTCandidateCollection>(col1Tag_);
-  produces<P2GTCandidateVectorRef>(col1Tag_.instance());
+    : scales_(config.getParameter<edm::ParameterSet>("scales")),
+      collection1_(config.getParameter<edm::ParameterSet>("collection1"), scales_),
+      collection2_(config.getParameter<edm::ParameterSet>("collection2"), scales_),
+      collection3_(config.getParameter<edm::ParameterSet>("collection3"), scales_),
+      os_(config.exists("os") ? config.getParameter<bool>("os") : false),
+      ss_(config.exists("ss") ? config.getParameter<bool>("ss") : false) {
+  consumes<P2GTCandidateCollection>(collection1_.tag());
+  produces<P2GTCandidateVectorRef>(collection1_.tag().instance());
 
-  if (!(col1Tag_ == col2Tag_)) {
-    consumes<P2GTCandidateCollection>(col2Tag_);
-    produces<P2GTCandidateVectorRef>(col2Tag_.instance());
+  if (!(collection1_.tag() == collection2_.tag())) {
+    consumes<P2GTCandidateCollection>(collection2_.tag());
+    produces<P2GTCandidateVectorRef>(collection2_.tag().instance());
   }
 
-  if (!(col1Tag_ == col3Tag_) && !(col2Tag_ == col3Tag_)) {
-    consumes<P2GTCandidateCollection>(col3Tag_);
-    produces<P2GTCandidateVectorRef>(col3Tag_.instance());
+  if (!(collection1_.tag() == collection3_.tag()) && !(collection2_.tag() == collection3_.tag())) {
+    consumes<P2GTCandidateCollection>(collection3_.tag());
+    produces<P2GTCandidateVectorRef>(collection3_.tag().instance());
   }
 }
 
 void L1GTTripleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("col1Tag");
-  desc.add<edm::InputTag>("col2Tag");
-  desc.add<edm::InputTag>("col3Tag");
-  desc.addOptional<double>("pt1_cut");
-  desc.addOptional<double>("pt2_cut");
-  desc.addOptional<double>("pt3_cut");
-  desc.addOptional<double>("minEta1_cut");
-  desc.addOptional<double>("maxEta1_cut");
-  desc.addOptional<double>("minEta2_cut");
-  desc.addOptional<double>("maxEta2_cut");
-  desc.addOptional<double>("minEta3_cut");
-  desc.addOptional<double>("maxEta3_cut");
-  desc.addOptional<double>("minPhi1_cut");
-  desc.addOptional<double>("maxPhi1_cut");
-  desc.addOptional<double>("minPhi2_cut");
-  desc.addOptional<double>("maxPhi2_cut");
-  desc.addOptional<double>("minPhi3_cut");
-  desc.addOptional<double>("maxPhi3_cut");
-  desc.addOptional<double>("minDz1_cut");
-  desc.addOptional<double>("maxDz1_cut");
-  desc.addOptional<double>("minDz2_cut");
-  desc.addOptional<double>("maxDz2_cut");
-  desc.addOptional<double>("minDz3_cut");
-  desc.addOptional<double>("maxDz3_cut");
-  desc.addOptional<unsigned int>("qual1_cut");
-  desc.addOptional<unsigned int>("qual2_cut");
-  desc.addOptional<unsigned int>("qual3_cut");
-  desc.addOptional<unsigned int>("iso1_cut");
-  desc.addOptional<unsigned int>("iso2_cut");
-  desc.addOptional<unsigned int>("iso3_cut");
-  desc.addOptional<bool>("os_cut", false);
-  desc.addOptional<bool>("ss_cut", false);
+
+  edm::ParameterSetDescription collection1Desc;
+  L1GTSingleCollectionCut::fillDescriptions(collection1Desc);
+  desc.add<edm::ParameterSetDescription>("collection1", collection1Desc);
+
+  edm::ParameterSetDescription collection2Desc;
+  L1GTSingleCollectionCut::fillDescriptions(collection2Desc);
+  desc.add<edm::ParameterSetDescription>("collection2", collection2Desc);
+
+  edm::ParameterSetDescription collection3Desc;
+  L1GTSingleCollectionCut::fillDescriptions(collection3Desc);
+  desc.add<edm::ParameterSetDescription>("collection3", collection3Desc);
+
+  desc.addOptional<bool>("os", false);
+  desc.addOptional<bool>("ss", false);
 
   edm::ParameterSetDescription scalesDesc;
   L1GTScales::fillDescriptions(scalesDesc);
@@ -205,9 +90,9 @@ bool L1GTTripleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
   edm::Handle<P2GTCandidateCollection> col1;
   edm::Handle<P2GTCandidateCollection> col2;
   edm::Handle<P2GTCandidateCollection> col3;
-  event.getByLabel(col1Tag_, col1);
-  event.getByLabel(col2Tag_, col2);
-  event.getByLabel(col3Tag_, col3);
+  event.getByLabel(collection1_.tag(), col1);
+  event.getByLabel(collection2_.tag(), col2);
+  event.getByLabel(collection3_.tag(), col3);
 
   bool condition_result = false;
 
@@ -261,7 +146,7 @@ bool L1GTTripleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
     for (std::size_t idx : triggeredIdcs1) {
       triggerCol1->push_back(P2GTCandidateRef(col1, idx));
     }
-    event.put(std::move(triggerCol1), col1Tag_.instance());
+    event.put(std::move(triggerCol1), collection1_.tag().instance());
 
     if (col1.product() != col2.product()) {
       std::unique_ptr<P2GTCandidateVectorRef> triggerCol2 = std::make_unique<P2GTCandidateVectorRef>();
@@ -269,7 +154,7 @@ bool L1GTTripleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
       for (std::size_t idx : triggeredIdcs2) {
         triggerCol2->push_back(P2GTCandidateRef(col2, idx));
       }
-      event.put(std::move(triggerCol2), col2Tag_.instance());
+      event.put(std::move(triggerCol2), collection2_.tag().instance());
     }
 
     if (col1.product() != col3.product() && col2.product() != col3.product()) {
@@ -278,7 +163,7 @@ bool L1GTTripleObjectCond::filter(edm::Event& event, const edm::EventSetup& setu
       for (std::size_t idx : triggeredIdcs3) {
         triggerCol3->push_back(P2GTCandidateRef(col3, idx));
       }
-      event.put(std::move(triggerCol3), col3Tag_.instance());
+      event.put(std::move(triggerCol3), collection3_.tag().instance());
     }
   }
 
@@ -289,33 +174,12 @@ bool L1GTTripleObjectCond::checkObjects(const P2GTCandidate& obj1,
                                         const P2GTCandidate& obj2,
                                         const P2GTCandidate& obj3) const {
   bool res{true};
-  res &= pt1_cut_ ? (obj1.hwPT() > pt1_cut_) : true;
-  res &= pt2_cut_ ? (obj2.hwPT() > pt2_cut_) : true;
-  res &= pt3_cut_ ? (obj3.hwPT() > pt3_cut_) : true;
-  res &= minEta1_cut_ ? (obj1.hwEta() > minEta1_cut_) : true;
-  res &= maxEta1_cut_ ? (obj1.hwEta() < maxEta1_cut_) : true;
-  res &= minEta2_cut_ ? (obj2.hwEta() > minEta2_cut_) : true;
-  res &= maxEta2_cut_ ? (obj2.hwEta() < maxEta2_cut_) : true;
-  res &= minEta3_cut_ ? (obj3.hwEta() > minEta3_cut_) : true;
-  res &= maxEta3_cut_ ? (obj3.hwEta() < maxEta3_cut_) : true;
-  res &= minPhi1_cut_ ? (obj1.hwPhi() > minPhi1_cut_) : true;
-  res &= maxPhi1_cut_ ? (obj1.hwPhi() < maxPhi1_cut_) : true;
-  res &= minPhi2_cut_ ? (obj2.hwPhi() > minPhi2_cut_) : true;
-  res &= maxPhi2_cut_ ? (obj2.hwPhi() < maxPhi2_cut_) : true;
-  res &= minPhi3_cut_ ? (obj3.hwPhi() > minPhi3_cut_) : true;
-  res &= maxPhi3_cut_ ? (obj3.hwPhi() < maxPhi3_cut_) : true;
-  res &= minDz1_cut_ ? (obj1.hwDZ() > minDz1_cut_) : true;
-  res &= maxDz1_cut_ ? (obj1.hwDZ() < maxDz1_cut_) : true;
-  res &= minDz2_cut_ ? (obj2.hwDZ() > minDz2_cut_) : true;
-  res &= maxDz2_cut_ ? (obj2.hwDZ() < maxDz2_cut_) : true;
-  res &= minDz3_cut_ ? (obj3.hwDZ() > minDz3_cut_) : true;
-  res &= maxDz3_cut_ ? (obj3.hwDZ() < maxDz3_cut_) : true;
-  res &= qual1_cut_ ? (obj1.hwQual() > qual1_cut_) : true;
-  res &= qual2_cut_ ? (obj2.hwQual() > qual2_cut_) : true;
-  res &= qual3_cut_ ? (obj3.hwQual() > qual3_cut_) : true;
-  res &= iso1_cut_ ? (obj1.hwIso() > iso1_cut_) : true;
-  res &= iso2_cut_ ? (obj2.hwIso() > iso2_cut_) : true;
-  res &= iso3_cut_ ? (obj3.hwIso() > iso3_cut_) : true;
+  res &= collection1_.checkObject(obj1);
+  res &= collection2_.checkObject(obj2);
+  res &= collection3_.checkObject(obj3);
+
+  res &= ss_ ? obj1.hwCharge() == obj2.hwCharge() == obj3.hwCharge() : true;
+  res &= os_ ? !(obj1.hwCharge() == obj2.hwCharge() == obj3.hwCharge()) : true;
 
   return res;
 }

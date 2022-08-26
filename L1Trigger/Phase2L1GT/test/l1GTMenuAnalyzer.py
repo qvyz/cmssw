@@ -35,13 +35,14 @@ std::vector<std::string> getFiltModules(edm::ParameterSet& pset,const std::strin
            const auto& modPSet = pset.getParameterSet(mod.front()!=std::string("-") ? mod : mod.substr(1));
            if(modPSet.getParameter<std::string>("@module_edm_type")=="EDFilter") {
              if (modPSet.getParameter<std::string>("@module_type") == "L1GTDoubleObjectCond") {
-               filtMods.push_back(mod + "::" + modPSet.getParameter<edm::InputTag>("col1Tag").instance());
-               if (modPSet.getParameter<edm::InputTag>("col1Tag").instance() != modPSet.getParameter<edm::InputTag>("col2Tag").instance()) {
-                 filtMods.push_back(mod + "::" + modPSet.getParameter<edm::InputTag>("col2Tag").instance());
+               filtMods.push_back(mod + "::" + modPSet.getParameterSet("collection1").getParameter<edm::InputTag>("tag").instance());
+               if (modPSet.getParameterSet("collection1").getParameter<edm::InputTag>("tag").instance() != 
+                   modPSet.getParameterSet("collection2").getParameter<edm::InputTag>("tag").instance()) {
+                 filtMods.push_back(mod + "::" + modPSet.getParameterSet("collection2").getParameter<edm::InputTag>("tag").instance());
                }
              }
              else if (modPSet.getParameter<std::string>("@module_type") == "L1GTSingleObjectCond"){
-               filtMods.push_back(mod + "::" + modPSet.getParameter<edm::InputTag>("colTag").instance());
+               filtMods.push_back(mod + "::" + modPSet.getParameter<edm::InputTag>("tag").instance());
              }
            }
         }

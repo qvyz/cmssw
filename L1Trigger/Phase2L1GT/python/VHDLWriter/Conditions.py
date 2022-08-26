@@ -32,16 +32,33 @@ class Condition:
 
 
     def __init__(self):
-        self._PossibleCuts = []
         self.Cuts = {}
         self.InputObjects = {}
-        self._HWConversionFunctions ={}
-        self._cut_aliases = {}
+        self._InputTags = []
+        self._HWConversionFunctions = {
+            'minPt': l1GTScales.to_hw_pT,
+            'minEta': l1GTScales.to_hw_eta,
+            'maxEta': l1GTScales.to_hw_eta,
+            'minPhi': l1GTScales.to_hw_phi,
+            'maxPhi': l1GTScales.to_hw_phi,
+            'minDz': l1GTScales.to_hw_dZ,
+            'maxDz': l1GTScales.to_hw_dZ,
+        }
+
+        self._cut_aliases = {
+            'minPt' : 'pT{}_cut',
+            'minEta' : 'minEta{}_cut',
+            'maxEta' : 'maxEta{}_cut',
+            'minPhi' : 'minPhi{}_cut',
+            'maxPhi' : 'maxPhi{}_cut',
+            'minDz' : 'minDz{}_cut',
+            'maxDz' : 'maxDz{}_cut',
+            'qual' : 'qual{}_cut',
+            'iso' : 'iso{}_cut'
+        }
 
     def _setInputObject(self,condition,value):
         self.InputObjects[condition] = self._ObjectNameConversions.get(value)
-    def _setPosibleCuts(self, cuts):
-        self._PossibleCuts = cuts
 
     def setCuts(self, **cutsdict):
         for key , value in cutsdict.items():
@@ -50,22 +67,23 @@ class Condition:
                     self.Cuts[key] = self._HWConversionFunctions[key](value)
                 else:
                     self.Cuts[key] = value
-    def setCut(self,key,value):
-                if key in self._HWConversionFunctions:
-                    self.Cuts[key] = self._HWConversionFunctions[key](value)
-                else:
-                    self.Cuts[key] = value        
+
+    def setCut(self,key,value, collection = ""):
+        if key in self._HWConversionFunctions:
+            self.Cuts[self.getHWCut(key, collection)] = self._HWConversionFunctions[key](value)
+        else:
+            self.Cuts[self.getHWCut(key, collection)] = value
 
     def setName(self,name):
         self.Name = name
 
-    def getCMSSWCut(self, cut):
+    def getHWCut(self, cut, collection = ""):
         if cut in self._cut_aliases:
-            return self._cut_aliases[cut]
+            return self._cut_aliases[cut].format(collection)
         return cut
 
-    def _setInputTags(self, tags):
-        self._InputTags = tags
+    def getCollections(self, object):
+        return {}
 
     def setInputObjects(self, **inobjs):
         for name, value in inobjs.items():
@@ -74,122 +92,55 @@ class Condition:
     def _setHWConversionFunctions(self,indict):
            self._HWConversionFunctions = indict
 
-    def getPossibleCuts(self):
-        return self._PossibleCuts
-
 class DoubleObjCond(Condition):
     Label = "L1GTDoubleObjectCond"
     Template = "double.template"
     def __init__(self):
         Condition.__init__(self)
-        self._setPosibleCuts(
-            [
-            "pT1_cut",
-            "pT2_cut",
-            "minEta1_cut",
-            "maxEta1_cut",
-            "minEta2_cut",
-            "maxEta2_cut",
-            "minPhi1_cut",
-            "maxPhi1_cut",
-            "minPhi2_cut",
-            "maxPhi2_cut",
-            "minDz1_cut",
-            "maxDz1_cut",
-            "minDz2_cut",
-            "maxDz2_cut",
-            "qual1_cut",
-            "qual2_cut",
-            "iso1_cut",
-            "iso2_cut",
-            "dEtaMin_cut",
-            "dPhiMin_cut",
-            "dRSquaredMin_cut",
-            "dRSquaredMax_cut",
-            "invMassSqrDiv2Min_cut",
-            "invMassSqrDiv2Max_cut",
-            "transMassSqrDiv2Min_cut",
-            "transMassSqrDiv2Max_cut",
-            "os_cut",
-            "ss_cut"
-            ]
-        )
-        self._setHWConversionFunctions(
-        {
-        "pT1_cut": l1GTScales.to_hw_pT,
-        "pT2_cut": l1GTScales.to_hw_pT,
-        "minEta1_cut": l1GTScales.to_hw_eta,
-        "maxEta1_cut": l1GTScales.to_hw_eta,
-        "minEta2_cut": l1GTScales.to_hw_eta,
-        "maxEta2_cut": l1GTScales.to_hw_eta,
-        "minPhi1_cut": l1GTScales.to_hw_phi,
-        "maxPhi1_cut": l1GTScales.to_hw_phi,
-        "minPhi2_cut": l1GTScales.to_hw_phi,
-        "maxPhi2_cut": l1GTScales.to_hw_phi,
-        "minDz1_cut": l1GTScales.to_hw_dZ,
-        "maxDz1_cut": l1GTScales.to_hw_dZ,
-        "minDz2_cut": l1GTScales.to_hw_dZ,
-        "maxDz2_cut": l1GTScales.to_hw_dZ,
-        "dEtaMin_cut": l1GTScales.to_hw_eta,
-        "dEtaMax_cut": l1GTScales.to_hw_eta,
-        "dPhiMin_cut": l1GTScales.to_hw_phi,
-        "dPhiMax_cut": l1GTScales.to_hw_phi,
-        "dRSquaredMin_cut": l1GTScales.to_hw_dRSquared,
-        "dRSquaredMax_cut": l1GTScales.to_hw_dRSquared,
-        "invMassSqrDiv2Min_cut": l1GTScales.to_hw_InvMassSqrDiv2,
-        "invMassSqrDiv2Max_cut": l1GTScales.to_hw_InvMassSqrDiv2,
-        "transMassSqrDiv2Min_cut": l1GTScales.to_hw_TransMassSqrDiv2,
-        "transMassSqrDiv2Max_cut": l1GTScales.to_hw_TransMassSqrDiv2,
-        }
-        )
+        
+        self._HWConversionFunctions.update({
+            'minDEta': l1GTScales.to_hw_eta,
+            'maxDEta': l1GTScales.to_hw_eta,
+            'minDPhi': l1GTScales.to_hw_phi,
+            'maxDPhi': l1GTScales.to_hw_phi,
+            'minDR': l1GTScales.to_hw_dRSquared,
+            'maxDR': l1GTScales.to_hw_dRSquared,
+            'minInvMass': l1GTScales.to_hw_InvMassSqrDiv2,
+            'maxInvMass': l1GTScales.to_hw_InvMassSqrDiv2,
+            'minTransMass': l1GTScales.to_hw_TransMassSqrDiv2,
+            'maxTransMass': l1GTScales.to_hw_TransMassSqrDiv2,
+        })
 
+        self._cut_aliases.update({ 
+            'minDEta' : 'dEtaMin_cut',
+            'maxDEta' : 'dEtaMax_cut',
+            'minDPhi' : 'dPhiMin_cut',
+            'maxDPhi' : 'dPhiMax_cut',
+            'minDR' : 'dRSquaredMin_cut',
+            'maxDR' : 'dRSquaredMax_cut',
+            'minInvMass' : 'invMassSqrDiv2Min_cut',
+            'maxInvMass' : 'invMassSqrDiv2Max_cut',
+            'minTransMass' : 'transMassSqrDiv2Min_cut',
+            'maxTransMass' : 'transMassSqrDiv2Max_cut',
+            'os' : 'os_cut',
+            'ss' : 'ss_cut'
+        })
 
-        self._setInputTags(
-            ["col1Tag",
-             "col2Tag"]
-        )
-        self._cut_aliases = {'pT1_cut': 'pt1_cut',
-        'pT2_cut': 'pt2_cut', 
-        'invMassSqrDiv2Min_cut' : 'invMassMin_cut', 
-        'invMassSqrDiv2Max_cut' : 'invMassMax_cut',
-        'transMassSqrDiv2Min_cut' : 'transMassMin_cut', 
-        'transMassSqrDiv2Max_cut' : 'transMassMax_cut',
-        'dRSquaredMin_cut': 'dRMin_cut',
-        'dRSquaredMax_cut': 'dRMax_cut',
-        }
+    def getCollections(self, object):
+        collections = {1: object.getParameter('collection1'), 2: object.getParameter('collection2')}
+        for col in collections.values():
+            self._InputTags += [col.getParameter("tag")]
+
+        return collections
 
 
 class SingleObjCond(Condition):
     Label = "L1GTSingleObjectCond"
     Template = "single.template"
-    def __init__(self):
-        Condition.__init__(self)
-        self._setPosibleCuts(
-            ["pT_cut",
-             "minEta_cut",
-             "maxEta_cut",
-             "minPhi_cut",
-             "maxPhi_cut",
-             "minDz_cut",
-             "maxDz_cut",
-             "qual_cut"]
-        )
-        self._setHWConversionFunctions(
-        {
-        "pT_cut": l1GTScales.to_hw_pT,
-        "minEta_cut": l1GTScales.to_hw_eta,
-        "maxEta_cut": l1GTScales.to_hw_eta,
-        "minPhi_cut": l1GTScales.to_hw_phi,
-        "maxPhi_cut": l1GTScales.to_hw_phi,
-        "minDz_cut": l1GTScales.to_hw_dZ,
-        "maxDz_cut": l1GTScales.to_hw_dZ,
-        }
-        )
-        self._setInputTags(
-            ["colTag"]
-        )
-        self._cut_aliases = {'pT_cut': 'pt_cut'}
 
+    def getCollections(self, object):
+        self._InputTags += [object.getParameter("tag")]
+        return {}
 
 class DefineAlgoBits:
     def __init__(self):

@@ -54,8 +54,9 @@ class L1TSingleInOutLUT:
 
     def export(self, filename: str):
         with open(filename, "w") as file:
-            for address, value in enumerate(self.lut):
-                file.write("@{:x} {:x}\n".format(address, int(value) & ((1 << self.width_out) - 1)))
+            for value in self.lut:
+                file.write("{:X}".format(int(value) & ((1 << self.width_out) - 1)
+                                         ).rjust(math.ceil(self.width_out/4), '0') + "\n")
 
     @ staticmethod
     def optimal_scale_factor(width_in, max_width_out, unused_lsbs, lsb, operation, start_value=0):
@@ -83,7 +84,8 @@ COS_PHI_IN_WIDTH = 11  # not using 2 lsb
 COSH_ETA_IN_WIDTH = 11  # not using 2 lsb and 1 msb (splitted LUT)
 
 # Since we calculate cosh(dEta) - cos(dPhi); both must be on the same scale the difference should fit into 17 bits for the DSP
-optimal_scale_factor = math.floor((2**17 - 1) / (math.cosh((2**(COSH_ETA_IN_WIDTH + 2) - 1)*scale_parameter.eta_lsb.value()) + 1))
+optimal_scale_factor = math.floor(
+    (2**17 - 1) / (math.cosh((2**(COSH_ETA_IN_WIDTH + 2) - 1)*scale_parameter.eta_lsb.value()) + 1))
 
 COS_PHI_LUT = L1TSingleInOutLUT(
     COS_PHI_IN_WIDTH, 2, scale_parameter.phi_lsb.value(), optimal_scale_factor, math.cos)
