@@ -81,6 +81,11 @@ process.l1t_doubleTkEle11TkPho11 = cms.Path(process.doubleTkEle11TkPho11)
 process.l1t_tripleTkEle20TkPho18Jet11 = cms.Path(process.tripleTkEle20TkPho18Jet11)
 process.l1t_quadTkEle20 = cms.Path(process.quadTkEle20)
 
+process.testOr = cms.EDFilter("PathStatusFilter",
+    logicalExpression =  cms.string("l1t_singleTkEle12 or l1t_doubleTkEle11TkPho11")
+)
+
+process.l1t_testOr = cms.Path(process.testOr)
 
 # Algo bits
 from L1Trigger.Phase2L1GT.l1GTAlgoChannelConfig import generate_channel_config 
@@ -88,7 +93,7 @@ from L1Trigger.Phase2L1GT.l1GTAlgoChannelConfig import generate_channel_config
 process.BoardData = cms.EDAnalyzer("L1GTBoardWriter",
   outputFilename = cms.string("outputPattern"),
   channelConfig = generate_channel_config({
-        9 : {0: "l1t_tripleTkEle20TkPho18Jet11", 2 : "l1t_singleTkEle12", 3: "l1t_quadTkEle20", 65 : "l1t_doubleTkEle11TkPho11"}
+        9 : {0: "l1t_testOr",1: "l1t_tripleTkEle20TkPho18Jet11", 2 : "l1t_singleTkEle12", 3: "l1t_quadTkEle20", 65 : "l1t_doubleTkEle11TkPho11"}
     })
 )
 

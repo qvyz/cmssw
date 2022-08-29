@@ -33,8 +33,6 @@ class Condition:
         "GMT Tk Muon" : "GMT_TK_MUON_SLOT", 
         "GMT Topo" : "GMT_TOPO_SLOT"
         }
-
-
     def __init__(self):
         self._Scales = sca.L1GTScales()
         self._PossibleCuts = []
@@ -63,6 +61,8 @@ class Condition:
     def setName(self,name):
         self.Name = name
 
+    def setPath(self,path):
+        self.Path = path
 
     def _setInputTags(self, tags):
         self._InputTags = tags
@@ -182,3 +182,12 @@ class DefineAlgoBits:
 
     
 
+class LogicalFilter:
+    def __init__(self,expression,modulenames):
+        self.expression = expression
+        self.modulenames = modulenames
+
+    def SetAlgobit(self,algobit):
+        self.algobit = algobit
+
+    
