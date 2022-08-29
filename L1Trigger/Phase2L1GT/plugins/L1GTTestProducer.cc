@@ -41,7 +41,11 @@ private:
   void produce(edm::Event &, const edm::EventSetup &) override;
   int nextValue(int mean = 1000, bool sign = false, int max = std::numeric_limits<int>::max());
 
-  int nextPt() { return std::max<int>(0, nextValue(300, false, (1 << P2GTCandidate::hwPT_t::width) - 1) + std::normal_distribution<double>(0, 500)(randomGenerator_)); }
+  int nextPt() {
+    return std::max<int>(0,
+                         nextValue(300, false, (1 << P2GTCandidate::hwPT_t::width) - 1) +
+                             std::normal_distribution<double>(0, 500)(randomGenerator_));
+  }
   int nextEta() {
     return std::uniform_int_distribution<int>(-(1 << (P2GTCandidate::hwEta_t::width - 1)),
                                               (1 << (P2GTCandidate::hwEta_t::width - 1)) - 1)(randomGenerator_);
@@ -94,7 +98,7 @@ static const l1t::demo::BoardDataWriter::ChannelMap_t CHANNEL_MAP_VU13P{
     {{"GCT", 0}, {{6, 0}, vrange<std::size_t, 24, 30>()}},
     {{"CL2", 0}, {{6, 0}, vrange<std::size_t, 32, 38>()}},
     {{"CL2", 1}, {{6, 0}, vrange<std::size_t, 38, 44>()}},
-    {{"GMT", 0}, {{18, 0}, vrange<std::size_t, 48, 66>()}},
+    {{"GMT", 0}, {{18, 0}, {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 68, 69, 70, 71, 72, 73}}},
     {{"CL2", 2}, {{6, 0}, vrange<std::size_t, 80, 86>()}},
     {{"GTT", 2}, {{6, 0}, vrange<std::size_t, 112, 118>()}},
     {{"GTT", 3}, {{6, 0}, vrange<std::size_t, 118, 124>()}}};
@@ -236,15 +240,15 @@ void L1GTTestProducer::produce(edm::Event &event, const edm::EventSetup &setup) 
     inputObjects["GMT SaDisplacedMuons"].emplace_back(std::make_unique<l1t::L1TGT_GMT_PromptDisplacedMuon>(
         true, nextPt(), nextEta(), nextPhi(), nextValue(), nextValue(), nextValue(), nextValue()));
     inputObjects["GMT TkMuons"].emplace_back(std::make_unique<l1t::L1TGT_GMT_TrackMatchedmuon>(true,
-                                                                                            nextPt(),
-                                                                                            nextEta(),
-                                                                                            nextPhi(),
-                                                                                            nextValue(),
-                                                                                            nextValue(),
-                                                                                            nextValue(),
-                                                                                            nextValue(),
-                                                                                            nextValue(),
-                                                                                            nextValue()));
+                                                                                               nextPt(),
+                                                                                               nextEta(),
+                                                                                               nextPhi(),
+                                                                                               nextValue(),
+                                                                                               nextValue(),
+                                                                                               nextValue(),
+                                                                                               nextValue(),
+                                                                                               nextValue(),
+                                                                                               nextValue()));
     inputObjects["GMT Topo"].emplace_back(
         std::make_unique<l1t::L1TGT_GMT_TopoObject>(true, nextPt(), nextEta(), nextPhi(), nextValue(), nextValue()));
 
