@@ -767,7 +767,7 @@ process._quadTkEleTkMuPUPPIJet_30_40_25_25_er2p4 = l1tGTQuadObjectCond.clone(
     )
 )
 
-channel_conf = {}
+algobit_conf = {}
 idx = 0
 # remove '_', since it is not allowed for module names
 for filt_name in process.filters:
@@ -776,20 +776,32 @@ for filt_name in process.filters:
     new_name = filt_name.replace('_', '')
     setattr(process, new_name, getattr(process, filt_name).clone())
     delattr(process, filt_name)
-    channel_conf[idx] = 'l1t' + filt_name
+    algobit_conf[idx] = 'l1t' + filt_name
     setattr(process, 'l1t' + filt_name, cms.Path(getattr(process, new_name)))
     idx += 1
 
 # Algo bits
 from L1Trigger.Phase2L1GT.l1tGTAlgoChannelConfig import generate_channel_config
 
+if options.platform == "VU13P":
+    channel_conf = generate_channel_config({
+        0: algobit_conf,
+        24: algobit_conf,
+        32: algobit_conf,
+        48: algobit_conf
+    })
+else:
+    channel_conf = generate_channel_config({
+        0: algobit_conf,
+        28: algobit_conf,
+        46: algobit_conf
+    })
+
 
 process.BoardData = cms.EDAnalyzer("L1GTBoardWriter",
   outputFilename = cms.string("outputPattern"),
   maxLines = cms.uint32(1024),
-  channelConfig = generate_channel_config({
-        0 : channel_conf
-    })
+  channelConfig = channel_conf
 )
 
 process.l1t_BoardData = cms.EndPath(process.BoardData)
