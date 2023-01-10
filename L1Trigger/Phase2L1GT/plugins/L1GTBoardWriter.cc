@@ -111,7 +111,7 @@ void L1GTBoardWriter::analyze(const edm::Event& event, const edm::EventSetup& iS
 
   l1t::demo::EventData eventData;
   for (auto& [channel, algoBits] : algoBitMap_) {
-    std::vector<ap_uint<64>> bits(std::ceil(static_cast<float>(algoBits.back().bitPos_ + 1) / 64), 0);
+    std::vector<ap_uint<64>> bits(9, 0);
 
     for (AlgoBit& algoBit : algoBits) {
       bits[algoBit.bitPos_ / 64].set(algoBit.bitPos_ % 64, algoBit.isSet(trigResults, triggerPaths));
