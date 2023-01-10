@@ -1,3 +1,4 @@
+import FWCore.ParameterSet.VarParsing as VarParsing
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('L1Test')
@@ -10,13 +11,20 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.source = cms.Source("EmptySource")
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(72))
 
+options = VarParsing.VarParsing()
+options.register ("platform",
+                  "VU9P",
+                  VarParsing.VarParsing.multiplicity.singleton,
+                  VarParsing.VarParsing.varType.string)
+options.parseArguments()
+
 
 process.l1tGTProducer = cms.EDProducer(
     "L1GTEvaluationProducer",
     outputFilename=cms.string("inputPattern"),
     random_seed=cms.uint32(0),
     maxLines=cms.uint32(1024),
-    platform=cms.string("VU9P")
+    platform=cms.string(options.platform)
 )
 
 process.l1t_GTProducer = cms.Path(process.l1tGTProducer)
