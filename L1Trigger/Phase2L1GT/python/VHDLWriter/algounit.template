@@ -38,8 +38,7 @@ architecture rtl of algos_slr{{slrnumber}} is
   signal algo_bits_srl1_int : std_logic_vector(NUM_ALGOS_IN_SRL - 1 downto 0);
   signal algo_bits_srl2_int : std_logic_vector(NUM_ALGOS_IN_SRL - 1 downto 0);
 
-  signal delayed_valid_to_payload : std_logic_vector(ALGO_REPLICATION_IN_SRL - 1 downto 0);
-  signal delayed_valid_buffer : std_logic_vector(ALGO_LATENCY + 1 downto 0); -- One additional tick used in delay line to register objects & valid bits.
+  signal delayed_valid_buffer : std_logic_vector (ALGO_LATENCY - 1 + 2 downto 0); -- +2 for "reg_outputs" stage
   -------- SIGNALS ---------
   {% for key,value in filtermodules.items() %}
   signal {{key}} : std_logic := '0';
