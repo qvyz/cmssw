@@ -65,8 +65,8 @@ process.UpstreamEmulators = cms.Task(
     process.TTClustersFromPhase2TrackerDigis,
     process.TTStubsFromPhase2TrackerDigis,
     process.offlineBeamSpot,
-    process.TTTracksFromTrackletEmulation,
-    process.TTTracksFromExtendedTrackletEmulation,
+    process.l1tTTTracksFromTrackletEmulation,
+    process.l1tTTTracksFromExtendedTrackletEmulation,
     process.SimL1EmulatorTask
 )
  
@@ -77,34 +77,34 @@ process.pUpstreamEmulators = cms.Path(process.UpstreamEmulators)
 ############################################################
 
 # Conditions
-from L1Trigger.Phase2L1GT.L1GTSingleObjectCond_cfi import L1GTSingleObjectCond
-from L1Trigger.Phase2L1GT.L1GTDoubleObjectCond_cfi import L1GTDoubleObjectCond
-from L1Trigger.Phase2L1GT.L1GTTripleObjectCond_cfi import L1GTTripleObjectCond
-from L1Trigger.Phase2L1GT.L1GTQuadObjectCond_cfi import L1GTQuadObjectCond
+from L1Trigger.Phase2L1GT.l1tGTSingleObjectCond_cfi import l1tGTSingleObjectCond
+from L1Trigger.Phase2L1GT.l1tGTDoubleObjectCond_cfi import l1tGTDoubleObjectCond
+from L1Trigger.Phase2L1GT.l1tGTTripleObjectCond_cfi import l1tGTTripleObjectCond
+from L1Trigger.Phase2L1GT.l1tGTQuadObjectCond_cfi import l1tGTQuadObjectCond
 
 # Some dummy seeds to test tracker interface
-process.DoubleJetCondition = L1GTDoubleObjectCond.clone(
+process.DoubleJetCondition = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GTTPromptJets"),
+        tag = cms.InputTag("l1tGTProducer", "GTTPromptJets"),
         minPt = cms.double(12)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GTTDisplacedJets"),
+        tag = cms.InputTag("l1tGTProducer", "GTTDisplacedJets"),
         minPt = cms.double(10)
     )
 )
 
-process.TripleJetCondition = L1GTTripleObjectCond.clone(
+process.TripleJetCondition = l1tGTTripleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GTTPromptJets"),
+        tag = cms.InputTag("l1tGTProducer", "GTTPromptJets"),
         minPt = cms.double(50)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GTTPromptJets"),
+        tag = cms.InputTag("l1tGTProducer", "GTTPromptJets"),
         minPt = cms.double(40)
     ),
     collection3 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GTTPromptJets"),
+        tag = cms.InputTag("l1tGTProducer", "GTTPromptJets"),
         minPt = cms.double(25)
     )
 )
@@ -112,15 +112,15 @@ process.TripleJetCondition = L1GTTripleObjectCond.clone(
 process.pDoubleJetCondition = cms.Path(process.DoubleJetCondition)
 process.pTripleJetCondition = cms.Path(process.TripleJetCondition)
 
-process.tkElePuppiJet = L1GTDoubleObjectCond.clone(
+process.tkElePuppiJet = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "CL2Electrons"),
+        tag = cms.InputTag("l1tGTProducer", "CL2Electrons"),
         minPt = cms.double(28),
         minEta = cms.double(-2.1),
         maxEta = cms.double(2.1)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "CL2Jets"),
+        tag = cms.InputTag("l1tGTProducer", "CL2Jets"),
         minPt = cms.double(40),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
@@ -132,23 +132,23 @@ process.pTkElePuppiJet = cms.Path(process.tkElePuppiJet)
 
 # Some seeds from https://twiki.cern.ch/twiki/pub/CMS/PhaseIIL1TriggerMenuTools/L1Menu_emulators12_3_x_060522.pdf
 
-process.SingleTkMuon = L1GTSingleObjectCond.clone(
-    tag =  cms.InputTag("L1GTProducer", "GMTTkMuons"),
+process.SingleTkMuon = l1tGTSingleObjectCond.clone(
+    tag =  cms.InputTag("l1tGTProducer", "GMTTkMuons"),
     minPt = cms.double(22),
     minEta = cms.double(-2.4),
     maxEta = cms.double(2.4)
 )
 process.pSingleTkMuon = cms.Path(process.SingleTkMuon)
 
-process.DoubleTkMuon = L1GTDoubleObjectCond.clone(
+process.DoubleTkMuon = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(15),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(7),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
@@ -157,21 +157,21 @@ process.DoubleTkMuon = L1GTDoubleObjectCond.clone(
 )
 process.pDoubleTkMuon = cms.Path(process.DoubleTkMuon)
 
-process.TripleTkMuon = L1GTTripleObjectCond.clone(
+process.TripleTkMuon = l1tGTTripleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(5),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(3),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection3 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(3),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
@@ -190,23 +190,23 @@ process.pTripleTkMuon = cms.Path(process.TripleTkMuon)
 
 # TODO Some other missing seeds
 
-process.HadSinglePuppiJet = L1GTSingleObjectCond.clone(
-    tag =  cms.InputTag("L1GTProducer", "CL2Jets"),
+process.HadSinglePuppiJet = l1tGTSingleObjectCond.clone(
+    tag =  cms.InputTag("l1tGTProducer", "CL2Jets"),
     minPt = cms.double(230),
     minEta = cms.double(-2.4),
     maxEta = cms.double(2.4)
 )
 process.pHadSinglePuppiJet = cms.Path(process.HadSinglePuppiJet)
 
-process.HadDoublePuppiJet = L1GTDoubleObjectCond.clone(
+process.HadDoublePuppiJet = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "CL2Jets"),
+        tag = cms.InputTag("l1tGTProducer", "CL2Jets"),
         minPt = cms.double(112),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "CL2Jets"),
+        tag = cms.InputTag("l1tGTProducer", "CL2Jets"),
         minPt = cms.double(112),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
@@ -219,21 +219,21 @@ process.pHadDoublePuppiJet = cms.Path(process.HadDoublePuppiJet)
 
 # ET miss seed
 
-process.PuppiMET = L1GTSingleObjectCond.clone(
-    tag = cms.InputTag("L1GTProducer", "CL2Jets"),
+process.PuppiMET = l1tGTSingleObjectCond.clone(
+    tag = cms.InputTag("l1tGTProducer", "CL2Jets"),
     minPt = cms.double(200)
 )
 process.pPuppiMET = cms.Path(process.PuppiMET)
 
-process.VBFDoublePuppiJet = L1GTDoubleObjectCond.clone(
+process.VBFDoublePuppiJet = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "CL2Jets"),
+        tag = cms.InputTag("l1tGTProducer", "CL2Jets"),
         minPt = cms.double(160),
         minEta = cms.double(-5),
         maxEta = cms.double(5)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "CL2Jets"),
+        tag = cms.InputTag("l1tGTProducer", "CL2Jets"),
         minPt = cms.double(35),
         minEta = cms.double(-5),
         maxEta = cms.double(5)
@@ -244,15 +244,15 @@ process.pVBFDoublePuppiJet = cms.Path(process.VBFDoublePuppiJet)
 
 
 # B-physics seeds from https://twiki.cern.ch/twiki/pub/CMS/PhaseIIL1TriggerMenuTools/L1Menu_emulators12_3_x_060522.pdf
-process.doubleTkMuon1 = L1GTDoubleObjectCond.clone(
+process.doubleTkMuon1 = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(2),
         minEta = cms.double(-1.5),
         maxEta = cms.double(1.5)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(2),
         minEta = cms.double(-1.5),
         maxEta = cms.double(1.5)
@@ -263,15 +263,15 @@ process.doubleTkMuon1 = L1GTDoubleObjectCond.clone(
 )
 process.pDoubleTkMuon1 = cms.Path(process.doubleTkMuon1)
 
-process.doubleTkMuon2 = L1GTDoubleObjectCond.clone(
+process.doubleTkMuon2 = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(4),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(4),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
@@ -282,15 +282,15 @@ process.doubleTkMuon2 = L1GTDoubleObjectCond.clone(
 )
 process.pDoubleTkMuon2 = cms.Path(process.doubleTkMuon2)
 
-process.doubleTkMuon3 = L1GTDoubleObjectCond.clone(
+process.doubleTkMuon3 = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(4.5),
         minEta = cms.double(-2.0),
         maxEta = cms.double(2.0)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(4.5),
         minEta = cms.double(-2.0),
         maxEta = cms.double(2.0)
@@ -303,21 +303,21 @@ process.doubleTkMuon3 = L1GTDoubleObjectCond.clone(
 process.pDoubleTkMuon3 = cms.Path(process.doubleTkMuon3)
 
 
-process.tripleTkMuon1 = L1GTTripleObjectCond.clone(
+process.tripleTkMuon1 = l1tGTTripleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(5),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(3),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection3 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(2),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
@@ -338,21 +338,21 @@ process.tripleTkMuon1 = L1GTTripleObjectCond.clone(
 process.pTripleTkMuon1 = cms.Path(process.tripleTkMuon1)
 
 
-process.tripleTkMuon2 = L1GTTripleObjectCond.clone(
+process.tripleTkMuon2 = l1tGTTripleObjectCond.clone(
     collection1 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(5),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection2 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(3),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
     ),
     collection3 = cms.PSet(
-        tag = cms.InputTag("L1GTProducer", "GMTTkMuons"),
+        tag = cms.InputTag("l1tGTProducer", "GMTTkMuons"),
         minPt = cms.double(2),
         minEta = cms.double(-2.4),
         maxEta = cms.double(2.4)
@@ -379,7 +379,7 @@ process.pTripleTkMuon2 = cms.Path(process.tripleTkMuon2)
 
 process.out = cms.OutputModule("PoolOutputModule",
 outputCommands = cms.untracked.vstring('drop *',
-        'keep *_L1GTProducer_*_L1TEmulation',
+        'keep *_l1tGTProducer_*_L1TEmulation',
         'keep l1tP2GTCandidatesl1tP2GTCandidatel1tP2GTCandidatesl1tP2GTCandidateedmrefhelperFindUsingAdvanceedmRefs_*_*_L1TEmulation',
         'keep *_TriggerResults_*_L1TEmulation'
     ),

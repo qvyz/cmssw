@@ -1,16 +1,16 @@
 """
 This computes the most optimal COS_PHI_LUT and COSH_ETA_LUT. Call
-:func:`~l1GTSingleInOutLUT.L1TSingleInOutLUT.export` to export the
+:func:`~l1tGTSingleInOutLUT.SingleInOutLUT.export` to export the
 generated LUT.
 """
 
 import FWCore.ParameterSet.Config as cms
-from L1Trigger.Phase2L1GT.L1GTScales import scale_parameter
+from L1Trigger.Phase2L1GT.l1tGTScales import scale_parameter
 from statistics import mean, median, stdev
 import math
 
 
-class L1TSingleInOutLUT:
+class SingleInOutLUT:
 
     def __init__(self, width_in, unused_lsbs, lsb, output_scale_factor, operation, start_value=0, label=""):
         self.debug_txt = ""
@@ -89,16 +89,16 @@ COSH_ETA_IN_WIDTH = 11  # not using 2 lsb and 1 msb (splitted LUT)
 optimal_scale_factor = math.floor(
     (2**17 - 1) / (math.cosh((2**(COSH_ETA_IN_WIDTH + 2) - 1)*scale_parameter.eta_lsb.value()) + 1))
 
-COS_PHI_LUT = L1TSingleInOutLUT(
+COS_PHI_LUT = SingleInOutLUT(
     COS_PHI_IN_WIDTH, 2, scale_parameter.phi_lsb.value(), optimal_scale_factor, math.cos)
 
 # eta in [0, 2pi)
-COSH_ETA_LUT = L1TSingleInOutLUT(
+COSH_ETA_LUT = SingleInOutLUT(
     COSH_ETA_IN_WIDTH, 2, scale_parameter.eta_lsb.value(), optimal_scale_factor, math.cosh, 0, "[0, 2pi)")
 
 # eta in [2pi, 4pi)
-COSH_ETA_LUT_2 = L1TSingleInOutLUT(
+COSH_ETA_LUT_2 = SingleInOutLUT(
     COSH_ETA_IN_WIDTH, 2, scale_parameter.eta_lsb.value(),
-    L1TSingleInOutLUT.optimal_scale_factor(
+    SingleInOutLUT.optimal_scale_factor(
         COSH_ETA_IN_WIDTH, 17, 2, scale_parameter.eta_lsb.value(), math.cosh, 2**13 * scale_parameter.eta_lsb.value()),
     math.cosh, 2**13 * scale_parameter.eta_lsb.value(), "[2pi, 4pi)")

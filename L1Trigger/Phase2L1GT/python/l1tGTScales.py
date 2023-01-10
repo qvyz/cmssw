@@ -19,4 +19,4 @@ scale_parameter = cms.PSet(
     neg_chg=cms.int32(0)
 )
 
-l1GTScales = CppScales(*[param.value() for param in scale_parameter.parameters_().values()])
+l1tGTScales = CppScales(*[param.value() for param in scale_parameter.parameters_().values()])

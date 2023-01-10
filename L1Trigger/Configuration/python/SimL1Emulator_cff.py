@@ -219,8 +219,8 @@ from L1Trigger.Phase2L1ParticleFlow.L1NNTauProducer_cff import *
 _phase2_siml1emulator.add(l1tNNTauProducerPuppi)
 
 # GT Producer
-from L1Trigger.Phase2L1GT.L1GTProducer_cff import *
-_phase2_siml1emulator.add(L1GTProducer)
+from L1Trigger.Phase2L1GT.l1tGTProducer_cff import *
+_phase2_siml1emulator.add(l1tGTProducer)
 
 # --> add modules
 from Configuration.Eras.Modifier_phase2_trigger_cff import phase2_trigger

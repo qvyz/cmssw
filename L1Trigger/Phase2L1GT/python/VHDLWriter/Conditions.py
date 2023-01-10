@@ -2,7 +2,7 @@ from ast import Mod
 from modulefinder import Module
 from queue import Empty
 from turtle import update
-from L1Trigger.Phase2L1GT.L1GTScales import l1GTScales
+from L1Trigger.Phase2L1GT.l1tGTScales import l1tGTScales
 
 class Condition:
     """
@@ -56,13 +56,13 @@ class Condition:
 
         }
         self._HWConversionFunctions = {
-            'minPt': l1GTScales.to_hw_pT,
-             'minEta': l1GTScales.to_hw_eta,
-             'maxEta': l1GTScales.to_hw_eta,
-             'minPhi': l1GTScales.to_hw_phi,
-             'maxPhi': l1GTScales.to_hw_phi,
-            'minZ0': l1GTScales.to_hw_z0,
-            'maxZ0': l1GTScales.to_hw_z0,
+            'minPt': l1tGTScales.to_hw_pT,
+             'minEta': l1tGTScales.to_hw_eta,
+             'maxEta': l1tGTScales.to_hw_eta,
+             'minPhi': l1tGTScales.to_hw_phi,
+             'maxPhi': l1tGTScales.to_hw_phi,
+            'minZ0': l1tGTScales.to_hw_z0,
+            'maxZ0': l1tGTScales.to_hw_z0,
         }
 
         self._cut_aliases = {
@@ -146,18 +146,18 @@ class DoubleObjCond(Condition):
         Condition.__init__(self)
         
         self._HWConversionFunctions.update({
-            'minDEta': l1GTScales.to_hw_eta,
-            'maxDEta': l1GTScales.to_hw_eta,
-            'minDPhi': l1GTScales.to_hw_phi,
-            'maxDPhi': l1GTScales.to_hw_phi,
-            'minDR': l1GTScales.to_hw_dRSquared,
-            'maxDR': l1GTScales.to_hw_dRSquared,
-            'minInvMass': l1GTScales.to_hw_InvMassSqrDiv2,
-            'maxInvMass': l1GTScales.to_hw_InvMassSqrDiv2,
-            'minTransMass': l1GTScales.to_hw_TransMassSqrDiv2,
-            'maxTransMass': l1GTScales.to_hw_TransMassSqrDiv2,
-            'minCombPt' :   l1GTScales.to_hw_PtSquared,
-            'maxCombPt' :   l1GTScales.to_hw_PtSquared
+            'minDEta': l1tGTScales.to_hw_eta,
+            'maxDEta': l1tGTScales.to_hw_eta,
+            'minDPhi': l1tGTScales.to_hw_phi,
+            'maxDPhi': l1tGTScales.to_hw_phi,
+            'minDR': l1tGTScales.to_hw_dRSquared,
+            'maxDR': l1tGTScales.to_hw_dRSquared,
+            'minInvMass': l1tGTScales.to_hw_InvMassSqrDiv2,
+            'maxInvMass': l1tGTScales.to_hw_InvMassSqrDiv2,
+            'minTransMass': l1tGTScales.to_hw_TransMassSqrDiv2,
+            'maxTransMass': l1tGTScales.to_hw_TransMassSqrDiv2,
+            'minCombPt' :   l1tGTScales.to_hw_PtSquared,
+            'maxCombPt' :   l1tGTScales.to_hw_PtSquared
         })
 
         self._cut_aliases.update({ 
@@ -438,16 +438,16 @@ class TripleObjCond(Condition):
         Condition.__init__(self)
         
         self._HWConversionFunctions.update({
-            'minDEta': l1GTScales.to_hw_eta,
-            'maxDEta': l1GTScales.to_hw_eta,
-            'minDPhi': l1GTScales.to_hw_phi,
-            'maxDPhi': l1GTScales.to_hw_phi,
-            'minDR': l1GTScales.to_hw_dRSquared,
-            'maxDR': l1GTScales.to_hw_dRSquared,
-            'minInvMass': l1GTScales.to_hw_InvMassSqrDiv2,
-            'maxInvMass': l1GTScales.to_hw_InvMassSqrDiv2,
-            'minTransMass': l1GTScales.to_hw_TransMassSqrDiv2,
-            'maxTransMass': l1GTScales.to_hw_TransMassSqrDiv2,
+            'minDEta': l1tGTScales.to_hw_eta,
+            'maxDEta': l1tGTScales.to_hw_eta,
+            'minDPhi': l1tGTScales.to_hw_phi,
+            'maxDPhi': l1tGTScales.to_hw_phi,
+            'minDR': l1tGTScales.to_hw_dRSquared,
+            'maxDR': l1tGTScales.to_hw_dRSquared,
+            'minInvMass': l1tGTScales.to_hw_InvMassSqrDiv2,
+            'maxInvMass': l1tGTScales.to_hw_InvMassSqrDiv2,
+            'minTransMass': l1tGTScales.to_hw_TransMassSqrDiv2,
+            'maxTransMass': l1tGTScales.to_hw_TransMassSqrDiv2,
             'os'          : self.booltostring,
             'ss'          : self.booltostring
         })
