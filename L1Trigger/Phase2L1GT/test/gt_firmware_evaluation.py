@@ -737,7 +737,15 @@ process._quadTkMuTkEle_5_5_5_7_er3p4_SS = l1tGTQuadObjectCond.clone(
         minEta=cms.double(-3.4),
         maxEta=cms.double(3.4)
     ),
-    ss=cms.bool(True)
+    delta12=cms.PSet(
+        ss=cms.bool(True)
+    ),
+    delta13=cms.PSet(
+        ss=cms.bool(True)
+    ),
+    delta14=cms.PSet(
+        ss=cms.bool(True)
+    )
 )
 
 process._quadTkEleTkMuPUPPIJet_30_40_25_25_er2p4 = l1tGTQuadObjectCond.clone(

@@ -11,6 +11,7 @@
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 #include "L1GTSingleCollectionCut.h"
+#include "L1GTDeltaCut.h"
 
 #include <cinttypes>
 #include <memory>
@@ -30,7 +31,6 @@ public:
 
 private:
   bool filter(edm::Event&, edm::EventSetup const&) override;
-  bool checkObjects(const P2GTCandidate&, const P2GTCandidate&, const P2GTCandidate&, const P2GTCandidate&) const;
 
   const L1GTScales scales_;
 
@@ -39,8 +39,15 @@ private:
   const L1GTSingleCollectionCut collection3Cuts_;
   const L1GTSingleCollectionCut collection4Cuts_;
 
-  const bool os_;  // Opposite sign
-  const bool ss_;  // Same sign
+  const bool enable_sanity_checks_;
+  const bool inv_mass_checks_;
+
+  const L1GTDeltaCut delta12Cuts_;
+  const L1GTDeltaCut delta13Cuts_;
+  const L1GTDeltaCut delta23Cuts_;
+  const L1GTDeltaCut delta14Cuts_;
+  const L1GTDeltaCut delta24Cuts_;
+  const L1GTDeltaCut delta34Cuts_;
 };
 
 L1GTQuadObjectCond::L1GTQuadObjectCond(const edm::ParameterSet& config)
@@ -49,8 +56,38 @@ L1GTQuadObjectCond::L1GTQuadObjectCond(const edm::ParameterSet& config)
       collection2Cuts_(config.getParameter<edm::ParameterSet>("collection2"), scales_),
       collection3Cuts_(config.getParameter<edm::ParameterSet>("collection3"), scales_),
       collection4Cuts_(config.getParameter<edm::ParameterSet>("collection4"), scales_),
-      os_(config.exists("os") ? config.getParameter<bool>("os") : false),
-      ss_(config.exists("ss") ? config.getParameter<bool>("ss") : false) {
+      enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
+      inv_mass_checks_(config.getUntrackedParameter<bool>("inv_mass_checks")),
+      delta12Cuts_(config.exists("delta12") ? config.getParameter<edm::ParameterSet>("delta12") : edm::ParameterSet(),
+                   config,
+                   scales_,
+                   enable_sanity_checks_,
+                   inv_mass_checks_),
+      delta13Cuts_(config.exists("delta13") ? config.getParameter<edm::ParameterSet>("delta13") : edm::ParameterSet(),
+                   config,
+                   scales_,
+                   enable_sanity_checks_,
+                   inv_mass_checks_),
+      delta23Cuts_(config.exists("delta23") ? config.getParameter<edm::ParameterSet>("delta23") : edm::ParameterSet(),
+                   config,
+                   scales_,
+                   enable_sanity_checks_,
+                   inv_mass_checks_),
+      delta14Cuts_(config.exists("delta14") ? config.getParameter<edm::ParameterSet>("delta14") : edm::ParameterSet(),
+                   config,
+                   scales_,
+                   enable_sanity_checks_,
+                   inv_mass_checks_),
+      delta24Cuts_(config.exists("delta24") ? config.getParameter<edm::ParameterSet>("delta24") : edm::ParameterSet(),
+                   config,
+                   scales_,
+                   enable_sanity_checks_,
+                   inv_mass_checks_),
+      delta34Cuts_(config.exists("delta34") ? config.getParameter<edm::ParameterSet>("delta34") : edm::ParameterSet(),
+                   config,
+                   scales_,
+                   enable_sanity_checks_,
+                   inv_mass_checks_) {
   consumes<P2GTCandidateCollection>(collection1Cuts_.tag());
   produces<P2GTCandidateVectorRef>(collection1Cuts_.tag().instance());
 
@@ -90,12 +127,38 @@ void L1GTQuadObjectCond::fillDescriptions(edm::ConfigurationDescriptions& descri
   L1GTSingleCollectionCut::fillDescriptions(collection4Desc);
   desc.add<edm::ParameterSetDescription>("collection4", collection4Desc);
 
-  desc.addOptional<bool>("os", false);
-  desc.addOptional<bool>("ss", false);
-
   edm::ParameterSetDescription scalesDesc;
   L1GTScales::fillDescriptions(scalesDesc);
   desc.add<edm::ParameterSetDescription>("scales", scalesDesc);
+
+  desc.addUntracked<bool>("sanity_checks");
+  desc.addUntracked<bool>("inv_mass_checks");
+
+  edm::ParameterSetDescription delta12Desc;
+  L1GTDeltaCut::fillDescriptions(delta12Desc);
+  desc.add<edm::ParameterSetDescription>("delta12", delta12Desc);
+
+  edm::ParameterSetDescription delta13Desc;
+  L1GTDeltaCut::fillDescriptions(delta13Desc);
+  desc.add<edm::ParameterSetDescription>("delta13", delta13Desc);
+
+  edm::ParameterSetDescription delta23Desc;
+  L1GTDeltaCut::fillDescriptions(delta23Desc);
+  desc.add<edm::ParameterSetDescription>("delta23", delta23Desc);
+
+  edm::ParameterSetDescription delta14Desc;
+  L1GTDeltaCut::fillDescriptions(delta14Desc);
+  desc.add<edm::ParameterSetDescription>("delta14", delta14Desc);
+
+  edm::ParameterSetDescription delta24Desc;
+  L1GTDeltaCut::fillDescriptions(delta24Desc);
+  desc.add<edm::ParameterSetDescription>("delta24", delta24Desc);
+
+  edm::ParameterSetDescription delta34Desc;
+  L1GTDeltaCut::fillDescriptions(delta34Desc);
+  desc.add<edm::ParameterSetDescription>("delta34", delta34Desc);
+
+  L1GTDeltaCut::fillLUTDescriptions(desc);
 
   descriptions.addWithDefaultLabel(desc);
 }
@@ -116,6 +179,8 @@ bool L1GTQuadObjectCond::filter(edm::Event& event, const edm::EventSetup& setup)
   std::set<std::size_t> triggeredIdcs2;
   std::set<std::size_t> triggeredIdcs3;
   std::set<std::size_t> triggeredIdcs4;
+
+  InvariantMassErrorCollection massErrors;
 
   for (std::size_t idx1 = 0; idx1 < col1->size(); ++idx1) {
     for (std::size_t idx2 = 0; idx2 < col2->size(); ++idx2) {
@@ -146,7 +211,17 @@ bool L1GTQuadObjectCond::filter(edm::Event& event, const edm::EventSetup& setup)
             continue;
           }
 
-          bool pass{checkObjects(col1->at(idx1), col2->at(idx2), col3->at(idx3), col4->at(idx4))};
+          bool pass = true;
+          pass &= collection1Cuts_.checkObject(col1->at(idx1));
+          pass &= collection2Cuts_.checkObject(col2->at(idx2));
+          pass &= collection3Cuts_.checkObject(col3->at(idx3));
+          pass &= collection4Cuts_.checkObject(col4->at(idx4));
+          pass &= delta12Cuts_.checkObjects(col1->at(idx1), col2->at(idx2), massErrors);
+          pass &= delta13Cuts_.checkObjects(col1->at(idx1), col3->at(idx3), massErrors);
+          pass &= delta23Cuts_.checkObjects(col2->at(idx2), col3->at(idx3), massErrors);
+          pass &= delta14Cuts_.checkObjects(col1->at(idx1), col4->at(idx4), massErrors);
+          pass &= delta24Cuts_.checkObjects(col2->at(idx2), col4->at(idx4), massErrors);
+          pass &= delta34Cuts_.checkObjects(col3->at(idx3), col4->at(idx4), massErrors);
           condition_result |= pass;
 
           if (pass) {
@@ -218,29 +293,11 @@ bool L1GTQuadObjectCond::filter(edm::Event& event, const edm::EventSetup& setup)
     }
   }
 
+  if (inv_mass_checks_) {
+    event.put(std::move(std::make_unique<InvariantMassErrorCollection>(std::move(massErrors))), "");
+  }
+
   return condition_result;
-}
-
-bool L1GTQuadObjectCond::checkObjects(const P2GTCandidate& obj1,
-                                      const P2GTCandidate& obj2,
-                                      const P2GTCandidate& obj3,
-                                      const P2GTCandidate& obj4) const {
-  bool res{true};
-
-  res &= collection1Cuts_.checkObject(obj1);
-  res &= collection2Cuts_.checkObject(obj2);
-  res &= collection3Cuts_.checkObject(obj3);
-  res &= collection4Cuts_.checkObject(obj4);
-
-  res &= ss_ ? (obj1.hwCharge() == obj2.hwCharge() && obj1.hwCharge() == obj3.hwCharge() &&
-                obj1.hwCharge() == obj4.hwCharge())
-             : true;
-
-  res &= os_ ? !(obj1.hwCharge() == obj2.hwCharge() && obj1.hwCharge() == obj3.hwCharge() &&
-                 obj1.hwCharge() == obj4.hwCharge())
-             : true;
-
-  return res;
 }
 
 DEFINE_FWK_MODULE(L1GTQuadObjectCond);
