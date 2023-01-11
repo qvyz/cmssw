@@ -106,7 +106,9 @@ static const l1t::demo::BoardDataWriter::ChannelMap_t CHANNEL_MAP_VU13P{
 L1GTEvaluationProducer::L1GTEvaluationProducer(const edm::ParameterSet &config)
     : randomGenerator_(config.exists("random_seed") ? config.getParameter<unsigned int>("random_seed")
                                                     : std::random_device()()),
-      boardDataWriter_(l1t::demo::FileFormat::EMP,
+      boardDataWriter_(config.exists("patternFormat")
+                           ? l1t::demo::parseFileFormat(config.getParameter<std::string>("patternFormat"))
+                           : l1t::demo::FileFormat::EMPv2,
                        config.getParameter<std::string>("outputFilename"),
                        9,
                        1,
@@ -145,6 +147,7 @@ void L1GTEvaluationProducer::fillDescriptions(edm::ConfigurationDescriptions &de
   desc.addOptional<unsigned int>("random_seed");
   desc.addOptional<unsigned int>("maxLines", 1024);
   desc.addOptional<std::string>("outputFilename");
+  desc.addOptional<std::string>("patternFormat");
   desc.ifValue(edm::ParameterDescription<std::string>("platform", "VU9P", true),
                edm::allowedValues<std::string>("VU9P", "VU13P"));
   description.addWithDefaultLabel(desc);
@@ -240,15 +243,15 @@ void L1GTEvaluationProducer::produce(edm::Event &event, const edm::EventSetup &s
     inputObjects["GMTSaDisplacedMuons"].emplace_back(std::make_unique<l1t::L1TGT_GMT_PromptDisplacedMuon>(
         true, nextPt(), nextEta(), nextPhi(), nextValue(), nextValue(), nextValue(), nextValue()));
     inputObjects["GMTTkMuons"].emplace_back(std::make_unique<l1t::L1TGT_GMT_TrackMatchedmuon>(true,
-                                                                                               nextPt(),
-                                                                                               nextEta(),
-                                                                                               nextPhi(),
-                                                                                               nextValue(),
-                                                                                               nextValue(),
-                                                                                               nextValue(),
-                                                                                               nextValue(),
-                                                                                               nextValue(),
-                                                                                               nextValue()));
+                                                                                              nextPt(),
+                                                                                              nextEta(),
+                                                                                              nextPhi(),
+                                                                                              nextValue(),
+                                                                                              nextValue(),
+                                                                                              nextValue(),
+                                                                                              nextValue(),
+                                                                                              nextValue(),
+                                                                                              nextValue()));
     inputObjects["GMTTopo"].emplace_back(
         std::make_unique<l1t::L1TGT_GMT_TopoObject>(true, nextPt(), nextEta(), nextPhi(), nextValue(), nextValue()));
 
@@ -257,8 +260,7 @@ void L1GTEvaluationProducer::produce(edm::Event &event, const edm::EventSetup &s
         std::make_unique<l1t::L1TGT_GCT_EgammaNonIsolated6p6>(true, nextPt(), nextEta(), nextPhi()));
     inputObjects["GCTIsoEg"].emplace_back(
         std::make_unique<l1t::L1TGT_GCT_EgammaIsolated6p6>(true, nextPt(), nextEta(), nextPhi()));
-    inputObjects["GCTJets"].emplace_back(
-        std::make_unique<l1t::L1TGT_GCT_jet6p6>(true, nextPt(), nextEta(), nextPhi()));
+    inputObjects["GCTJets"].emplace_back(std::make_unique<l1t::L1TGT_GCT_jet6p6>(true, nextPt(), nextEta(), nextPhi()));
     inputObjects["GCTTaus"].emplace_back(
         std::make_unique<l1t::L1TGT_GCT_tau6p6>(true, nextPt(), nextEta(), nextPhi(), nextValue()));
 

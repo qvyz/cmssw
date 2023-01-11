@@ -76,7 +76,9 @@ static l1t::demo::BoardDataWriter::ChannelMap_t generateChannelMap(const edm::Pa
 }
 
 L1GTBoardWriter::L1GTBoardWriter(const edm::ParameterSet& config)
-    : boardDataWriter_(l1t::demo::FileFormat::EMP,
+    : boardDataWriter_(config.exists("patternFormat")
+                           ? l1t::demo::parseFileFormat(config.getParameter<std::string>("patternFormat"))
+                           : l1t::demo::FileFormat::EMPv2,
                        config.getParameter<std::string>("outputFilename"),
                        9,
                        1,
@@ -139,6 +141,7 @@ void L1GTBoardWriter::fillDescriptions(edm::ConfigurationDescriptions& descripti
   desc.addVPSet("channelConfig", algosDesc);
   desc.addOptional<unsigned int>("maxLines", 1024);
   desc.addOptional<std::string>("processName", "");
+  desc.addOptional<std::string>("patternFormat");
 
   descriptions.addDefault(desc);
 }
