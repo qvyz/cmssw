@@ -46,6 +46,9 @@ l1tGTDoubleObjectCond.inv_mass_checks = cms.untracked.bool(True)
 l1tGTTripleObjectCond.sanity_checks = cms.untracked.bool(True)
 l1tGTTripleObjectCond.inv_mass_checks = cms.untracked.bool(True)
 
+l1tGTQuadObjectCond.sanity_checks = cms.untracked.bool(True)
+l1tGTQuadObjectCond.inv_mass_checks = cms.untracked.bool(True)
+
 # Conditions
 
 process._singleTkMu_14_er2p3 = l1tGTSingleObjectCond.clone(

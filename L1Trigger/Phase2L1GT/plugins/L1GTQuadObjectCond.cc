@@ -106,6 +106,10 @@ L1GTQuadObjectCond::L1GTQuadObjectCond(const edm::ParameterSet& config)
     consumes<P2GTCandidateCollection>(collection4Cuts_.tag());
     produces<P2GTCandidateVectorRef>(collection4Cuts_.tag().instance());
   }
+
+  if (inv_mass_checks_) {
+    produces<InvariantMassErrorCollection>();
+  }
 }
 
 void L1GTQuadObjectCond::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
