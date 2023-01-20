@@ -11,7 +11,6 @@
 #include "DataFormats/L1TCorrelator/interface/TkElectron.h"
 
 #include "DataFormats/L1TParticleFlow/interface/gt_datatypes.h"
-#include "DataFormats/L1TParticleFlow/interface/egamma.h"
 
 #include "DataFormats/L1Trigger/interface/EtSum.h"
 
@@ -61,7 +60,7 @@ namespace l1t {
   }
 
   P2GTCandidate::P2GTCandidate(const TkEm& obj) {
-    l1gt::Photon gtPhoton = l1ct::EGIsoObj::unpack(const_cast<TkEm&>(obj).egBinaryWord<96>()).toGT();
+    l1gt::Photon gtPhoton = l1gt::Photon::unpack_ap(const_cast<TkEm&>(obj).egBinaryWord<96>());
     hwPT_ = gtPhoton.v3.pt.V.to_int();
     hwPhi_ = gtPhoton.v3.phi.V.to_int();
     hwEta_ = gtPhoton.v3.eta.V.to_int();
@@ -70,8 +69,7 @@ namespace l1t {
   }
 
   P2GTCandidate::P2GTCandidate(const TkElectron& obj) {
-    l1gt::Electron gtElectron{
-        true, {obj.pt(), obj.phi() / l1gt::Scales::ETAPHI_LSB, obj.eta() / l1gt::Scales::ETAPHI_LSB}, 0, 0, 0, 0};
+    l1gt::Electron gtElectron = l1gt::Electron::unpack_ap(const_cast<TkElectron&>(obj).egBinaryWord<96>());
     hwPT_ = gtElectron.v3.pt.V.to_int();
     hwPhi_ = gtElectron.v3.phi.V.to_int();
     hwEta_ = gtElectron.v3.eta.V.to_int();
