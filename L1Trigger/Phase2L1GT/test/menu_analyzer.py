@@ -26,7 +26,6 @@ std::vector<std::string> getPathNames(edm::ParameterSet& pset){
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 std::vector<std::string> getFiltModules(edm::ParameterSet& pset,const std::string& pathName){
    std::vector<std::string> filtMods;
-   const auto& pathPSet = pset.getParameterSet("@trigger_paths");
    if(pset.existsAs<std::vector<std::string> >(pathName,true)){
      const auto& modules = pset.getParameter<std::vector<std::string>>(pathName);
      for(const auto& mod : modules){

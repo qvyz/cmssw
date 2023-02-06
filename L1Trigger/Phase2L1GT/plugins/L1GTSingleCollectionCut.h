@@ -9,6 +9,7 @@
 
 #include "L1GTOptionalParam.h"
 
+#include <algorithm>
 #include <optional>
 
 namespace l1t {
@@ -33,8 +34,10 @@ namespace l1t {
               "maxZ0", config, std::bind(&L1GTScales::to_hw_z0, scales, std::placeholders::_1))),
           minScalarSumPt_(getOptionalParam<int, double>(
               "minScalarSumPt", config, std::bind(&L1GTScales::to_hw_pT, scales, std::placeholders::_1))),
-          qual_(getOptionalParam<unsigned int>("qual", config)),
-          iso_(getOptionalParam<unsigned int>("iso", config)) {}
+          qual_(config.exists("qual") ? config.getParameter<std::vector<unsigned int>>("qual")
+                                      : std::vector<unsigned int>()),
+          iso_(config.exists("iso") ? config.getParameter<std::vector<unsigned int>>("iso")
+                                    : std::vector<unsigned int>()) {}
 
     bool checkObject(const P2GTCandidate& obj) const {
       bool result = true;
@@ -52,8 +55,8 @@ namespace l1t {
 
       result &= minScalarSumPt_ ? (obj.hwSca_sum() > minScalarSumPt_) : true;
 
-      result &= qual_ ? (obj.hwQual() == qual_) : true;
-      result &= iso_ ? (obj.hwIso() == iso_) : true;
+      result &= qual_.empty() ? true : std::find(qual_.begin(), qual_.end(), obj.hwQual().to_uint()) != qual_.end();
+      result &= iso_.empty() ? true : std::find(iso_.begin(), iso_.end(), obj.hwIso().to_uint()) != iso_.end();
 
       return result;
     }
@@ -68,8 +71,8 @@ namespace l1t {
       desc.addOptional<double>("minZ0");
       desc.addOptional<double>("maxZ0");
       desc.addOptional<double>("minScalarSumPt");
-      desc.addOptional<unsigned int>("qual");
-      desc.addOptional<unsigned int>("iso");
+      desc.addOptional<std::vector<unsigned int>>("qual");
+      desc.addOptional<std::vector<unsigned int>>("iso");
     }
 
     const edm::InputTag& tag() const { return tag_; }
@@ -84,8 +87,8 @@ namespace l1t {
     const std::optional<int> minZ0_;
     const std::optional<int> maxZ0_;
     const std::optional<int> minScalarSumPt_;
-    const std::optional<int> qual_;
-    const std::optional<int> iso_;
+    const std::vector<unsigned int> qual_;
+    const std::vector<unsigned int> iso_;
   };
 
 }  // namespace l1t
