@@ -1,5 +1,5 @@
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/stream/EDFilter.h"
+#include "FWCore/Framework/interface/global/EDFilter.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/L1Trigger/interface/P2GTCandidate.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
@@ -27,7 +27,7 @@
 
 using namespace l1t;
 
-class L1GTDoubleObjectCond : public edm::stream::EDFilter<> {
+class L1GTDoubleObjectCond : public edm::global::EDFilter<> {
 public:
   explicit L1GTDoubleObjectCond(const edm::ParameterSet&);
   ~L1GTDoubleObjectCond() override = default;
@@ -35,7 +35,7 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions&);
 
 private:
-  bool filter(edm::Event&, edm::EventSetup const&) override;
+  bool filter(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
 
   const L1GTScales scales_;
 
@@ -92,7 +92,7 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
   descriptions.addWithDefaultLabel(desc);
 }
 
-bool L1GTDoubleObjectCond::filter(edm::Event& event, const edm::EventSetup& setup) {
+bool L1GTDoubleObjectCond::filter(edm::StreamID, edm::Event& event, const edm::EventSetup& setup) const {
   edm::Handle<P2GTCandidateCollection> col1;
   edm::Handle<P2GTCandidateCollection> col2;
   event.getByLabel(collection1Cuts_.tag(), col1);

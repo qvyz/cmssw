@@ -5,7 +5,7 @@
 #include "DataFormats/Common/interface/View.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/Framework/interface/global/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -32,7 +32,7 @@
 
 using namespace l1t;
 
-class L1GTProducer : public edm::stream::EDProducer<> {
+class L1GTProducer : public edm::global::EDProducer<> {
 public:
   explicit L1GTProducer(const edm::ParameterSet &);
   ~L1GTProducer() override = default;
@@ -40,7 +40,7 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions &);
 
 private:
-  void produce(edm::Event &, const edm::EventSetup &) override;
+  void produce(edm::StreamID, edm::Event &, const edm::EventSetup &) const override;
 
   const edm::InputTag gttPromptJetTag_;
   const edm::InputTag gttDisplacedJetTag_;
@@ -144,7 +144,7 @@ static void produceCl2HtSum(const std::string &productName, const edm::InputTag 
   event.put(std::move(outputCollection), productName);
 }
 
-void L1GTProducer::produce(edm::Event &event, const edm::EventSetup &setup) {
+void L1GTProducer::produce(edm::StreamID, edm::Event &event, const edm::EventSetup &setup) const {
   produceByTag<TkJetWordCollection>("GTTPromptJets", gttPromptJetTag_, event);
   produceByTag<TkJetWordCollection>("GTTDisplacedJets", gttDisplacedJetTag_, event);
   produceByTag<VertexWordCollection, 10>("GTTPrimaryVert", gttPrimaryVertexTag_, event);
