@@ -14,6 +14,8 @@
 
 #include "DataFormats/L1Trigger/interface/EtSum.h"
 
+#include <type_traits>
+
 namespace l1t {
   P2GTCandidate::P2GTCandidate() {}
 
@@ -22,23 +24,32 @@ namespace l1t {
         hwQual_(obj.qualityWord().V.to_int()),
         hwSum_pT_pv_(obj.multiplicityWord().V.to_int()),
         hwNumber_of_tracks_in_pv_(obj.multiplicityWord().V.to_int()),
-        hwNumber_of_tracks_not_in_pv_(obj.inverseMultiplicityWord().V.to_int()) {}
+        hwNumber_of_tracks_not_in_pv_(obj.inverseMultiplicityWord().V.to_int()),
+        objectType_(GTTPrimaryVert) {}
 
-  P2GTCandidate::P2GTCandidate(const TkJetWord& obj)
+  static_assert(std::is_same<std::result_of<decltype (&TkJetWord::ptWord)(TkJetWord*)>::type,
+                             ap_ufixed<16, 11, AP_TRN, AP_SAT>>::value);
+  static_assert(std::result_of<decltype (&TkJetWord::glbPhiWord)(TkJetWord*)>::type::width == 13);
+  static_assert(std::result_of<decltype (&TkJetWord::glbEtaWord)(TkJetWord*)>::type::width == 14);
+  static_assert(std::result_of<decltype (&TkJetWord::z0Word)(TkJetWord*)>::type::width == 10);
+  static_assert(std::result_of<decltype (&TkJetWord::ntWord)(TkJetWord*)>::type::width == 5);
+  P2GTCandidate::P2GTCandidate(const TkJetWord& obj, ObjectType objectType)
       : hwPT_(obj.ptWord().V.to_int()),
         hwPhi_(obj.glbPhiWord().V.to_int()),
         hwEta_(obj.glbEtaWord().V.to_int()),
         hwZ0_(obj.z0Word().V.to_int()),
-        hwNumber_of_tracks_(obj.ntWord().V.to_int()) {}
+        hwNumber_of_tracks_(obj.ntWord().V.to_int()),
+        objectType_(objectType) {}
 
-  P2GTCandidate::P2GTCandidate(const SAMuon& obj)
+  P2GTCandidate::P2GTCandidate(const SAMuon& obj, ObjectType objectType)
       : hwPT_(obj.hwPt()),
         hwPhi_(obj.hwPhi()),
         hwEta_(obj.hwEta()),
         hwZ0_(obj.hwZ0()),
         hwQual_(obj.hwQual()),
         hwCharge_(obj.hwCharge()),
-        hwD0_(obj.hwD0()) {}
+        hwD0_(obj.hwD0()),
+        objectType_(objectType) {}
 
   P2GTCandidate::P2GTCandidate(const TrackerMuon& obj)
       : hwPT_(obj.hwPt()),
@@ -49,7 +60,8 @@ namespace l1t {
         hwQual_(obj.hwQual()),
         hwCharge_(obj.hwCharge()),
         hwD0_(obj.hwD0()),
-        hwBeta_(obj.hwBeta()) {}
+        hwBeta_(obj.hwBeta()),
+        objectType_(GMTTkMuons) {}
 
   P2GTCandidate::P2GTCandidate(const PFJet& obj) {
     l1gt::Jet gtJet = l1gt::Jet::unpack(const_cast<PFJet&>(obj).encodedJet());
@@ -57,6 +69,7 @@ namespace l1t {
     hwPhi_ = gtJet.v3.phi.V.to_int();
     hwEta_ = gtJet.v3.eta.V.to_int();
     hwZ0_ = gtJet.z0.V.to_int();
+    objectType_ = CL2Jets;
   }
 
   P2GTCandidate::P2GTCandidate(const TkEm& obj) {
@@ -66,6 +79,7 @@ namespace l1t {
     hwEta_ = gtPhoton.v3.eta.V.to_int();
     hwIso_ = gtPhoton.isolation.V.to_int();
     hwQual_ = gtPhoton.quality.V.to_int();
+    objectType_ = CL2Photons;
   }
 
   P2GTCandidate::P2GTCandidate(const TkElectron& obj) {
@@ -77,6 +91,7 @@ namespace l1t {
     hwIso_ = gtElectron.isolation.V.to_int();
     hwQual_ = gtElectron.quality.V.to_int();
     hwCharge_ = gtElectron.charge.V.to_int();
+    objectType_ = CL2Electrons;
   }
 
   P2GTCandidate::P2GTCandidate(const EtSum& met) {
@@ -85,6 +100,7 @@ namespace l1t {
     hwPT_ = sum.vector_pt.V.to_int();
     hwPhi_ = sum.vector_phi.V.to_int();
     hwSca_sum_ = sum.scalar_pt.V.to_int();
+    objectType_ = CL2EtSum;
   }
 
   P2GTCandidate::P2GTCandidate(const EtSum& ht, const EtSum& mht) {
@@ -93,6 +109,7 @@ namespace l1t {
     hwPT_ = sum.vector_pt.V.to_int();
     hwPhi_ = sum.vector_phi.V.to_int();
     hwSca_sum_ = sum.scalar_pt.V.to_int();
+    objectType_ = CL2HtSum;
   }
 
   bool P2GTCandidate::operator==(const P2GTCandidate& rhs) const {
