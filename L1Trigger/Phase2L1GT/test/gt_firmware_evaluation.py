@@ -16,7 +16,7 @@ options.register ("platform",
                   "VU9P",
                   VarParsing.VarParsing.multiplicity.singleton,
                   VarParsing.VarParsing.varType.string)
-# options.parseArguments()
+options.parseArguments()
 
 
 process.l1tGTProducer = cms.EDProducer(
