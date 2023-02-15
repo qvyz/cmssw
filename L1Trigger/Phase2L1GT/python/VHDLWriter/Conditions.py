@@ -142,6 +142,7 @@ class DoubleObjCond(Condition):
     Label = "L1GTDoubleObjectCond"
     Template = "double.template"
     NumberOfCollections = 2 
+    NumberOfCorrelations = 2
     def __init__(self):
         Condition.__init__(self)
         
@@ -231,8 +232,6 @@ class SingleObjCond(Condition):
 
 
 
-
-
 class QuadObjCond(Condition):
     """
     Class for to the L1GTQuadObjectCond 
@@ -240,7 +239,7 @@ class QuadObjCond(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-        self._cut_aliases.update({ 
+        self._cut_aliases.update({
             'minPt' : 'pT_cuts',
             'minEta' : 'minEta_cuts',
             'maxEta' : 'maxEta_cuts',
@@ -250,8 +249,8 @@ class QuadObjCond(Condition):
             'maxZ0' : 'maxZ0_cuts',
             'qual' : 'qual_cuts',
             'iso' : 'iso_cuts',
-            'os' : 'os_cut',
-            'ss' : 'ss_cut'})
+            'os' : 'os_cuts',
+            'ss' : 'ss_cuts'})
 
         self._HWConversionFunctions.update({
             'os'          : self.booltostring,
@@ -261,7 +260,8 @@ class QuadObjCond(Condition):
 
     Label = "L1GTQuadObjectCond"
     Template = "quad.template"
-    NumberOfCollections = 4 
+    NumberOfCollections = 4
+    NumberOfCorrelations = 6
     def getCollections(self, object):
         collections = {1: object.getParameter('collection1'), 2: object.getParameter('collection2'),3: object.getParameter('collection3'),4: object.getParameter('collection4')}
         for col in collections.values():
@@ -269,11 +269,15 @@ class QuadObjCond(Condition):
         return collections
 
 
+    def getCollections(self, object):
+        collections = {1: object.getParameter('collection1'), 2: object.getParameter('collection2'),3: object.getParameter('collection3'),4: object.getParameter('collection4')}
+        for col in collections.values():
+            self._InputTags += [col.getParameter("tag")]
 
-
-
-
-
+        return collections
+    def getCorrelations(self, object):
+        correlations = { 1: object.getParameter('delta12'), 2: object.getParameter('delta13'), 3 : object.getParameter('delta14'),4: object.getParameter('delta23'), 5: object.getParameter('delta24'), 6 : object.getParameter('delta34')}
+        return correlations
 
 class CutResources:
     def __init__(self,bram = 0,dsp = 0,lut = 0):
@@ -434,6 +438,7 @@ class TripleObjCond(Condition):
     Label = "L1GTTripleObjectCond"
     Template = "triple.template"
     NumberOfCollections = 3
+    NumberOfCorrelations = 3
     def __init__(self):
         Condition.__init__(self)
         

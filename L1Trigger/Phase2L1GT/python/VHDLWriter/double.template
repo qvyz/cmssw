@@ -18,10 +18,6 @@ generic map(
   {%- endfor +%}
 )
 port map(
-  clk           => clk, -- ipbus signals
-  rst           => rst,
-  ipb_in        => ipb_in,
-  ipb_out       => open,
   clk_algo      => clk_algo,
   rst_algo      => rst_algo,
   objects_valid => objects_valid,

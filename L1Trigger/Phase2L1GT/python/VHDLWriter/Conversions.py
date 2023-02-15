@@ -31,13 +31,13 @@ def checkFilter(filt):
             if col.hasParameter(knowncut):
                 Condit.setCut(knowncut,col.getParameter(knowncut).value(), idx,Condit.NumberOfCollections)
                 Condit.addResources(knowncut)
-    if Condit.Label == "L1GTTripleObjectCond":
+    if ((Condit.Label == "L1GTTripleObjectCond" ) or (Condit.Label == "L1GTQuadObjectCond"))  :
         for idx, col in Condit.getCorrelations(filt).items():
             knowncuts = Condit._cut_aliases.keys()
             for knowncut in knowncuts:
                 if col != None:
                     if col.hasParameter(knowncut):
-                        Condit.setCut(knowncut,col.getParameter(knowncut).value(), idx,Condit.NumberOfCollections)
+                        Condit.setCut(knowncut,col.getParameter(knowncut).value(), idx,Condit.NumberOfCorrelations)
                         Condit.addResources(knowncut)
     knowncuts = Condit._cut_aliases.keys()
     for knowncut in knowncuts:
@@ -218,66 +218,6 @@ def distributeAlgosWithoutopt(algodict,numslrs):
 
 
 
-
-def minconditionsperslrVU9P(algodict):
-    algounits = []
-    dadad = cond.AlgorithmBlock()
-    dadad.Collections = {"GTT_PROMPT_JETS_SLOT",
-"GTT_DISPLACED_JETS_SLOT",
-"GTT_HT_MISS_PROMPT_SLOT",
-"GTT_HT_MISS_DISPLACED_SLOT",
-"GTT_ET_MISS_SLOT",
-"GTT_TAUS_SLOT"}
-    algounits.append(dadad)
-    slr1 = cond.AlgorithmBlock()
-    slr1.Collections =  {       
-        "CL2_JET_SLOT",
-        "CL2_HT_MISS_SLOT",
-        "CL2_ET_MISS_SLOT",
-        "CL2_TAU_SLOT",
-
-        
-        "CL2_ELECTRON_SLOT",
-        "CL2_PHOTON_SLOT"}
-    algounits.append(slr1)
-    slr2 = cond.AlgorithmBlock()
-    slr2.Collections =  {       
-"GCT_NON_ISO_EG_SLOT",
-"GCT_ISO_EG_SLOT",
-"GCT_JETS_SLOT",
-"GCT_TAUS_SLOT",
-"GCT_HT_MISS_SLOT",
-"GCT_ET_MISS_SLOT",
-"GMT_SA_PROMPT_SLOT",
-"GMT_SA_DISPLACED_SLOT",
-"GMT_TK_MUON_SLOT",
-"GMT_TOPO_SLOT"}
-    algounits.append(slr2)
-    class Found(Exception): pass
-    for algo in algodict.algoblocks:
-        try:
-            for i in range(0,len(algo.Collections)):
-                for unit in algounits:
-                    if len(algo.Collections.difference(unit.Collections)) == i:
-                        unit.Combineblocks(algo)
-                        raise Found
-
-        except Found:
-            pass
-        # else: 
-        #     minmodules = min(len(item.Modules) for item in algounits)
-        #     for algo in algounits:
-        #         if len(algo.Modules) == minmodules:
-        #             unit.Combineblocks(algo)
-        #             break
-
-    return algounits
-
-
-
-
-
-
 def assignAlgostoSlrs(knownfilters,logicalcombinations,numslrs):
     algoblocks = WriteAlgoDict(knownfilters,logicalcombinations)
     distributedAlgos = distributealgos(algoblocks,numslrs)
@@ -301,7 +241,7 @@ def writeAlgounits(distributedAlgos,algomap,knownfilters,logcomb):
             for log in value.LogicalPath:
                 logicalcombinations[log] = logcomb[log]
         algounittext = writer.algounitWriter(algomap,condtext,tdistributedAlgos,logicalcombinations,index)
-        writer.writeAlgounitToFile("algos_slr{}.vhdl".format(index),algounittext)
+        writer.writeAlgounitToFile("algos_slr{}.vhd".format(index),algounittext)
 
 
 def getAlgobits(algomap,distributedalgos,Outputchans):
