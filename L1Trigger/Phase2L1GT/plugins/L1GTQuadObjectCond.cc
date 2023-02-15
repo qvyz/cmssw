@@ -6,6 +6,7 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/Utilities/interface/EDGetToken.h"
 #include "DataFormats/Common/interface/Ref.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
@@ -48,6 +49,11 @@ private:
   const L1GTDeltaCut delta14Cuts_;
   const L1GTDeltaCut delta24Cuts_;
   const L1GTDeltaCut delta34Cuts_;
+
+  const edm::EDGetTokenT<P2GTCandidateCollection> token1_;
+  const edm::EDGetTokenT<P2GTCandidateCollection> token2_;
+  const edm::EDGetTokenT<P2GTCandidateCollection> token3_;
+  const edm::EDGetTokenT<P2GTCandidateCollection> token4_;
 };
 
 L1GTQuadObjectCond::L1GTQuadObjectCond(const edm::ParameterSet& config)
@@ -87,23 +93,35 @@ L1GTQuadObjectCond::L1GTQuadObjectCond(const edm::ParameterSet& config)
                    config,
                    scales_,
                    enable_sanity_checks_,
-                   inv_mass_checks_) {
-  consumes<P2GTCandidateCollection>(collection1Cuts_.tag());
+                   inv_mass_checks_),
+      token1_(consumes<P2GTCandidateCollection>(collection1Cuts_.tag())),
+      token2_(collection1Cuts_.tag() == collection2Cuts_.tag()
+                  ? token1_
+                  : consumes<P2GTCandidateCollection>(collection2Cuts_.tag())),
+      token3_(collection1Cuts_.tag() == collection3Cuts_.tag()
+                  ? token1_
+                  : (collection2Cuts_.tag() == collection3Cuts_.tag()
+                         ? token2_
+                         : consumes<P2GTCandidateCollection>(collection3Cuts_.tag()))),
+      token4_(collection1Cuts_.tag() == collection4Cuts_.tag()
+                  ? token1_
+                  : (collection2Cuts_.tag() == collection4Cuts_.tag()
+                         ? token2_
+                         : (collection3Cuts_.tag() == collection4Cuts_.tag()
+                                ? token3_
+                                : consumes<P2GTCandidateCollection>(collection4Cuts_.tag())))) {
   produces<P2GTCandidateVectorRef>(collection1Cuts_.tag().instance());
 
   if (!(collection1Cuts_.tag() == collection2Cuts_.tag())) {
-    consumes<P2GTCandidateCollection>(collection2Cuts_.tag());
     produces<P2GTCandidateVectorRef>(collection2Cuts_.tag().instance());
   }
 
   if (!(collection1Cuts_.tag() == collection3Cuts_.tag()) && !(collection2Cuts_.tag() == collection3Cuts_.tag())) {
-    consumes<P2GTCandidateCollection>(collection3Cuts_.tag());
     produces<P2GTCandidateVectorRef>(collection3Cuts_.tag().instance());
   }
 
   if (!(collection1Cuts_.tag() == collection4Cuts_.tag()) && !(collection2Cuts_.tag() == collection4Cuts_.tag()) &&
       !(collection3Cuts_.tag() == collection4Cuts_.tag())) {
-    consumes<P2GTCandidateCollection>(collection4Cuts_.tag());
     produces<P2GTCandidateVectorRef>(collection4Cuts_.tag().instance());
   }
 
@@ -168,14 +186,10 @@ void L1GTQuadObjectCond::fillDescriptions(edm::ConfigurationDescriptions& descri
 }
 
 bool L1GTQuadObjectCond::filter(edm::StreamID, edm::Event& event, const edm::EventSetup& setup) const {
-  edm::Handle<P2GTCandidateCollection> col1;
-  edm::Handle<P2GTCandidateCollection> col2;
-  edm::Handle<P2GTCandidateCollection> col3;
-  edm::Handle<P2GTCandidateCollection> col4;
-  event.getByLabel(collection1Cuts_.tag(), col1);
-  event.getByLabel(collection2Cuts_.tag(), col2);
-  event.getByLabel(collection3Cuts_.tag(), col3);
-  event.getByLabel(collection4Cuts_.tag(), col4);
+  edm::Handle<P2GTCandidateCollection> col1 = event.getHandle(token1_);
+  edm::Handle<P2GTCandidateCollection> col2 = event.getHandle(token2_);
+  edm::Handle<P2GTCandidateCollection> col3 = event.getHandle(token3_);
+  edm::Handle<P2GTCandidateCollection> col4 = event.getHandle(token4_);
 
   bool condition_result = false;
 

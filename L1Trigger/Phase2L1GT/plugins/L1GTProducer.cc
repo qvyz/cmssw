@@ -1,5 +1,6 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/Utilities/interface/EDGetToken.h"
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "DataFormats/Common/interface/View.h"
@@ -42,47 +43,33 @@ public:
 private:
   void produce(edm::StreamID, edm::Event &, const edm::EventSetup &) const override;
 
-  const edm::InputTag gttPromptJetTag_;
-  const edm::InputTag gttDisplacedJetTag_;
-  const edm::InputTag gttPrimaryVertexTag_;
+  const edm::EDGetTokenT<TkJetWordCollection> gttPromptJetToken_;
+  const edm::EDGetTokenT<TkJetWordCollection> gttDisplacedJetToken_;
+  const edm::EDGetTokenT<VertexWordCollection> gttPrimaryVertexToken_;
 
-  const edm::InputTag gmtSaPromptMuonTag_;
-  const edm::InputTag gmtSaDisplacedMuonTag_;
-  const edm::InputTag gmtTkMuonTag_;
+  const edm::EDGetTokenT<SAMuonCollection> gmtSaPromptMuonToken_;
+  const edm::EDGetTokenT<SAMuonCollection> gmtSaDisplacedMuonToken_;
+  const edm::EDGetTokenT<TrackerMuonCollection> gmtTkMuonToken_;
 
-  const edm::InputTag cl2JetTag_;
-  const edm::InputTag cl2PhotonTag_;
-  const edm::InputTag cl2ElectronTag_;
-  const edm::InputTag cl2EtSumTag_;
-  const edm::InputTag cl2HtSumTag_;
+  const edm::EDGetTokenT<PFJetCollection> cl2JetToken_;
+  const edm::EDGetTokenT<TkEmCollection> cl2PhotonToken_;
+  const edm::EDGetTokenT<TkElectronCollection> cl2ElectronToken_;
+  const edm::EDGetTokenT<std::vector<l1t::EtSum>> cl2EtSumToken_;
+  const edm::EDGetTokenT<std::vector<l1t::EtSum>> cl2HtSumToken_;
 };
 
 L1GTProducer::L1GTProducer(const edm::ParameterSet &config)
-    : gttPromptJetTag_(config.getParameter<edm::InputTag>("GTTPromptJets")),
-      gttDisplacedJetTag_(config.getParameter<edm::InputTag>("GTTDisplacedJets")),
-      gttPrimaryVertexTag_(config.getParameter<edm::InputTag>("GTTPrimaryVert")),
-      gmtSaPromptMuonTag_(config.getParameter<edm::InputTag>("GMTSaPromptMuons")),
-      gmtSaDisplacedMuonTag_(config.getParameter<edm::InputTag>("GMTSaDisplacedMuons")),
-      gmtTkMuonTag_(config.getParameter<edm::InputTag>("GMTTkMuons")),
-      cl2JetTag_(config.getParameter<edm::InputTag>("CL2Jets")),
-      cl2PhotonTag_(config.getParameter<edm::InputTag>("CL2Photons")),
-      cl2ElectronTag_(config.getParameter<edm::InputTag>("CL2Electrons")),
-      cl2EtSumTag_(config.getParameter<edm::InputTag>("CL2EtSum")),
-      cl2HtSumTag_(config.getParameter<edm::InputTag>("CL2HtSum")) {
-  consumes<TkJetWordCollection>(gttPromptJetTag_);
-  consumes<TkJetWordCollection>(gttDisplacedJetTag_);
-  consumes<VertexWordCollection>(gttPrimaryVertexTag_);
-
-  consumes<SAMuonCollection>(gmtSaPromptMuonTag_);
-  consumes<SAMuonCollection>(gmtSaDisplacedMuonTag_);
-  consumes<TrackerMuonCollection>(gmtTkMuonTag_);
-
-  consumes<PFJetCollection>(cl2JetTag_);
-  consumes<TkEmCollection>(cl2PhotonTag_);
-  consumes<TkElectronCollection>(cl2ElectronTag_);
-  consumes<std::vector<l1t::EtSum>>(cl2EtSumTag_);
-  consumes<std::vector<l1t::EtSum>>(cl2HtSumTag_);
-
+    : gttPromptJetToken_(consumes<TkJetWordCollection>(config.getParameter<edm::InputTag>("GTTPromptJets"))),
+      gttDisplacedJetToken_(consumes<TkJetWordCollection>(config.getParameter<edm::InputTag>("GTTDisplacedJets"))),
+      gttPrimaryVertexToken_(consumes<VertexWordCollection>(config.getParameter<edm::InputTag>("GTTPrimaryVert"))),
+      gmtSaPromptMuonToken_(consumes<SAMuonCollection>(config.getParameter<edm::InputTag>("GMTSaPromptMuons"))),
+      gmtSaDisplacedMuonToken_(consumes<SAMuonCollection>(config.getParameter<edm::InputTag>("GMTSaDisplacedMuons"))),
+      gmtTkMuonToken_(consumes<TrackerMuonCollection>(config.getParameter<edm::InputTag>("GMTTkMuons"))),
+      cl2JetToken_(consumes<PFJetCollection>(config.getParameter<edm::InputTag>("CL2Jets"))),
+      cl2PhotonToken_(consumes<TkEmCollection>(config.getParameter<edm::InputTag>("CL2Photons"))),
+      cl2ElectronToken_(consumes<TkElectronCollection>(config.getParameter<edm::InputTag>("CL2Electrons"))),
+      cl2EtSumToken_(consumes<std::vector<l1t::EtSum>>(config.getParameter<edm::InputTag>("CL2EtSum"))),
+      cl2HtSumToken_(consumes<std::vector<l1t::EtSum>>(config.getParameter<edm::InputTag>("CL2HtSum"))) {
   produces<P2GTCandidateCollection>("GTTPromptJets");
   produces<P2GTCandidateCollection>("GTTDisplacedJets");
   produces<P2GTCandidateCollection>("GTTPrimaryVert");
@@ -118,10 +105,10 @@ void L1GTProducer::fillDescriptions(edm::ConfigurationDescriptions &description)
 }
 
 template <typename T, std::size_t MAX_COLLECTION_SIZE = 12>
-static void produceByTag(const std::string &productName, const edm::InputTag &tag, edm::Event &event) {
+static void produceByToken(const std::string &productName, const edm::EDGetTokenT<T> &token, edm::Event &event) {
   std::unique_ptr<P2GTCandidateCollection> outputCollection = std::make_unique<P2GTCandidateCollection>();
   edm::Handle<T> inputCollection;
-  if (event.getByLabel(tag, inputCollection)) {
+  if (event.getByToken(token, inputCollection)) {
     std::size_t idx = 0;
     for (const auto &object : *inputCollection) {
       if (idx >= MAX_COLLECTION_SIZE) {
@@ -136,28 +123,29 @@ static void produceByTag(const std::string &productName, const edm::InputTag &ta
   event.put(std::move(outputCollection), productName);
 }
 
-static void produceCl2HtSum(const std::string &productName, const edm::InputTag &tag, edm::Event &event) {
+static void produceCl2HtSum(const std::string &productName,
+                            const edm::EDGetTokenT<std::vector<l1t::EtSum>> &token,
+                            edm::Event &event) {
   std::unique_ptr<P2GTCandidateCollection> outputCollection = std::make_unique<P2GTCandidateCollection>();
-  edm::Handle<std::vector<EtSum>> htCollection;
-  event.getByLabel(tag, htCollection);
+  edm::Handle<std::vector<EtSum>> htCollection = event.getHandle(token);
   outputCollection->emplace_back(P2GTCandidate(htCollection->at(0), htCollection->at(1)));
   event.put(std::move(outputCollection), productName);
 }
 
 void L1GTProducer::produce(edm::StreamID, edm::Event &event, const edm::EventSetup &setup) const {
-  produceByTag<TkJetWordCollection>("GTTPromptJets", gttPromptJetTag_, event);
-  produceByTag<TkJetWordCollection>("GTTDisplacedJets", gttDisplacedJetTag_, event);
-  produceByTag<VertexWordCollection, 10>("GTTPrimaryVert", gttPrimaryVertexTag_, event);
+  produceByToken<TkJetWordCollection>("GTTPromptJets", gttPromptJetToken_, event);
+  produceByToken<TkJetWordCollection>("GTTDisplacedJets", gttDisplacedJetToken_, event);
+  produceByToken<VertexWordCollection, 10>("GTTPrimaryVert", gttPrimaryVertexToken_, event);
 
-  produceByTag<SAMuonCollection>("GMTSaPromptMuons", gmtSaPromptMuonTag_, event);
-  produceByTag<SAMuonCollection>("GMTSaDisplacedMuons", gmtSaDisplacedMuonTag_, event);
-  produceByTag<TrackerMuonCollection>("GMTTkMuons", gmtTkMuonTag_, event);
+  produceByToken<SAMuonCollection>("GMTSaPromptMuons", gmtSaPromptMuonToken_, event);
+  produceByToken<SAMuonCollection>("GMTSaDisplacedMuons", gmtSaDisplacedMuonToken_, event);
+  produceByToken<TrackerMuonCollection>("GMTTkMuons", gmtTkMuonToken_, event);
 
-  produceByTag<PFJetCollection>("CL2Jets", cl2JetTag_, event);
-  produceByTag<TkEmCollection>("CL2Photons", cl2PhotonTag_, event);
-  produceByTag<TkElectronCollection>("CL2Electrons", cl2ElectronTag_, event);
-  produceByTag<std::vector<EtSum>, 1>("CL2EtSum", cl2EtSumTag_, event);
-  produceCl2HtSum("CL2HtSum", cl2HtSumTag_, event);
+  produceByToken<PFJetCollection>("CL2Jets", cl2JetToken_, event);
+  produceByToken<TkEmCollection>("CL2Photons", cl2PhotonToken_, event);
+  produceByToken<TkElectronCollection>("CL2Electrons", cl2ElectronToken_, event);
+  produceByToken<std::vector<EtSum>, 1>("CL2EtSum", cl2EtSumToken_, event);
+  produceCl2HtSum("CL2HtSum", cl2HtSumToken_, event);
 }
 
 DEFINE_FWK_MODULE(L1GTProducer);

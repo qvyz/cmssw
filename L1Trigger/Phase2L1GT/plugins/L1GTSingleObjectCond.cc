@@ -7,6 +7,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/Utilities/interface/EDGetToken.h"
 #include "DataFormats/Common/interface/Ref.h"
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
@@ -31,11 +32,14 @@ private:
 
   const L1GTScales scales_;
   const L1GTSingleCollectionCut collection;
+
+  const edm::EDGetTokenT<P2GTCandidateCollection> token_;
 };
 
 L1GTSingleObjectCond::L1GTSingleObjectCond(const edm::ParameterSet& config)
-    : scales_(config.getParameter<edm::ParameterSet>("scales")), collection(config, scales_) {
-  consumes<P2GTCandidateCollection>(collection.tag());
+    : scales_(config.getParameter<edm::ParameterSet>("scales")),
+      collection(config, scales_),
+      token_(consumes<P2GTCandidateCollection>(collection.tag())) {
   produces<P2GTCandidateVectorRef>(collection.tag().instance());
 }
 
@@ -51,8 +55,7 @@ void L1GTSingleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
 }
 
 bool L1GTSingleObjectCond::filter(edm::StreamID, edm::Event& event, const edm::EventSetup& setup) const {
-  edm::Handle<P2GTCandidateCollection> col;
-  event.getByLabel(collection.tag(), col);
+  edm::Handle<P2GTCandidateCollection> col = event.getHandle(token_);
 
   bool condition_result = false;
 

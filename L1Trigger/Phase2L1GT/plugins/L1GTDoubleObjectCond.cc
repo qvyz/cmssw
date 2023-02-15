@@ -6,11 +6,11 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/Utilities/interface/EDGetToken.h"
 #include "DataFormats/Common/interface/Ref.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTInvariantMassError.h"
-
-#include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 
@@ -46,6 +46,9 @@ private:
   const bool inv_mass_checks_;
 
   const L1GTDeltaCut deltaCuts_;
+
+  const edm::EDGetTokenT<P2GTCandidateCollection> token1_;
+  const edm::EDGetTokenT<P2GTCandidateCollection> token2_;
 };
 
 L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
@@ -54,12 +57,14 @@ L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
       collection2Cuts_(config.getParameterSet("collection2"), scales_),
       enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
       inv_mass_checks_(config.getUntrackedParameter<bool>("inv_mass_checks")),
-      deltaCuts_(config, config, scales_, enable_sanity_checks_, inv_mass_checks_) {
-  consumes<P2GTCandidateCollection>(collection1Cuts_.tag());
+      deltaCuts_(config, config, scales_, enable_sanity_checks_, inv_mass_checks_),
+      token1_(consumes<P2GTCandidateCollection>(collection1Cuts_.tag())),
+      token2_(collection1Cuts_.tag() == collection2Cuts_.tag()
+                  ? token1_
+                  : consumes<P2GTCandidateCollection>(collection2Cuts_.tag())) {
   produces<P2GTCandidateVectorRef>(collection1Cuts_.tag().instance());
 
   if (!(collection1Cuts_.tag() == collection2Cuts_.tag())) {
-    consumes<P2GTCandidateCollection>(collection2Cuts_.tag());
     produces<P2GTCandidateVectorRef>(collection2Cuts_.tag().instance());
   }
 
@@ -93,10 +98,8 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
 }
 
 bool L1GTDoubleObjectCond::filter(edm::StreamID, edm::Event& event, const edm::EventSetup& setup) const {
-  edm::Handle<P2GTCandidateCollection> col1;
-  edm::Handle<P2GTCandidateCollection> col2;
-  event.getByLabel(collection1Cuts_.tag(), col1);
-  event.getByLabel(collection2Cuts_.tag(), col2);
+  edm::Handle<P2GTCandidateCollection> col1 = event.getHandle(token1_);
+  edm::Handle<P2GTCandidateCollection> col2 = event.getHandle(token2_);
 
   bool condition_result = false;
 
@@ -108,10 +111,8 @@ bool L1GTDoubleObjectCond::filter(edm::StreamID, edm::Event& event, const edm::E
   for (std::size_t idx1 = 0; idx1 < col1->size(); ++idx1) {
     for (std::size_t idx2 = 0; idx2 < col2->size(); ++idx2) {
       // If we're looking at the same collection then we shouldn't use the same object in one comparison.
-      if (col1.product() == col2.product()) {
-        if (idx1 == idx2) {
-          continue;
-        }
+      if (col1.product() == col2.product() && idx1 == idx2) {
+        continue;
       }
 
       bool pass = true;
