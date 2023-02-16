@@ -157,31 +157,39 @@ def distributeAlgos(algodict,numslrs):
     algounits = []
     for i in range(numslrs):
         algounits.append(cond.AlgorithmBlock())
-    flip = (numslrs -1) * -1
-    count = 0
+    cnt = 0
 
     addmax = algodict.popMaxalgoblock()
     if(numslrs == 1):
         while(addmax != 0):
-            algounits[count].Combineblocks(addmax)
+            algounits[cnt].Combineblocks(addmax)
             addmax = algodict.popMaxalgoblock()
         return algounits
     else:
-        algounits[numslrs-1 - abs(flip)].Combineblocks(addmax)
-        flip += 1
-
+        print(type(addmax))
+        if(addmax == type(int)):
+            return addmax
+        slrcounter = 0
+        repeater = 0
         while(addmax != 0):
+            print(cnt)
+            if cnt < (numslrs - 1):
+                algounits[cnt].Combineblocks(addmax)
+            elif cnt == (numslrs - 1):
+                algounits[cnt].Combineblocks(addmax)
+            else:
+                algounits[6 - cnt].Combineblocks(addmax)
+            
+            if (((cnt == numslrs - 1)) and (repeater > 0)):
+                cnt = cnt
+                repeater = 0
+            elif (cnt == 2 * (numslrs - 1)):
+                cnt = 0
+                repeater = 1
+            else:
+                cnt = cnt + 1
+                repeater = 1
             addmax = algodict.popMaxalgoblock()
-            if addmax != 0:
-                algounits[numslrs-1 - abs(flip)].Combineblocks(addmax)
-            if (numslrs-1 - abs(flip) == 0) or (numslrs-1 - abs(flip) == 2):
-                if addmax != 0:
-                    addmax = algodict.popMaxalgoblock()
-                    if addmax != 0:
-                        algounits[numslrs-1 - abs(flip)].Combineblocks(addmax)
-            flip += 1
-            if flip == (numslrs -1):
-                flip = (numslrs -1) * -1
         return algounits
 
 
@@ -189,34 +197,59 @@ def distributeAlgosWithoutopt(algodict,numslrs):
     algounits = []
     for i in range(numslrs):
         algounits.append(cond.AlgorithmBlock())
-    flip = (numslrs -1) * -1
-    count = 0
 
-    addmax = algodict.algoblocks.pop()
     if(numslrs == 1):
-        while(algodict.algoblocks != []):
-            algounits[count].Combineblocks(addmax)
-            addmax = algodict.algoblocks.pop()
+        while(addalgo != 0):
+            algounits[0].Combineblocks(addalgo)
+            addalgo = algodict.popMaxalgoblock()
         return algounits
     else:
-        algounits[numslrs-1 - abs(flip)].Combineblocks(addmax)
-        flip += 1
+        addalgo = algodict.algoblocks.pop()
+        print(type(addalgo))
+        if(addalgo == type(int)):
+            return addalgo
+        cnt = 0
+        repeater = 0
+        while(addalgo != None):
+            if addalgo == type(int):
+                return 0
+            print(cnt)
+            if cnt < (numslrs - 1):
+                algounits[cnt].Combineblocks(addalgo)
+            elif cnt == (numslrs - 1):
+                algounits[cnt].Combineblocks(addalgo)
+            else:
+                algounits[6 - cnt].Combineblocks(addalgo)
+            
+            if (((cnt == numslrs - 1)) and (repeater > 0)):
+                cnt = cnt
+                repeater = 0
+            elif (cnt == 2 * (numslrs - 1)):
+                cnt = 0
+                repeater = 1
+            else:
+                cnt = cnt + 1
+                repeater = 1
 
-        while(algodict.algoblocks != []):
-            addmax = algodict.algoblocks.pop()
-            algounits[numslrs-1 - abs(flip)].Combineblocks(addmax)
-            if (numslrs-1 - abs(flip) == 0) or (numslrs-1 - abs(flip) == 2):
-                if algodict.algoblocks != []:
-                    addmax = algodict.algoblocks.pop()
-                    if algodict.algoblocks != []:
-                        algounits[numslrs-1 - abs(flip)].Combineblocks(addmax)
-            flip += 1
-            if flip == (numslrs -1):
-                flip = (numslrs -1) * -1
+            if algodict.algoblocks == []:
+                return algounits
+            else:
+                addalgo = algodict.algoblocks.pop()
         return algounits
 
+def distributeAlgosAtRandom(algodict,numslrs,seed = 2):
+    import random as rand
+    rand.seed = seed
 
+    algounits = []
+    for i in range(numslrs):
+        algounits.append(cond.AlgorithmBlock())
+    addalgo = algodict.algoblocks.pop()
+    while(algodict.algoblocks != []):
+        algounits[rand.randint(0,(numslrs - 1))].Combineblocks(addalgo)
+        addalgo = algodict.algoblocks.pop()
 
+    addalgo = algodict.algoblocks.pop()
 
 def assignAlgostoSlrs(knownfilters,logicalcombinations,numslrs):
     algoblocks = WriteAlgoDict(knownfilters,logicalcombinations)
