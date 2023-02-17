@@ -276,7 +276,7 @@ class QuadObjCond(Condition):
 
         return collections
     def getCorrelations(self, object):
-        correlations = { 1: object.getParameter('delta12'), 2: object.getParameter('delta13'), 3 : object.getParameter('delta14'),4: object.getParameter('delta23'), 5: object.getParameter('delta24'), 6 : object.getParameter('delta34')}
+        correlations = { 1: object.getParameter('delta12'), 2: object.getParameter('delta13'), 3 : object.getParameter('delta23'),4: object.getParameter('delta14'), 5: object.getParameter('delta24'), 6 : object.getParameter('delta34')}
         return correlations
 
 class CutResources:

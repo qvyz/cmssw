@@ -248,8 +248,7 @@ def distributeAlgosAtRandom(algodict,numslrs,seed = 2):
     while(algodict.algoblocks != []):
         algounits[rand.randint(0,(numslrs - 1))].Combineblocks(addalgo)
         addalgo = algodict.algoblocks.pop()
-
-    addalgo = algodict.algoblocks.pop()
+    return algounits
 
 def assignAlgostoSlrs(knownfilters,logicalcombinations,numslrs):
     algoblocks = WriteAlgoDict(knownfilters,logicalcombinations)
@@ -274,7 +273,7 @@ def writeAlgounits(distributedAlgos,algomap,knownfilters,logcomb):
             for log in value.LogicalPath:
                 logicalcombinations[log] = logcomb[log]
         algounittext = writer.algounitWriter(algomap,condtext,tdistributedAlgos,logicalcombinations,index)
-        writer.writeAlgounitToFile("algos_slr{}.vhd".format(index),algounittext)
+        writer.writeAlgounitToFile("p2gt_algos_slr{}.vhd".format(index),algounittext)
 
 
 def getAlgobits(algomap,distributedalgos,Outputchans):
