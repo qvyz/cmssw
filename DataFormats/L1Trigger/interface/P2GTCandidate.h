@@ -66,14 +66,44 @@ namespace l1t {
       bool set_;
     };
 
+    enum ObjectType {
+      Undefined,
+      GCTNonIsoEg,
+      GCTIsoEg,
+      GCTJets,
+      GCTTaus,
+      GCTHtSum,
+      GCTEtSum,
+      GMTSaPromptMuons,
+      GMTSaDisplacedMuons,
+      GMTTkMuons,
+      GMTTopo,
+      GTTPromptJets,
+      GTTDisplacedJets,
+      GTTPhiCandidates,
+      GTTRhoCandidates,
+      GTTBsCandidates,
+      GTTHadronicTaus,
+      GTTPrimaryVert,
+      GTTPromptHtSum,
+      GTTDisplacedHtSum,
+      GTTEtSum,
+      CL2Jets,
+      CL2Taus,
+      CL2Electrons,
+      CL2Photons,
+      CL2HtSum,
+      CL2EtSum
+    };
+
     P2GTCandidate();
 
     // GTT
     P2GTCandidate(const VertexWord&);
-    P2GTCandidate(const TkJetWord&);
+    P2GTCandidate(const TkJetWord&, ObjectType);
 
     // GMT
-    P2GTCandidate(const SAMuon&);
+    P2GTCandidate(const SAMuon&, ObjectType);
     P2GTCandidate(const TrackerMuon&);
 
     // CL2
@@ -252,6 +282,8 @@ namespace l1t {
       return static_cast<int>(hwNumber_of_tracks_not_in_pv_);
     }
 
+    ObjectType objectType() const { return objectType_; }
+
     bool operator==(const P2GTCandidate& rhs) const;
     bool operator!=(const P2GTCandidate& rhs) const;
 
@@ -278,6 +310,8 @@ namespace l1t {
     OptionalInt hwType_;
     OptionalInt hwNumber_of_tracks_in_pv_;
     OptionalInt hwNumber_of_tracks_not_in_pv_;
+
+    ObjectType objectType_ = Undefined;
   };
 
 };  // namespace l1t

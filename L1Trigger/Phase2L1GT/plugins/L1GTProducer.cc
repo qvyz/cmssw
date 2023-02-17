@@ -104,7 +104,7 @@ void L1GTProducer::fillDescriptions(edm::ConfigurationDescriptions &description)
   description.addWithDefaultLabel(desc);
 }
 
-template <typename T, std::size_t MAX_COLLECTION_SIZE = 12>
+template <typename T, std::size_t MAX_COLLECTION_SIZE = 12, P2GTCandidate::ObjectType type = P2GTCandidate::Undefined>
 static void produceByToken(const std::string &productName, const edm::EDGetTokenT<T> &token, edm::Event &event) {
   std::unique_ptr<P2GTCandidateCollection> outputCollection = std::make_unique<P2GTCandidateCollection>();
   edm::Handle<T> inputCollection;
@@ -115,7 +115,11 @@ static void produceByToken(const std::string &productName, const edm::EDGetToken
         break;
       }
 
-      outputCollection->emplace_back(P2GTCandidate(object));
+      if constexpr (type != P2GTCandidate::Undefined) {
+        outputCollection->emplace_back(P2GTCandidate(object, type));
+      } else {
+        outputCollection->emplace_back(P2GTCandidate(object));
+      }
       ++idx;
     }
   }
@@ -133,12 +137,15 @@ static void produceCl2HtSum(const std::string &productName,
 }
 
 void L1GTProducer::produce(edm::StreamID, edm::Event &event, const edm::EventSetup &setup) const {
-  produceByToken<TkJetWordCollection>("GTTPromptJets", gttPromptJetToken_, event);
-  produceByToken<TkJetWordCollection>("GTTDisplacedJets", gttDisplacedJetToken_, event);
+  produceByToken<TkJetWordCollection, 12, P2GTCandidate::GTTPromptJets>("GTTPromptJets", gttPromptJetToken_, event);
+  produceByToken<TkJetWordCollection, 12, P2GTCandidate::GTTDisplacedJets>(
+      "GTTDisplacedJets", gttDisplacedJetToken_, event);
   produceByToken<VertexWordCollection, 10>("GTTPrimaryVert", gttPrimaryVertexToken_, event);
 
-  produceByToken<SAMuonCollection>("GMTSaPromptMuons", gmtSaPromptMuonToken_, event);
-  produceByToken<SAMuonCollection>("GMTSaDisplacedMuons", gmtSaDisplacedMuonToken_, event);
+  produceByToken<SAMuonCollection, 12, P2GTCandidate::GMTSaPromptMuons>(
+      "GMTSaPromptMuons", gmtSaPromptMuonToken_, event);
+  produceByToken<SAMuonCollection, 12, P2GTCandidate::GMTSaDisplacedMuons>(
+      "GMTSaDisplacedMuons", gmtSaDisplacedMuonToken_, event);
   produceByToken<TrackerMuonCollection>("GMTTkMuons", gmtTkMuonToken_, event);
 
   produceByToken<PFJetCollection>("CL2Jets", cl2JetToken_, event);
