@@ -707,9 +707,12 @@ process._tripleTkMuTkEle_7_5_5_er3p4_SS = l1tGTTripleObjectCond.clone(
         maxEta=cms.double(3.4)
     ),
     delta12=cms.PSet(
+        minTransMass=cms.double(3),
         ss=cms.bool(True)
+
     ),
     delta13=cms.PSet(
+        minTransMass=cms.double(3),
         ss=cms.bool(True)
     )
 )
@@ -2653,6 +2656,24 @@ process._tkEleTkMuon_10_20_er2p4_dzMax1p0_xxx_3 = l1tGTDoubleObjectCond.clone(
     ),
 )
 
+process._tkIsoElePUPPItau_22_39_er2p1_drMin0p3_dzMax1p0_xxx_3_test = l1tGTDoubleObjectCond.clone(
+    collection1=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "GMTTkMuons"),
+        minPt=cms.double(25),
+        minEta=cms.double(-1.875),
+        maxEta=cms.double(2.1),
+        minZ0=cms.double(-1.0),
+        maxZ0=cms.double(1.0),
+    ),
+    collection2=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "CL2Taus"),
+        minPt=cms.double(42),
+        minEta=cms.double(-1.874),
+        maxEta=cms.double(2.1),
+    ),
+    minDR=cms.double(0.35),
+)
+
 process._puppiTauTkMuon_27_18_er2p1_dzMax1p0_xxx_3 = l1tGTDoubleObjectCond.clone(
     collection1=cms.PSet(
         tag=cms.InputTag("l1tGTProducer", "CL2Taus"),
@@ -2894,6 +2915,23 @@ process._tripleTkMuTkEle_7_5_5_er3p4_SS_xxx_3 = l1tGTTripleObjectCond.clone(
         ss=cms.bool(True)
     )
 )
+process._doubleEG_32_32_er2p5_Mt40_xxx_ext_test3 = l1tGTDoubleObjectCond.clone(
+    collection1=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "CL2Jets"),
+        minPt=cms.double(38),
+        minEta=cms.double(-2.235),
+        maxEta=cms.double(2.5),
+    ),
+    collection2=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "CL2Electrons"),
+        minPt=cms.double(38),
+        minEta=cms.double(-2.234),
+        maxEta=cms.double(2.5),
+    ),
+    minTransMass=cms.double(3),
+)
+
+
 
 process._quadTkMuTkEle_5_5_5_7_er3p4_SS_xxx_3 = l1tGTQuadObjectCond.clone(
     collection1=cms.PSet(
@@ -2957,6 +2995,22 @@ process._quadTkEleTkMuPUPPIJet_30_40_25_25_er2p4_xxx_3 = l1tGTQuadObjectCond.clo
         maxEta=cms.double(2.4)
     )
 )
+process._doubleEG_32_32_er2p5_Mt40_xxx_ext_test2 = l1tGTDoubleObjectCond.clone(
+    collection1=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "CL2Jets"),
+        minPt=cms.double(38),
+        minEta=cms.double(-2.235),
+        maxEta=cms.double(2.5),
+    ),
+    collection2=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "GCTIsoEg"),
+        minPt=cms.double(38),
+        minEta=cms.double(-2.234),
+        maxEta=cms.double(2.5),
+    ),
+    minTransMass=cms.double(3),
+)
+
 
 
 process._tkIsoElePUPPItau_22_39_er2p1_drMin0p3_dzMax1p0_xxx_ext = l1tGTDoubleObjectCond.clone(
@@ -3010,6 +3064,23 @@ process._doublePuppiJet_160_35_er5p0_massMin620_xxx_ext = l1tGTDoubleObjectCond.
     ),
     minInvMass=cms.double(1.635),
 )
+process._doubleEG_32_32_er2p5_Mt40_xxx_ext_test = l1tGTDoubleObjectCond.clone(
+    collection1=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "CL2Jets"),
+        minPt=cms.double(38),
+        minEta=cms.double(-2.235),
+        maxEta=cms.double(2.5),
+    ),
+    collection2=cms.PSet(
+        tag=cms.InputTag("l1tGTProducer", "GCTIsoEg"),
+        minPt=cms.double(38),
+        minEta=cms.double(-2.234),
+        maxEta=cms.double(2.5),
+    ),
+    minTransMass=cms.double(12),
+)
+
+
 
 process._doubleTkMuon_2_2_er1p5_drMax1p4_OS_dzMax1p0_xxx_ext = l1tGTDoubleObjectCond.clone(
     collection1=cms.PSet(

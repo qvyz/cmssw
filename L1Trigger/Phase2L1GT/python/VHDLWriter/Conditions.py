@@ -47,13 +47,6 @@ class Condition:
         self.Paths = []
         self.ResourceUseage = CutResources()
         self.ResourcesperCut = {
-            ('minPt') : CutResources(bram = 0 , dsp = 0, lut = 110),
-            ('minEta','maxEta') : CutResources(bram = 0 , dsp = 0, lut = 120),
-            ('minPhi','maxPhi') : CutResources(bram = 0 , dsp = 0, lut = 123),
-            ('minZ0','maxZ0') : CutResources(bram = 0 , dsp = 0, lut = 123),
-            ('qual') : CutResources(bram = 0 , dsp = 0, lut = 40),
-            ('iso') : CutResources(bram = 0 , dsp = 0, lut = 40)
-
         }
         self._HWConversionFunctions = {
             'minPt': l1tGTScales.to_hw_pT,
@@ -74,12 +67,14 @@ class Condition:
         else : 
             return False
 
-    def addResources(self,knowncut):
+    def addResources(self,knowncut,keep = 0):
         for k in list(self.ResourcesperCut.keys()):
             if knowncut in k:
                 if k in self.ResourcesperCut.keys():
-                    self.ResourceUseage.addCutResources(self.ResourcesperCut.pop(k))
-
+                    if keep == 0:
+                        self.ResourceUseage.addCutResources(self.ResourcesperCut.pop(k))
+                    else:
+                        self.ResourceUseage.addCutResources(self.ResourcesperCut[k])
 
 
 
@@ -91,7 +86,10 @@ class Condition:
         if collection != "":
             if self.getHWCut(key) not in self.Cuts.keys():
                 cut = _Cut()
-                cut.setNumberofvalues(numberofparameters)
+                if key in self._HWConversionFunctions:
+                    cut.setNumberofvalues(numberofparameters,type(self._HWConversionFunctions[key](physvalue)))
+                else:
+                    cut.setNumberofvalues(numberofparameters)
                 if key in self._HWConversionFunctions:
                     if ((key == 'ss') or (key == 'os')):
                         cut.setforBooleanCut(numberofparameters)
@@ -187,11 +185,18 @@ class DoubleObjCond(Condition):
             'ss' : 'ss_cut'
         })
         self.ResourcesperCut.update({
+                        ('minPt') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('minEta','maxEta') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('minPhi','maxPhi') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('minZ0','maxZ0') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('qual') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('iso') : CutResources(bram = 0 , dsp = 0, lut = 30),
             ('minDEta','maxDEta') : CutResources(bram = 0 , dsp = 0, lut = 800),
             ('minDPhi','maxDPhi') : CutResources(bram = 0 , dsp = 0, lut = 800),
             ('minDR','maxDR') : CutResources(bram = 0 , dsp = 24, lut = 1800),
-            ('minInvMass','maxInvMass') : CutResources(bram = 24 , dsp = 36, lut = 2000),
-            ('minTransMass','maxTransMass') : CutResources(bram = 24 , dsp = 36, lut = 2000)
+            ('minCombPt','maxCombPt') : CutResources(bram = 6 , dsp = 108, lut = 1800),
+            ('minInvMass','maxInvMass') : CutResources(bram = 30 , dsp = 36, lut = 2000),
+            ('minTransMass','maxTransMass') : CutResources(bram = 6 , dsp = 36, lut = 2000)
         })
 
 
@@ -221,9 +226,20 @@ class SingleObjCond(Condition):
             'maxZ0' : 'maxZ0_cut',
             'qual' : 'qual_cut',
             'iso' : 'iso_cut'})
+        self.ResourcesperCut.update({
+            ('minPt') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('minEta','maxEta') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('minPhi','maxPhi') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('minZ0','maxZ0') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('qual') : CutResources(bram = 0 , dsp = 0, lut = 30),
+            ('iso') : CutResources(bram = 0 , dsp = 0, lut = 30)
+        })
 
     Label = "L1GTSingleObjectCond"
     Template = "single.template"
+
+
+
 
 
     def getCollections(self, object):
@@ -239,7 +255,7 @@ class QuadObjCond(Condition):
     def __init__(self):
         Condition.__init__(self)
 
-        self._cut_aliases.update({
+        self._cut_aliases.update({ 
             'minPt' : 'pT_cuts',
             'minEta' : 'minEta_cuts',
             'maxEta' : 'maxEta_cuts',
@@ -249,13 +265,40 @@ class QuadObjCond(Condition):
             'maxZ0' : 'maxZ0_cuts',
             'qual' : 'qual_cuts',
             'iso' : 'iso_cuts',
+            'minDEta' : 'mindEta_cuts',
+            'maxDEta' : 'maxdEta_cuts',
+            'minDPhi' : 'mindPhi_cuts',
+            'maxDPhi' : 'maxdPhi_cuts',
+            'minDR' : 'mindRSquared_cuts',
+            'maxDR' : 'maxdRSquared_cuts',
+            'minInvMass' : 'mininvMassSqrDiv2_cuts',
+            'maxInvMass' : 'maxinvMassSqrDiv2_cuts',
+            'minTransMass' : 'mintransMassSqrDiv2_cuts',
+            'maxTransMass' : 'maxtransMassSqrDiv2_cuts',
             'os' : 'os_cuts',
-            'ss' : 'ss_cuts'})
-
+            'ss' : 'ss_cuts'
+        })
         self._HWConversionFunctions.update({
             'os'          : self.booltostring,
             'ss'          : self.booltostring
         })
+        self.ResourcesperCut.update({
+            ('minPt') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('minEta','maxEta') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('minPhi','maxPhi') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('minZ0','maxZ0') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('qual') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('iso') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('minDEta','maxDEta') : CutResources(bram = 0 , dsp = 0, lut = 800),
+            ('minDPhi','maxDPhi') : CutResources(bram = 0 , dsp = 0, lut = 800),
+            ('minDR','maxDR') : CutResources(bram = 0 , dsp = 24, lut = 1800),
+            ('minCombPt','maxCombPt') : CutResources(bram = 6 , dsp = 108, lut = 1800),
+            ('minInvMass','maxInvMass') : CutResources(bram = 30 , dsp = 36, lut = 2000),
+            ('minTransMass','maxTransMass') : CutResources(bram = 6 , dsp = 36, lut = 2000)
+        })
+
+
+
 
 
     Label = "L1GTQuadObjectCond"
@@ -312,14 +355,15 @@ class _Cut:
         self.hwcut.append(hwcut)
         self.physcut.append(physcut)
         self.enablecut.append(True)        
-    def setNumberofvalues(self,value):
-        self.hwcut = [0] * (value )
+    def setNumberofvalues(self,value,value_type = int):
+        self.hwcut = [value_type(0)] * (value )
         self.physcut = [0] * (value)
         self.enablecut = [False] * (value)
 
     def setforBooleanCut(self,value):
         self.hwcut = [False] * (value)
     def setCutat(self,hwcut,physcut,position):
+
         self.hwcut[position -1] = hwcut
         self.physcut[position -1] = physcut
         self.enablecut[position -1] = True
@@ -412,18 +456,19 @@ class Algorithmsdict:
         if self.algoblocks == []:
             return 0
         else:
-           brammax = max(item.ResourceUseage.bram for item in self.algoblocks)
-
-           if brammax!=0 :
-                for item, value in enumerate(self.algoblocks):
-                    if value.ResourceUseage.bram == brammax:
-                        return self.algoblocks.pop(item)
 
            dspmax = max(item.ResourceUseage.dsp for item in self.algoblocks)
            if dspmax!=0 :
                 for item, value in enumerate(self.algoblocks):
                     if value.ResourceUseage.dsp == dspmax:
                         return self.algoblocks.pop(item)
+           brammax = max(item.ResourceUseage.bram for item in self.algoblocks)
+           if brammax!=0 :
+                for item, value in enumerate(self.algoblocks):
+                    if value.ResourceUseage.bram == brammax:
+                        return self.algoblocks.pop(item)
+
+
            lutmax = max(item.ResourceUseage.lut for item in self.algoblocks)
            for item, value in enumerate(self.algoblocks):
                 if value.ResourceUseage.lut == lutmax:
@@ -468,26 +513,34 @@ class TripleObjCond(Condition):
             'maxZ0' : 'maxZ0_cuts',
             'qual' : 'qual_cuts',
             'iso' : 'iso_cuts',
-            'minDEta' : 'mindEta_cut',
-            'maxDEta' : 'maxdEta_cut',
-            'minDPhi' : 'mindPhi_cut',
-            'maxDPhi' : 'maxdPhi_cut',
-            'minDR' : 'mindRSquared_cut',
-            'maxDR' : 'maxdRSquared_cut',
-            'minInvMass' : 'mininvMassSqrDiv2_cut',
-            'maxInvMass' : 'maxinvMassSqrDiv2_cut',
-            'minTransMass' : 'mintransMassSqrDiv2_cut',
-            'maxTransMass' : 'maxtransMassSqrDiv2_cut',
+            'minDEta' : 'mindEta_cuts',
+            'maxDEta' : 'maxdEta_cuts',
+            'minDPhi' : 'mindPhi_cuts',
+            'maxDPhi' : 'maxdPhi_cuts',
+            'minDR' : 'mindRSquared_cuts',
+            'maxDR' : 'maxdRSquared_cuts',
+            'minInvMass' : 'mininvMassSqrDiv2_cuts',
+            'maxInvMass' : 'maxinvMassSqrDiv2_cuts',
+            'minTransMass' : 'mintransMassSqrDiv2_cuts',
+            'maxTransMass' : 'maxtransMassSqrDiv2_cuts',
             'os' : 'os_cuts',
             'ss' : 'ss_cuts'
         })
         self.ResourcesperCut.update({
+            ('minPt') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('minEta','maxEta') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('minPhi','maxPhi') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('minZ0','maxZ0') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('qual') : CutResources(bram = 0 , dsp = 0, lut = 150),
+            ('iso') : CutResources(bram = 0 , dsp = 0, lut = 150),
             ('minDEta','maxDEta') : CutResources(bram = 0 , dsp = 0, lut = 800),
             ('minDPhi','maxDPhi') : CutResources(bram = 0 , dsp = 0, lut = 800),
             ('minDR','maxDR') : CutResources(bram = 0 , dsp = 24, lut = 1800),
-            ('minInvMass','maxInvMass') : CutResources(bram = 24 , dsp = 36, lut = 2000),
-            ('minTransMass','maxTransMass') : CutResources(bram = 24 , dsp = 36, lut = 2000)
+            ('minCombPt','maxCombPt') : CutResources(bram = 6 , dsp = 108, lut = 1800),
+            ('minInvMass','maxInvMass') : CutResources(bram = 30 , dsp = 36, lut = 2000),
+            ('minTransMass','maxTransMass') : CutResources(bram = 6 , dsp = 36, lut = 2000)
         })
+
 
 
     def getCollections(self, object):

@@ -38,7 +38,7 @@ def checkFilter(filt):
                 if col != None:
                     if col.hasParameter(knowncut):
                         Condit.setCut(knowncut,col.getParameter(knowncut).value(), idx,Condit.NumberOfCorrelations)
-                        Condit.addResources(knowncut)
+                        Condit.addResources(knowncut,1)
     knowncuts = Condit._cut_aliases.keys()
     for knowncut in knowncuts:
         if filt.hasParameter(knowncut):
@@ -166,19 +166,17 @@ def distributeAlgos(algodict,numslrs):
             addmax = algodict.popMaxalgoblock()
         return algounits
     else:
-        print(type(addmax))
         if(addmax == type(int)):
             return addmax
         slrcounter = 0
         repeater = 0
         while(addmax != 0):
-            print(cnt)
             if cnt < (numslrs - 1):
                 algounits[cnt].Combineblocks(addmax)
             elif cnt == (numslrs - 1):
                 algounits[cnt].Combineblocks(addmax)
             else:
-                algounits[6 - cnt].Combineblocks(addmax)
+                algounits[(numslrs - 1) * 2 - cnt].Combineblocks(addmax)
             
             if (((cnt == numslrs - 1)) and (repeater > 0)):
                 cnt = cnt
@@ -205,7 +203,6 @@ def distributeAlgosWithoutopt(algodict,numslrs):
         return algounits
     else:
         addalgo = algodict.algoblocks.pop()
-        print(type(addalgo))
         if(addalgo == type(int)):
             return addalgo
         cnt = 0
@@ -213,13 +210,12 @@ def distributeAlgosWithoutopt(algodict,numslrs):
         while(addalgo != None):
             if addalgo == type(int):
                 return 0
-            print(cnt)
             if cnt < (numslrs - 1):
                 algounits[cnt].Combineblocks(addalgo)
             elif cnt == (numslrs - 1):
                 algounits[cnt].Combineblocks(addalgo)
             else:
-                algounits[6 - cnt].Combineblocks(addalgo)
+                algounits[(numslrs - 1) * 2 - cnt].Combineblocks(addalgo)
             
             if (((cnt == numslrs - 1)) and (repeater > 0)):
                 cnt = cnt

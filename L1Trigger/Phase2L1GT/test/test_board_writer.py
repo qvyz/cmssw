@@ -11,11 +11,12 @@ distributedalgos = dict()
 knownfilters = conversions.getConditionsfromConfig(gt)
 logicalcombinations = conversions.getLogicalFilters(gt,knownfilters)
 algoblocks = conversions.writeAlgoblocks(knownfilters,logicalcombinations)
-distributedalgos = conversions.distributeAlgosAtRandom(algoblocks,4)
+distributedalgos = conversions.distributeAlgos(algoblocks,4)
 conversions.writeAlgounits(distributedalgos,algobitmap,knownfilters,logicalcombinations)
 distributed_algomap = conversions.getAlgobits(algobitmap,distributedalgos,[0,24,32,48])
 
-
+for algo in distributedalgos:
+  print(algo.ResourceUseage.printResources())
 
 
 import FWCore.ParameterSet.Config as cms
