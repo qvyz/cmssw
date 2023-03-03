@@ -1,5 +1,5 @@
-#ifndef P2GTCandidate_h
-#define P2GTCandidate_h
+#ifndef DataFormats_L1Trigger_P2GTCandidate_h
+#define DataFormats_L1Trigger_P2GTCandidate_h
 
 #include <vector>
 #include <ap_int.h>
@@ -316,4 +316,4 @@ namespace l1t {
 
 };  // namespace l1t
 
-#endif
+#endif // DataFormats_L1Trigger_P2GTCandidate_h

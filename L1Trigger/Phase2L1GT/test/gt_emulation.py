@@ -32,8 +32,9 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring(
-                                '/store/mc/Phase2HLTTDRWinter20DIGI/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW/PU200_110X_mcRun4_realistic_v3-v2/110000/005E74D6-B50E-674E-89E6-EAA9A617B476.root',
-                            )
+                                '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/MinBias_TuneCP5_14TeV-pythia8/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/110000/0016DCDC-FCE4-BC47-89AC-43EB1BB82D46.root',
+                            ),
+                            inputCommands = cms.untracked.vstring("keep *","drop l1tTkPrimaryVertexs_L1TkPrimaryVertex_*_*")
 )
 
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(20))
@@ -82,6 +83,8 @@ from L1Trigger.Phase2L1GT.l1tGTDoubleObjectCond_cfi import l1tGTDoubleObjectCond
 from L1Trigger.Phase2L1GT.l1tGTTripleObjectCond_cfi import l1tGTTripleObjectCond
 from L1Trigger.Phase2L1GT.l1tGTQuadObjectCond_cfi import l1tGTQuadObjectCond
 
+from L1Trigger.Phase2L1GT.l1tGTAlgoBlockProducer_cff import algorithms
+
 # Some dummy seeds to test tracker interface
 process.DoubleJetCondition = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
@@ -93,6 +96,8 @@ process.DoubleJetCondition = l1tGTDoubleObjectCond.clone(
         minPt = cms.double(10)
     )
 )
+process.pDoubleJetCondition = cms.Path(process.DoubleJetCondition)
+algorithms.append(cms.PSet(expression = cms.string("pDoubleJetCondition")))
 
 process.TripleJetCondition = l1tGTTripleObjectCond.clone(
     collection1 = cms.PSet(
@@ -108,9 +113,8 @@ process.TripleJetCondition = l1tGTTripleObjectCond.clone(
         minPt = cms.double(25)
     )
 )
-
-process.pDoubleJetCondition = cms.Path(process.DoubleJetCondition)
 process.pTripleJetCondition = cms.Path(process.TripleJetCondition)
+algorithms.append(cms.PSet(expression = cms.string("pTripleJetCondition")))
 
 process.tkElePuppiJet = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
@@ -129,6 +133,7 @@ process.tkElePuppiJet = l1tGTDoubleObjectCond.clone(
     maxDz = cms.double(1)
 )
 process.pTkElePuppiJet = cms.Path(process.tkElePuppiJet)
+algorithms += [cms.PSet(expression = cms.string("pTkElePuppiJet"))]
 
 # Some seeds from https://twiki.cern.ch/twiki/pub/CMS/PhaseIIL1TriggerMenuTools/L1Menu_emulators12_3_x_060522.pdf
 
@@ -139,6 +144,7 @@ process.SingleTkMuon = l1tGTSingleObjectCond.clone(
     maxEta = cms.double(2.4)
 )
 process.pSingleTkMuon = cms.Path(process.SingleTkMuon)
+algorithms.append(cms.PSet(expression = cms.string("pSingleTkMuon")))
 
 process.DoubleTkMuon = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
@@ -156,6 +162,7 @@ process.DoubleTkMuon = l1tGTDoubleObjectCond.clone(
     maxDz = cms.double(1),
 )
 process.pDoubleTkMuon = cms.Path(process.DoubleTkMuon)
+algorithms.append(cms.PSet(expression = cms.string("pDoubleTkMuon")))
 
 process.TripleTkMuon = l1tGTTripleObjectCond.clone(
     collection1 = cms.PSet(
@@ -187,6 +194,7 @@ process.TripleTkMuon = l1tGTTripleObjectCond.clone(
     )
 )
 process.pTripleTkMuon = cms.Path(process.TripleTkMuon)
+algorithms.append(cms.PSet(expression = cms.string("pTripleTkMuon")))
 
 # TODO Some other missing seeds
 
@@ -197,6 +205,8 @@ process.HadSinglePuppiJet = l1tGTSingleObjectCond.clone(
     maxEta = cms.double(2.4)
 )
 process.pHadSinglePuppiJet = cms.Path(process.HadSinglePuppiJet)
+algorithms.append(cms.PSet(expression = cms.string("pHadSinglePuppiJet")))
+
 
 process.HadDoublePuppiJet = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
@@ -214,6 +224,7 @@ process.HadDoublePuppiJet = l1tGTDoubleObjectCond.clone(
     maxDEta = cms.double(1.6),
 )
 process.pHadDoublePuppiJet = cms.Path(process.HadDoublePuppiJet)
+algorithms.append(cms.PSet(expression = cms.string("pHadDoublePuppiJet")))
 
 # TODO some other seeds
 
@@ -224,6 +235,7 @@ process.PuppiMET = l1tGTSingleObjectCond.clone(
     minPt = cms.double(200)
 )
 process.pPuppiMET = cms.Path(process.PuppiMET)
+algorithms.append(cms.PSet(expression = cms.string("pPuppiMET")))
 
 process.VBFDoublePuppiJet = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
@@ -241,6 +253,7 @@ process.VBFDoublePuppiJet = l1tGTDoubleObjectCond.clone(
     minInvMass = cms.double(620),
 )
 process.pVBFDoublePuppiJet = cms.Path(process.VBFDoublePuppiJet)
+algorithms.append(cms.PSet(expression = cms.string("pVBFDoublePuppiJet")))
 
 
 # B-physics seeds from https://twiki.cern.ch/twiki/pub/CMS/PhaseIIL1TriggerMenuTools/L1Menu_emulators12_3_x_060522.pdf
@@ -262,6 +275,7 @@ process.doubleTkMuon1 = l1tGTDoubleObjectCond.clone(
     os = cms.bool(True)
 )
 process.pDoubleTkMuon1 = cms.Path(process.doubleTkMuon1)
+algorithms.append(cms.PSet(expression = cms.string("pDoubleTkMuon1")))
 
 process.doubleTkMuon2 = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
@@ -281,6 +295,7 @@ process.doubleTkMuon2 = l1tGTDoubleObjectCond.clone(
     os = cms.bool(True)
 )
 process.pDoubleTkMuon2 = cms.Path(process.doubleTkMuon2)
+algorithms.append(cms.PSet(expression = cms.string("pDoubleTkMuon2")))
 
 process.doubleTkMuon3 = l1tGTDoubleObjectCond.clone(
     collection1 = cms.PSet(
@@ -301,7 +316,7 @@ process.doubleTkMuon3 = l1tGTDoubleObjectCond.clone(
     os = cms.bool(True)
 )
 process.pDoubleTkMuon3 = cms.Path(process.doubleTkMuon3)
-
+algorithms.append(cms.PSet(expression = cms.string("pDoubleTkMuon3")))
 
 process.tripleTkMuon1 = l1tGTTripleObjectCond.clone(
     collection1 = cms.PSet(
@@ -336,6 +351,7 @@ process.tripleTkMuon1 = l1tGTTripleObjectCond.clone(
     )
 )
 process.pTripleTkMuon1 = cms.Path(process.tripleTkMuon1)
+algorithms.append(cms.PSet(expression = cms.string("pTripleTkMuon1")))
 
 
 process.tripleTkMuon2 = l1tGTTripleObjectCond.clone(
@@ -371,7 +387,7 @@ process.tripleTkMuon2 = l1tGTTripleObjectCond.clone(
     )
 )
 process.pTripleTkMuon2 = cms.Path(process.tripleTkMuon2)
-
+algorithms.append(cms.PSet(expression = cms.string("pTripleTkMuon2")))
 
 ############################################################
 # Analyzable output
@@ -381,6 +397,7 @@ process.out = cms.OutputModule("PoolOutputModule",
 outputCommands = cms.untracked.vstring('drop *',
         'keep *_l1tGTProducer_*_L1TEmulation',
         'keep l1tP2GTCandidatesl1tP2GTCandidatel1tP2GTCandidatesl1tP2GTCandidateedmrefhelperFindUsingAdvanceedmRefs_*_*_L1TEmulation',
+        'keep *_l1tGTAlgoBlockProducer_*_L1TEmulation',
         'keep *_TriggerResults_*_L1TEmulation'
     ),
     fileName=cms.untracked.string("l1t_emulation.root")
