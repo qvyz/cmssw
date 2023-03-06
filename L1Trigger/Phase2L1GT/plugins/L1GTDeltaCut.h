@@ -163,8 +163,8 @@ namespace l1t {
         if (std::abs(lutCosDPhi - cosPhiLUT_.output_scale() * std::cos(dPhi.value() * scales_.phi_lsb())) >
             cosPhiLUT_.hwMax_error()) {
           edm::LogError("COS LUT") << "Difference larger than max LUT error: " << cosPhiLUT_.hwMax_error()
-                                   << ", lut: " << lutCosDPhi
-                                   << ", calc: " << cosPhiLUT_.output_scale() * std::cos(dPhi.value() * scales_.phi_lsb());
+                                   << ", lut: " << lutCosDPhi << ", calc: "
+                                   << cosPhiLUT_.output_scale() * std::cos(dPhi.value() * scales_.phi_lsb());
         }
       }
 

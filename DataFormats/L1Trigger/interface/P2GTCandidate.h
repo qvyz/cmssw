@@ -316,4 +316,4 @@ namespace l1t {
 
 };  // namespace l1t
 
-#endif // DataFormats_L1Trigger_P2GTCandidate_h
+#endif  // DataFormats_L1Trigger_P2GTCandidate_h

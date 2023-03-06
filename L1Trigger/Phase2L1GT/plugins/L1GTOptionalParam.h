@@ -28,4 +28,4 @@ namespace l1t {
   }
 }  // namespace l1t
 
-#endif // L1Trigger_Phase2L1GT_L1GTOptionalParam_h
+#endif  // L1Trigger_Phase2L1GT_L1GTOptionalParam_h
