@@ -2,6 +2,12 @@
 
 import L1Trigger.Phase2L1GT.VHDLWriter.Conversions as conversions
 import L1Trigger.Phase2L1GT.VHDLWriter.Writer as writer
+import sys
+import os
+cmsswbase = os.getenv('CMSSW_BASE')
+syspath = cmsswbase + '/src/L1Trigger/Phase2L1GT/test' 
+print(syspath)
+sys.path.insert(1, syspath)
 from gt_firmware_evaluation import process as gt
 from gt_firmware_evaluation import algobit_conf as algobitmap
 
