@@ -14,25 +14,34 @@ namespace l1t {
 
   class P2GTAlgoBlock {
   public:
-    P2GTAlgoBlock() : algoName_(""), initial_(false), afterMask_(false), afterPrescale_(false), trigObjects_() {}
-    P2GTAlgoBlock(std::string name, bool initial, bool afterMask, bool afterPrescale, P2GTCandidateVectorRef trigObjects)
+    P2GTAlgoBlock()
+        : algoName_(""),
+          decisionBeforeBxMaskAndPrescale_(false),
+          decisionBeforePrescale_(false),
+          decisionFinal_(false),
+          trigObjects_() {}
+    P2GTAlgoBlock(std::string name,
+                  bool decisionBeforeBxMaskAndPrescale,
+                  bool decisionBeforePrescale,
+                  bool decisionFinal,
+                  P2GTCandidateVectorRef trigObjects)
         : algoName_(std::move(name)),
-          initial_(initial),
-          afterMask_(afterMask),
-          afterPrescale_(afterPrescale),
+          decisionBeforeBxMaskAndPrescale_(decisionBeforeBxMaskAndPrescale),
+          decisionBeforePrescale_(decisionBeforePrescale),
+          decisionFinal_(decisionFinal),
           trigObjects_(std::move(trigObjects)) {}
 
     const std::string& algoName() const { return algoName_; }
-    bool initial() const { return initial_; }
-    bool afterMask() const { return afterMask_; }
-    bool afterPrescale() const { return afterPrescale_; }
+    bool decisionBeforeBxMaskAndPrescale() const { return decisionBeforeBxMaskAndPrescale_; }
+    bool decisionBeforePrescale() const { return decisionBeforePrescale_; }
+    bool decisionFinal() const { return decisionFinal_; }
     const P2GTCandidateVectorRef& trigObjects() const { return trigObjects_; }
 
   private:
     const std::string algoName_;
-    const bool initial_;
-    const bool afterMask_;
-    const bool afterPrescale_;
+    const bool decisionBeforeBxMaskAndPrescale_;
+    const bool decisionBeforePrescale_;
+    const bool decisionFinal_;
     const P2GTCandidateVectorRef trigObjects_;
   };
 
