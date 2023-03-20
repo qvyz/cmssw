@@ -7,7 +7,6 @@
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
@@ -17,106 +16,69 @@
 #include "L1Trigger/DemonstratorTools/interface/utilities.h"
 
 #include "FWCore/Utilities/interface/EDGetToken.h"
-#include "DataFormats/Common/interface/TriggerResults.h"
 
-#include "FWCore/Framework/interface/TriggerNamesService.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "DataFormats/L1Trigger/interface/P2GTAlgoBlock.h"
 
 #include "ap_int.h"
 
 #include <vector>
-#include <map>
-#include <cmath>
 #include <algorithm>
 #include <string>
-#include <optional>
 
-class L1GTBoardWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
+using namespace l1t;
+
+class L1GTBoardWriter : public edm::one::EDAnalyzer<> {
 public:
   explicit L1GTBoardWriter(const edm::ParameterSet&);
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
-  struct AlgoBit {
-    unsigned int bitPos_;
-    std::string path;
-    std::optional<std::size_t> idx;
-
-    bool isSet(const edm::TriggerResults& triggerResults, const std::vector<std::string>& paths) {
-      if (!idx) {
-        auto it = std::find(paths.begin(), paths.end(), path);
-        if (it == paths.end()) {
-          edm::LogError("L1GTBoardWriter") << "path not found: " << path;
-        }
-        idx = it - paths.begin();
-      }
-      return triggerResults[idx.value()].accept();
-    }
-  };
-
 private:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
   void endJob() override;
 
+  const std::vector<unsigned int> channels_;
+  const std::vector<unsigned long long> algoBitMask_;
+  const edm::EDGetTokenT<P2GTAlgoBlockCollection> algoBlocksToken_;
   l1t::demo::BoardDataWriter boardDataWriter_;
-  edm::EDGetTokenT<edm::TriggerResults> trigResults_;
-  std::map<size_t, std::vector<AlgoBit>> algoBitMap_;
 };
 
-static l1t::demo::BoardDataWriter::ChannelMap_t generateChannelMap(const edm::ParameterSet& config) {
-  l1t::demo::BoardDataWriter::ChannelMap_t channelMap;
-  for (auto& param : config.getParameterSetVector("channelConfig")) {
-    l1t::demo::LinkId id{"Algos", param.getParameter<unsigned int>("channel")};
-    l1t::demo::ChannelSpec spec{1, 0, 0};
-
-    channelMap.insert({id, {spec, {id.channel}}});
-  }
-
-  return channelMap;
-}
-
 L1GTBoardWriter::L1GTBoardWriter(const edm::ParameterSet& config)
-    : boardDataWriter_(config.exists("patternFormat")
-                           ? l1t::demo::parseFileFormat(config.getParameter<std::string>("patternFormat"))
-                           : l1t::demo::FileFormat::EMPv2,
-                       config.getParameter<std::string>("outputFilename"),
-                       9,
-                       1,
-                       config.exists("maxLines") ? config.getParameter<unsigned int>("maxLines") : 1024,
-                       generateChannelMap(config)),
-      trigResults_(consumes<edm::TriggerResults>(edm::InputTag(
-          "TriggerResults", "", config.exists("processName") ? config.getParameter<std::string>("processName") : ""))) {
-  for (const edm::ParameterSet& param : config.getParameterSetVector("channelConfig")) {
-    std::vector<AlgoBit> algoBits;
-    for (const edm::ParameterSet& algoConfig : param.getParameterSetVector("algoBits")) {
-      algoBits.emplace_back(AlgoBit{
-          algoConfig.getParameter<unsigned int>("bitPos"), algoConfig.getParameter<std::string>("path"), std::nullopt});
-    }
-
-    std::sort(algoBits.begin(), algoBits.end(), [](const AlgoBit& lhs, const AlgoBit& rhs) {
-      return lhs.bitPos_ < rhs.bitPos_;
-    });
-
-    algoBitMap_.emplace(param.getParameter<unsigned int>("channel"), algoBits);
-  }
-}
+    : channels_(config.getParameter<std::vector<unsigned int>>("channels")),
+      algoBitMask_(config.exists("algoBitMask") ? config.getParameter<std::vector<unsigned long long>>("algoBitMask")
+                                                : std::vector<unsigned long long>()),
+      algoBlocksToken_(consumes<P2GTAlgoBlockCollection>(config.getParameter<edm::InputTag>("algoBlocksTag"))),
+      boardDataWriter_(
+          config.exists("patternFormat") ? l1t::demo::parseFileFormat(config.getParameter<std::string>("patternFormat"))
+                                         : l1t::demo::FileFormat::EMPv2,
+          config.getParameter<std::string>("outputFilename"),
+          9,
+          1,
+          config.exists("maxLines") ? config.getParameter<unsigned int>("maxLines") : 1024,
+          [](const std::vector<unsigned int>& channels) {
+            l1t::demo::BoardDataWriter::ChannelMap_t channelMap;
+            for (unsigned int channel : channels) {
+              channelMap.insert({l1t::demo::LinkId{"Algos", channel}, {l1t::demo::ChannelSpec{1, 0, 0}, {channel}}});
+            }
+            return channelMap;
+          }(channels_)) {}
 
 void L1GTBoardWriter::analyze(const edm::Event& event, const edm::EventSetup& iSetup) {
-  edm::Service<edm::service::TriggerNamesService> tns;
-  std::vector<std::string> triggerPaths;
-
-  const edm::TriggerResults& trigResults = event.get(trigResults_);
-
-  if (!tns.isAvailable() || !tns->getTrigPaths(trigResults, triggerPaths)) {
-    edm::LogError("L1GTBoardWriter") << "TriggerNamesService not available!";
-  }
-
   l1t::demo::EventData eventData;
-  for (auto& [channel, algoBits] : algoBitMap_) {
-    std::vector<ap_uint<64>> bits(9, 0);
+  const P2GTAlgoBlockCollection& algoBlocks = event.get(algoBlocksToken_);
 
-    for (AlgoBit& algoBit : algoBits) {
-      bits[algoBit.bitPos_ / 64].set(algoBit.bitPos_ % 64, algoBit.isSet(trigResults, triggerPaths));
+  auto algoBlockIt = algoBlocks.begin();
+  auto algoMaskIt = algoBitMask_.begin();
+
+  for (unsigned int channel : channels_) {
+    std::vector<ap_uint<64>> bits(9, 0);
+    for (std::size_t word = 0; word < 9; word++) {
+      ap_uint<64> mask = algoMaskIt != algoBitMask_.end() ? *algoMaskIt++ : ~static_cast<unsigned long long>(0);
+
+      for (std::size_t idx = 0; idx < 64 && algoBlockIt != algoBlocks.end(); idx++) {
+        bits[word].set(idx, algoBlockIt->decisionBeforeBxMaskAndPrescale() & mask.bit(idx));
+        algoBlockIt++;
+      }
     }
 
     eventData.add({"Algos", channel}, bits);
@@ -128,19 +90,12 @@ void L1GTBoardWriter::analyze(const edm::Event& event, const edm::EventSetup& iS
 void L1GTBoardWriter::endJob() { boardDataWriter_.flush(); }
 
 void L1GTBoardWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  edm::ParameterSetDescription algoDesc;
-  algoDesc.add<unsigned int>("bitPos");
-  algoDesc.add<std::string>("path");
-
-  edm::ParameterSetDescription algosDesc;
-  algosDesc.add<unsigned int>("channel");
-  algosDesc.addVPSet("algoBits", algoDesc);
-
   edm::ParameterSetDescription desc;
   desc.add<std::string>("outputFilename");
-  desc.addVPSet("channelConfig", algosDesc);
+  desc.add<edm::InputTag>("algoBlocksTag");
+  desc.add<std::vector<unsigned int>>("channels");
+  desc.addOptional<std::vector<unsigned long long>>("algoBitMask");
   desc.addOptional<unsigned int>("maxLines", 1024);
-  desc.addOptional<std::string>("processName", "");
   desc.addOptional<std::string>("patternFormat");
 
   descriptions.addDefault(desc);

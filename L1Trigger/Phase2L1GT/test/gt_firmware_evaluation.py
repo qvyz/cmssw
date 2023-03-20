@@ -778,7 +778,8 @@ process._quadTkEleTkMuPUPPIJet_30_40_25_25_er2p4 = l1tGTQuadObjectCond.clone(
     )
 )
 
-algobit_conf = {}
+algorithms = cms.VPSet()
+
 idx = 0
 # remove '_', since it is not allowed for module names
 for filt_name in process.filters:
@@ -787,32 +788,30 @@ for filt_name in process.filters:
     new_name = filt_name.replace('_', '')
     setattr(process, new_name, getattr(process, filt_name).clone())
     delattr(process, filt_name)
-    algobit_conf[idx] = 'l1t' + filt_name
     setattr(process, 'l1t' + filt_name, cms.Path(getattr(process, new_name)))
+
+    algorithms.append(cms.PSet(expression = cms.string('l1t' + filt_name)))
     idx += 1
 
 # Algo bits
-from L1Trigger.Phase2L1GT.l1tGTAlgoChannelConfig import generate_channel_config
+process.l1tGTAlgoBlockProducer = cms.EDProducer(
+    "L1GTAlgoBlockProducer",
+    algorithms = algorithms
+)
+
+process.pl1tGTAlgoBlockProducer = cms.Path(process.l1tGTAlgoBlockProducer)
 
 if options.platform == "VU13P":
-    channel_conf = generate_channel_config({
-        0: algobit_conf,
-        24: algobit_conf,
-        32: algobit_conf,
-        48: algobit_conf
-    })
+    channels = cms.vuint32(46, 47)
 else:
-    channel_conf = generate_channel_config({
-        0: algobit_conf,
-        28: algobit_conf,
-        46: algobit_conf
-    })
+    channels = cms.vuint32(32, 33)
 
 
 process.BoardData = cms.EDAnalyzer("L1GTBoardWriter",
   outputFilename = cms.string("outputPattern"),
+  algoBlocksTag = cms.InputTag("l1tGTAlgoBlockProducer"),
   maxLines = cms.uint32(1024),
-  channelConfig = channel_conf
+  channels = channels
 )
 
 process.l1t_BoardData = cms.EndPath(process.BoardData)

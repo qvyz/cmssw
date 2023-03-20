@@ -30,14 +30,10 @@ process.source = cms.Source("PoolSource", fileNames=cms.untracked.vstring(("file
 
 
 # Algo bits
-from L1Trigger.Phase2L1GT.l1tGTAlgoChannelConfig import generate_channel_config
-
 process.BoardData = cms.EDAnalyzer("L1GTBoardWriter",
   outputFilename = cms.string("outputPattern"),
   maxLines = cms.uint32(1024),
-  processName = cms.string("L1Test"),
-  channelConfig = generate_channel_config(
-  distributed_algomap
-    )
+  algoBlocksTag = cms.InputTag("l1tGTAlgoBlockProducer"),
+  channels = cms.vuint32(47, 48)
 )
 process.l1t_BoardData = cms.Path(process.BoardData)
