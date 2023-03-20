@@ -36,8 +36,8 @@ namespace l1t {
               "minScalarSumPt", config, std::bind(&L1GTScales::to_hw_pT, scales, std::placeholders::_1))),
           qual_(config.exists("qual") ? config.getParameter<std::vector<unsigned int>>("qual")
                                       : std::vector<unsigned int>()),
-          iso_(config.exists("iso") ? config.getParameter<std::vector<unsigned int>>("iso")
-                                    : std::vector<unsigned int>()) {}
+          maxIso_(getOptionalParam<int, double>(
+              "maxIso", config, std::bind(&L1GTScales::to_hw_isolation, scales, std::placeholders::_1))) {}
 
     bool checkObject(const P2GTCandidate& obj) const {
       bool result = true;
@@ -56,7 +56,7 @@ namespace l1t {
       result &= minScalarSumPt_ ? (obj.hwSca_sum() > minScalarSumPt_) : true;
 
       result &= qual_.empty() ? true : std::find(qual_.begin(), qual_.end(), obj.hwQual().to_uint()) != qual_.end();
-      result &= iso_.empty() ? true : std::find(iso_.begin(), iso_.end(), obj.hwIso().to_uint()) != iso_.end();
+      result &= maxIso_ ? (obj.hwIso() < maxIso_) : true;
 
       return result;
     }
@@ -72,7 +72,7 @@ namespace l1t {
       desc.addOptional<double>("maxZ0");
       desc.addOptional<double>("minScalarSumPt");
       desc.addOptional<std::vector<unsigned int>>("qual");
-      desc.addOptional<std::vector<unsigned int>>("iso");
+      desc.addOptional<double>("maxIso");
     }
 
     const edm::InputTag& tag() const { return tag_; }
@@ -88,7 +88,7 @@ namespace l1t {
     const std::optional<int> maxZ0_;
     const std::optional<int> minScalarSumPt_;
     const std::vector<unsigned int> qual_;
-    const std::vector<unsigned int> iso_;
+    const std::optional<int> maxIso_;
   };
 
 }  // namespace l1t
