@@ -11,53 +11,26 @@
 
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 
+#include "L1GTSingleInOutLUT.h"
 #include "L1GTOptionalParam.h"
 
 #include <optional>
 
 namespace l1t {
 
-  class L1TSingleInOutLUT {
-  public:
-    L1TSingleInOutLUT(const std::vector<int32_t>& data, uint32_t unused_lsbs, double output_scale, double max_error)
-        : data_(data),
-          unused_lsbs_(unused_lsbs),
-          output_scale_(output_scale),
-          // I guess ceil is required due to small differences in C++ and python's cos/cosh implementation.
-          hwMax_error_(std::ceil(max_error * output_scale)) {}
-
-    int32_t operator[](uint32_t i) const { return data_[(i >> unused_lsbs_) % data_.size()]; }
-    double hwMax_error() const { return hwMax_error_; }
-    double output_scale() const { return output_scale_; }
-    static constexpr uint32_t DETA_LUT_SPLIT = 1 << 13;  // hw 2pi
-
-  private:
-    const std::vector<int32_t> data_;
-    const uint32_t unused_lsbs_;
-    const double output_scale_;
-    const double hwMax_error_;  // Sanity check
-  };
-
   class L1GTDeltaCut {
   public:
+    static constexpr uint32_t DETA_LUT_SPLIT = 1 << 13;  // hw 2pi
+
     L1GTDeltaCut(const edm::ParameterSet& config,
                  const edm::ParameterSet& lutConfig,
                  const L1GTScales& scales,
                  bool enable_sanity_checks = false,
                  bool inv_mass_checks = false)
         : scales_(scales),
-          coshEtaLUT_(lutConfig.getParameterSet("cosh_eta_lut").getParameter<std::vector<int>>("lut"),
-                      lutConfig.getParameterSet("cosh_eta_lut").getParameter<uint32_t>("unused_lsbs"),
-                      lutConfig.getParameterSet("cosh_eta_lut").getParameter<double>("output_scale_factor"),
-                      lutConfig.getParameterSet("cosh_eta_lut").getParameter<double>("max_error")),
-          coshEtaLUT2_(lutConfig.getParameterSet("cosh_eta_lut2").getParameter<std::vector<int>>("lut"),
-                       lutConfig.getParameterSet("cosh_eta_lut2").getParameter<uint32_t>("unused_lsbs"),
-                       lutConfig.getParameterSet("cosh_eta_lut2").getParameter<double>("output_scale_factor"),
-                       lutConfig.getParameterSet("cosh_eta_lut2").getParameter<double>("max_error")),
-          cosPhiLUT_(lutConfig.getParameterSet("cos_phi_lut").getParameter<std::vector<int>>("lut"),
-                     lutConfig.getParameterSet("cos_phi_lut").getParameter<uint32_t>("unused_lsbs"),
-                     lutConfig.getParameterSet("cos_phi_lut").getParameter<double>("output_scale_factor"),
-                     lutConfig.getParameterSet("cos_phi_lut").getParameter<double>("max_error")),
+          coshEtaLUT_(lutConfig.getParameterSet("cosh_eta_lut")),
+          coshEtaLUT2_(lutConfig.getParameterSet("cosh_eta_lut2")),
+          cosPhiLUT_(lutConfig.getParameterSet("cos_phi_lut")),
           minDEta_(getOptionalParam<int, double>(
               "minDEta", config, std::bind(&L1GTScales::to_hw_phi, scales, std::placeholders::_1))),
           maxDEta_(getOptionalParam<int, double>(
@@ -135,9 +108,7 @@ namespace l1t {
 
       int32_t lutCoshDEta;
       if (dEta) {
-        lutCoshDEta = dEta < L1TSingleInOutLUT::DETA_LUT_SPLIT
-                          ? coshEtaLUT_[dEta.value()]
-                          : coshEtaLUT2_[dEta.value() - L1TSingleInOutLUT::DETA_LUT_SPLIT];
+        lutCoshDEta = dEta < DETA_LUT_SPLIT ? coshEtaLUT_[dEta.value()] : coshEtaLUT2_[dEta.value() - DETA_LUT_SPLIT];
       }
 
       // Optimization: (cos(x + pi) = -cos(x), x in [0, pi))
@@ -148,10 +119,8 @@ namespace l1t {
 
       if (enable_sanity_checks_ && dEta && dPhi) {
         // Check whether the LUT error is smaller or equal than the expected maximum LUT error
-        double coshEtaLUTMax =
-            dEta < L1TSingleInOutLUT::DETA_LUT_SPLIT ? coshEtaLUT_.hwMax_error() : coshEtaLUT2_.hwMax_error();
-        double etaLUTScale =
-            dEta < L1TSingleInOutLUT::DETA_LUT_SPLIT ? coshEtaLUT_.output_scale() : coshEtaLUT2_.output_scale();
+        double coshEtaLUTMax = dEta < DETA_LUT_SPLIT ? coshEtaLUT_.hwMax_error() : coshEtaLUT2_.hwMax_error();
+        double etaLUTScale = dEta < DETA_LUT_SPLIT ? coshEtaLUT_.output_scale() : coshEtaLUT2_.output_scale();
 
         if (std::abs(lutCoshDEta - etaLUTScale * std::cosh(dEta.value() * scales_.eta_lsb())) > coshEtaLUTMax) {
           edm::LogError("COSH LUT") << "Difference larger than max LUT error: " << coshEtaLUTMax
@@ -170,7 +139,7 @@ namespace l1t {
 
       if (minInvMassSqrDiv2_ || maxInvMassSqrDiv2_) {
         int64_t invMassSqrDiv2;
-        if (dEta < L1TSingleInOutLUT::DETA_LUT_SPLIT) {
+        if (dEta < DETA_LUT_SPLIT) {
           // dEta [0, 2pi)
           invMassSqrDiv2 = obj1.hwPT().to_int64() * obj2.hwPT().to_int64() * (lutCoshDEta - lutCosDPhi);
           res &= minInvMassSqrDiv2_
@@ -196,10 +165,9 @@ namespace l1t {
               std::sqrt(2 * obj1.hwPT().to_double() * obj2.hwPT().to_double() *
                         (std::cosh(dEta.value() * scales_.eta_lsb()) - std::cos(dPhi.value() * scales_.phi_lsb())));
 
-          double lutInvMass =
-              scales_.pT_lsb() * std::sqrt(2 * static_cast<double>(invMassSqrDiv2) /
-                                           (dEta < L1TSingleInOutLUT::DETA_LUT_SPLIT ? coshEtaLUT_.output_scale()
-                                                                                     : coshEtaLUT2_.output_scale()));
+          double lutInvMass = scales_.pT_lsb() * std::sqrt(2 * static_cast<double>(invMassSqrDiv2) /
+                                                           (dEta < DETA_LUT_SPLIT ? coshEtaLUT_.output_scale()
+                                                                                  : coshEtaLUT2_.output_scale()));
 
           double error = std::abs(precInvMass - lutInvMass);
           massErrors.emplace_back(InvariantMassError{error, error / precInvMass, precInvMass});
@@ -232,24 +200,15 @@ namespace l1t {
 
     static void fillLUTDescriptions(edm::ParameterSetDescription& desc) {
       edm::ParameterSetDescription coshLUTDesc;
-      coshLUTDesc.add<std::vector<int32_t>>("lut");
-      coshLUTDesc.add<double>("output_scale_factor");
-      coshLUTDesc.add<uint32_t>("unused_lsbs");
-      coshLUTDesc.add<double>("max_error");
+      L1GTSingleInOutLUT::fillLUTDescriptions(coshLUTDesc);
       desc.add<edm::ParameterSetDescription>("cosh_eta_lut", coshLUTDesc);
 
       edm::ParameterSetDescription coshLUT2Desc;
-      coshLUT2Desc.add<std::vector<int32_t>>("lut");
-      coshLUT2Desc.add<double>("output_scale_factor");
-      coshLUT2Desc.add<uint32_t>("unused_lsbs");
-      coshLUT2Desc.add<double>("max_error");
+      L1GTSingleInOutLUT::fillLUTDescriptions(coshLUT2Desc);
       desc.add<edm::ParameterSetDescription>("cosh_eta_lut2", coshLUT2Desc);
 
       edm::ParameterSetDescription cosLUTDesc;
-      cosLUTDesc.add<std::vector<int32_t>>("lut");
-      cosLUTDesc.add<double>("output_scale_factor");
-      cosLUTDesc.add<uint32_t>("unused_lsbs");
-      cosLUTDesc.add<double>("max_error");
+      L1GTSingleInOutLUT::fillLUTDescriptions(cosLUTDesc);
       desc.add<edm::ParameterSetDescription>("cos_phi_lut", cosLUTDesc);
     }
 
@@ -275,9 +234,9 @@ namespace l1t {
   private:
     const L1GTScales& scales_;
 
-    const L1TSingleInOutLUT coshEtaLUT_;   // [0, 2pi)
-    const L1TSingleInOutLUT coshEtaLUT2_;  // [2pi, 4pi)
-    const L1TSingleInOutLUT cosPhiLUT_;
+    const L1GTSingleInOutLUT coshEtaLUT_;   // [0, 2pi)
+    const L1GTSingleInOutLUT coshEtaLUT2_;  // [2pi, 4pi)
+    const L1GTSingleInOutLUT cosPhiLUT_;
 
     const std::optional<int> minDEta_;
     const std::optional<int> maxDEta_;

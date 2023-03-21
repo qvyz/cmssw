@@ -8,6 +8,7 @@
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 
 #include "L1GTOptionalParam.h"
+#include "L1GTSingleInOutLUT.h"
 
 #include <algorithm>
 #include <optional>
@@ -16,7 +17,9 @@ namespace l1t {
 
   class L1GTSingleCollectionCut {
   public:
-    L1GTSingleCollectionCut(const edm::ParameterSet& config, const L1GTScales& scales)
+    L1GTSingleCollectionCut(const edm::ParameterSet& config,
+                            const edm::ParameterSet& lutConfig,
+                            const L1GTScales& scales)
         : tag_(config.getParameter<edm::InputTag>("tag")),
           minPt_(getOptionalParam<int, double>(
               "minPt", config, std::bind(&L1GTScales::to_hw_pT, scales, std::placeholders::_1))),
@@ -37,7 +40,8 @@ namespace l1t {
           qual_(config.exists("qual") ? config.getParameter<std::vector<unsigned int>>("qual")
                                       : std::vector<unsigned int>()),
           maxIso_(getOptionalParam<int, double>(
-              "maxIso", config, std::bind(&L1GTScales::to_hw_isolation, scales, std::placeholders::_1))) {}
+              "maxIso", config, std::bind(&L1GTScales::to_hw_isolation, scales, std::placeholders::_1))),
+          oneOverIsoLUT_(lutConfig.getParameterSet("one_over_iso_lut")) {}
 
     bool checkObject(const P2GTCandidate& obj) const {
       bool result = true;
@@ -56,7 +60,9 @@ namespace l1t {
       result &= minScalarSumPt_ ? (obj.hwSca_sum() > minScalarSumPt_) : true;
 
       result &= qual_.empty() ? true : std::find(qual_.begin(), qual_.end(), obj.hwQual().to_uint()) != qual_.end();
-      result &= maxIso_ ? (obj.hwIso() < maxIso_) : true;
+      result &= maxIso_ ? std::round(oneOverIsoLUT_.output_scale() * maxIso_.value()) <
+                              oneOverIsoLUT_[obj.hwIso()] * obj.hwPT()
+                        : true;
 
       return result;
     }
@@ -88,7 +94,9 @@ namespace l1t {
     const std::optional<int> maxZ0_;
     const std::optional<int> minScalarSumPt_;
     const std::vector<unsigned int> qual_;
-    const std::optional<int> maxIso_;
+    const std::optional<double> maxIso_;
+
+    const L1GTSingleInOutLUT oneOverIsoLUT_;
   };
 
 }  // namespace l1t

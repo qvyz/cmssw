@@ -17,6 +17,7 @@
 #include "L1GTOptionalParam.h"
 #include "L1GTSingleCollectionCut.h"
 #include "L1GTDeltaCut.h"
+#include "L1GTSingleInOutLUT.h"
 
 #include <cinttypes>
 #include <memory>
@@ -53,8 +54,8 @@ private:
 
 L1GTDoubleObjectCond::L1GTDoubleObjectCond(const edm::ParameterSet& config)
     : scales_(config.getParameter<edm::ParameterSet>("scales")),
-      collection1Cuts_(config.getParameterSet("collection1"), scales_),
-      collection2Cuts_(config.getParameterSet("collection2"), scales_),
+      collection1Cuts_(config.getParameterSet("collection1"), config, scales_),
+      collection2Cuts_(config.getParameterSet("collection2"), config, scales_),
       enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
       inv_mass_checks_(config.getUntrackedParameter<bool>("inv_mass_checks")),
       deltaCuts_(config, config, scales_, enable_sanity_checks_, inv_mass_checks_),
@@ -89,6 +90,10 @@ void L1GTDoubleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
 
   L1GTDeltaCut::fillDescriptions(desc);
   L1GTDeltaCut::fillLUTDescriptions(desc);
+
+  edm::ParameterSetDescription oneOverIsoLUTDesc;
+  L1GTSingleInOutLUT::fillLUTDescriptions(oneOverIsoLUTDesc);
+  desc.add<edm::ParameterSetDescription>("one_over_iso_lut", oneOverIsoLUTDesc);
 
   edm::ParameterSetDescription scalesDesc;
   L1GTScales::fillDescriptions(scalesDesc);

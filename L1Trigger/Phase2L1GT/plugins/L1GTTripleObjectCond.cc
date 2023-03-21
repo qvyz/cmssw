@@ -14,6 +14,7 @@
 #include "L1Trigger/Phase2L1GT/interface/L1GTScales.h"
 #include "L1GTSingleCollectionCut.h"
 #include "L1GTDeltaCut.h"
+#include "L1GTSingleInOutLUT.h"
 
 #include <set>
 
@@ -51,9 +52,9 @@ private:
 
 L1GTTripleObjectCond::L1GTTripleObjectCond(const edm::ParameterSet& config)
     : scales_(config.getParameter<edm::ParameterSet>("scales")),
-      collection1Cuts_(config.getParameter<edm::ParameterSet>("collection1"), scales_),
-      collection2Cuts_(config.getParameter<edm::ParameterSet>("collection2"), scales_),
-      collection3Cuts_(config.getParameter<edm::ParameterSet>("collection3"), scales_),
+      collection1Cuts_(config.getParameter<edm::ParameterSet>("collection1"), config, scales_),
+      collection2Cuts_(config.getParameter<edm::ParameterSet>("collection2"), config, scales_),
+      collection3Cuts_(config.getParameter<edm::ParameterSet>("collection3"), config, scales_),
       enable_sanity_checks_(config.getUntrackedParameter<bool>("sanity_checks")),
       inv_mass_checks_(config.getUntrackedParameter<bool>("inv_mass_checks")),
       delta12Cuts_(config.exists("delta12") ? config.getParameter<edm::ParameterSet>("delta12") : edm::ParameterSet(),
@@ -109,6 +110,10 @@ void L1GTTripleObjectCond::fillDescriptions(edm::ConfigurationDescriptions& desc
   edm::ParameterSetDescription collection3Desc;
   L1GTSingleCollectionCut::fillDescriptions(collection3Desc);
   desc.add<edm::ParameterSetDescription>("collection3", collection3Desc);
+
+  edm::ParameterSetDescription oneOverIsoLUTDesc;
+  L1GTSingleInOutLUT::fillLUTDescriptions(oneOverIsoLUTDesc);
+  desc.add<edm::ParameterSetDescription>("one_over_iso_lut", oneOverIsoLUTDesc);
 
   edm::ParameterSetDescription scalesDesc;
   L1GTScales::fillDescriptions(scalesDesc);

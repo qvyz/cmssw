@@ -17,17 +17,18 @@ class SingleInOutLUT:
         input_scale_factor = 2**unused_lsbs * lsb
         self.unused_lsbs = unused_lsbs
         self.lsb = lsb
-        signed_output = min([operation(input_scale_factor * i + start_value)
+        signed_output = min([operation(input_scale_factor * (i + 0.5) + start_value)
                             for i in range(2**width_in)]) < 0
 
         self.width_out = math.ceil(math.log2(output_scale_factor *
-                                             max([abs(operation(input_scale_factor * i + start_value)) for i in range(2**width_in)])))
+                                             max([abs(operation(input_scale_factor * (i + 0.5) + start_value)) for i in range(2**width_in - 1)] + 
+                                             [abs(operation(input_scale_factor * (2**width_in - 1) + start_value))])))
 
         if signed_output:
             self.width_out += 1
 
-        
-        self.debug_info("***************************** {} LUT {} *****************************".format(operation.__name__, label))
+        self.debug_info(
+            "***************************** {} LUT {} *****************************".format(operation.__name__, label))
         self.debug_info("Depth: {} x {} (addr x data)".format(width_in, self.width_out))
         self.debug_info("Scale: {}".format(output_scale_factor))
 
@@ -73,9 +74,8 @@ class SingleInOutLUT:
 
         self.max_error = max(errors)
 
-        
         self.debug_info("Error: {:.5f} +/- {:.5f}, max: {:.5f}, total: {:.5f}, median: {:.5f}".format(
-                mean(errors), stdev(errors), self.max_error, sum(errors), median(errors)))
+            mean(errors), stdev(errors), self.max_error, sum(errors), median(errors)))
 
         # mass_errors = [errors[i]/(2*self.operation(i * self.lsb + self.start_value)) for i in range(2**(self.width_in + self.unused_lsbs)) ]
         # self.debug_info("inv mass error: {:.5f} +/- {:.5f}, max: {:.5f}, total: {:.5f}, median: {:.5f}".format(
@@ -84,6 +84,7 @@ class SingleInOutLUT:
 
 COS_PHI_IN_WIDTH = 10   # not using 2 lsb and 1 msb (cos(x + pi) = -cos(x), x in [0, pi))
 COSH_ETA_IN_WIDTH = 11  # not using 2 lsb and 1 msb (splitted LUT)
+ISOLATION_WIDTH = 11
 
 # Since we calculate cosh(dEta) - cos(dPhi); both must be on the same scale the difference should fit into 17 bits for the DSP
 optimal_scale_factor = math.floor(
@@ -102,3 +103,8 @@ COSH_ETA_LUT_2 = SingleInOutLUT(
     SingleInOutLUT.optimal_scale_factor(
         COSH_ETA_IN_WIDTH, 17, 2, scale_parameter.eta_lsb.value(), math.cosh, 2**13 * scale_parameter.eta_lsb.value()),
     math.cosh, 2**13 * scale_parameter.eta_lsb.value(), "[2pi, 4pi)")
+
+ONE_OVER_ISO_LUT = SingleInOutLUT(
+    ISOLATION_WIDTH, 0, scale_parameter.isolation_lsb.value(), 2**16 - 1, lambda x: 1 /
+    x if x > scale_parameter.isolation_lsb.value() else 1/scale_parameter.isolation_lsb.value()
+)
