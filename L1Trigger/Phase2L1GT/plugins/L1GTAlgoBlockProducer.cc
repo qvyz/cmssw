@@ -372,11 +372,11 @@ L1GTAlgoBlockProducer::L1GTAlgoBlockProducer(const edm::ParameterSet& config) {
 
     AlgoDefinition definition;
 
-    definition.evaluator_ = shuntingYardAlgorithm.finish();
-
     for (const auto& operand : shuntingYardAlgorithm.getOperandStack()) {
       definition.pathNames_.push_back(operand->pathName());
     }
+
+    definition.evaluator_ = shuntingYardAlgorithm.finish();
 
     definition.evaluator_->init(iC);
     algoDefinitions_.emplace(std::move(name), std::move(definition));
@@ -397,7 +397,7 @@ void L1GTAlgoBlockProducer::beginRun(const edm::Run& iRun, const edm::EventSetup
 
   for (auto& [name, algoDef] : algoDefinitions_) {
     for (const std::string& pathName : algoDef.pathNames_) {
-      if (pset->existsAs<std::vector<std::string>>(pathName, true)) {
+      if (pset->existsAs<std::vector<std::string>>(pathName)) {
         const auto& modules = pset->getParameter<std::vector<std::string>>(pathName);
         for (const auto& mod : modules) {
           if (mod.front() != std::string("-") && pset->exists(mod)) {
