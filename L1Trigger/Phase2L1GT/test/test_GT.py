@@ -95,7 +95,6 @@ process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
 
 process.load('L1Trigger.Phase2L1GT.l1tGTMenu_cfi')
-process.algoStep = cms.Path(process.p2gtAlgoBlock)
 
 process.out = cms.OutputModule("PoolOutputModule",
 outputCommands = cms.untracked.vstring('drop *',
@@ -109,7 +108,7 @@ outputCommands = cms.untracked.vstring('drop *',
 process.pOut = cms.EndPath(process.out)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.L1simulation_step,process.algoStep,process.pOut,process.endjob_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1simulation_step,process.menuTask,process.pOut,process.endjob_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
