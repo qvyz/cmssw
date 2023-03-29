@@ -25,7 +25,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring(
-                                '/store/mc/Phase2Fall22DRMiniAOD/MinBias_TuneCP5_14TeV-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_125X_mcRun4_realistic_v2-v1/30007/017df0e0-4fae-4f31-aae6-2c4915423b0c.root',
+                                '/store/mc/Phase2Fall22DRMiniAOD/TT_TuneCP5_14TeV-powheg-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_125X_mcRun4_realistic_v2_ext1-v1/30001/9ac14ec7-19fe-4933-a6c6-bc873f473f67.root',
                             ),
 )
 
@@ -102,7 +102,9 @@ process.out = cms.OutputModule("PoolOutputModule",
 outputCommands = cms.untracked.vstring('drop *',
         'keep *_l1tGTProducer_*_L1TEmulation',
         'keep *_TriggerResults_*_L1TEmulation',
-        'keep *_p2gtAlgoBlock_*_L1TEmulation'
+        'keep *_p2gtAlgoBlock_*_L1TEmulation',
+        'keep *P2GTCandidate*_*_*_L1TEmulation',
+
     ),
     fileName=cms.untracked.string("l1t_emulation.root")
 )
@@ -110,7 +112,7 @@ outputCommands = cms.untracked.vstring('drop *',
 process.pOut = cms.EndPath(process.out)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.L1simulation_step,process.menuTask,process.pOut,process.endjob_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1simulation_step,process.pSingleTkMuon22, process.pp2gtAlgoBlock,process.pOut,process.endjob_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 

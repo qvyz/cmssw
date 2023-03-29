@@ -16,13 +16,13 @@ from L1Trigger.Phase2L1GT.l1tGTAlgoBlockProducer_cff import * # algorithms
 ####### SEED 1 ###########
 
 
-pSingleTkMuon22 = l1tGTSingleObjectCond.clone(
+SingleTkMuon22 = l1tGTSingleObjectCond.clone(
     tag =  cms.InputTag("l1tGTProducer","GMTTkMuons"),
     minPt = cms.double(22),
     minEta = cms.double(-2.4),
     maxEta = cms.double(2.4)
 )
-#pSingleTkMuon22 = cms.Path(SingleTkMuon22)
+pSingleTkMuon22 = cms.Path(SingleTkMuon22)
 algorithms.append(cms.PSet(expression = cms.string("pSingleTkMuon22")))
 
 
@@ -33,6 +33,6 @@ p2gtAlgoBlock = l1tGTAlgoBlockProducer.clone(
 ) 
 
 
-#pp2gtAlgoBlock = cms.Path(p2gtAlgoBlock)
+pp2gtAlgoBlock = cms.Path(p2gtAlgoBlock)
 
-menuTask = cms.Path(pSingleTkMuon22*p2gtAlgoBlock)
+#menuTask = cms.Path(pSingleTkMuon22*p2gtAlgoBlock)
