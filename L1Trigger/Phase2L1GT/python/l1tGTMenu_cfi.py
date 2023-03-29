@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 ############################################################
 
 # Conditions
-from L1Trigger.Phase2L1GT.l1tGTProducer_cff import *
+from L1Trigger.Phase2L1GT.l1tGTProducer_cff import l1tGTProducer
 from L1Trigger.Phase2L1GT.l1tGTSingleObjectCond_cfi import l1tGTSingleObjectCond
 from L1Trigger.Phase2L1GT.l1tGTDoubleObjectCond_cfi import l1tGTDoubleObjectCond
 from L1Trigger.Phase2L1GT.l1tGTTripleObjectCond_cfi import l1tGTTripleObjectCond
@@ -17,13 +17,14 @@ from L1Trigger.Phase2L1GT.l1tGTAlgoBlockProducer_cff import * # algorithms
 
 
 SingleTkMuon22 = l1tGTSingleObjectCond.clone(
-    tag =  cms.InputTag("L1GTProducer", "GMTTkMuons"),
+    tag =  cms.InputTag("l1tGTProducer","GMTTkMuons"),
     minPt = cms.double(22),
     minEta = cms.double(-2.4),
     maxEta = cms.double(2.4)
 )
 pSingleTkMuon22 = cms.Path(SingleTkMuon22)
 algorithms.append(cms.PSet(expression = cms.string("pSingleTkMuon22")))
+
 
 ####### ALGOBLOCK ###########
 
@@ -32,4 +33,7 @@ p2gtAlgoBlock = l1tGTAlgoBlockProducer.clone(
 ) 
 
 
-menuTask = cms.Path(l1tGTProducer*p2gtAlgoBlock)
+pp2gtAlgoBlock = cms.Path(p2gtAlgoBlock)
+
+
+menuTask = cms.Task(pSingleTkMuon22*pp2gtAlgoBlock)

@@ -7,7 +7,7 @@ import FWCore.ParameterSet.Config as cms
 
 from Configuration.Eras.Era_Phase2C17I13M9_cff import Phase2C17I13M9
 
-process = cms.Process('L1',Phase2C17I13M9)
+process = cms.Process('L1TEmulation',Phase2C17I13M9)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -94,6 +94,8 @@ process.L1simulation_step = cms.Path(process.SimL1Emulator)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
 
+
+#process.load('L1Trigger.Phase2L1GT.l1tGTProducer_cff')
 process.load('L1Trigger.Phase2L1GT.l1tGTMenu_cfi')
 
 process.out = cms.OutputModule("PoolOutputModule",

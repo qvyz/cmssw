@@ -224,11 +224,11 @@ from L1Trigger.Phase2L1ParticleFlow.L1BJetProducer_cff import *
 _phase2_siml1emulator.add(L1TBJetsTask)
 
 # Global Trigger
-#from L1Trigger.Phase2L1GT.l1tGTProducer_cff import *
-#_phase2_siml1emulator.add(l1tGTTask)
+from L1Trigger.Phase2L1GT.l1tGTProducer_cff import *
+_phase2_siml1emulator.add(l1tGTProducer)
 
-#from L1Trigger.Phase2L1GT.l1tGTAlgoBlockProducer_cff import *
-#_phase2_siml1emulator.add(l1tGTAlgoBlockProducer)
+from L1Trigger.Phase2L1GT.l1tGTAlgoBlockProducer_cff import *
+_phase2_siml1emulator.add(l1tGTAlgoBlockProducer)
 
 
 # --> add modules
