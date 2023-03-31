@@ -15,6 +15,3 @@ l1tGTProducer = cms.EDProducer(
     CL2HtSum = cms.InputTag("l1tSCPFL1PuppiCorrectedEmulatorMHT")
 )
 
-
-gtTask = cms.Path(l1tGTProducer)
-

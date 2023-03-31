@@ -94,25 +94,17 @@ process.L1simulation_step = cms.Path(process.SimL1Emulator)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
 
+#GT emulator
+process.load('L1Trigger.Configuration.GTemulator_cff')
+process.GTemulation_step = cms.Path(process.GTemulator)
 
-#process.load('L1Trigger.Phase2L1GT.l1tGTProducer_cff')
-process.load('L1Trigger.Phase2L1GT.l1tGTMenu_cfi')
+from L1Trigger.Configuration.customisePhase2 import runGTemulator
+process = runGTemulator(process)
 
-process.out = cms.OutputModule("PoolOutputModule",
-outputCommands = cms.untracked.vstring('drop *',
-        'keep *_l1tGTProducer_*_L1TEmulation',
-        'keep *_TriggerResults_*_L1TEmulation',
-        'keep *_p2gtAlgoBlock_*_L1TEmulation',
-        'keep *P2GTCandidate*_*_*_L1TEmulation',
-
-    ),
-    fileName=cms.untracked.string("l1t_emulation.root")
-)
-
-process.pOut = cms.EndPath(process.out)
+from L1Trigger.Phase2L1GT.l1tGTAlgoBlockProducer_cff import collectAlgorithmPaths
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.L1simulation_step,process.pSingleTkMuon22, process.pp2gtAlgoBlock,process.pOut,process.endjob_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.L1simulation_step,process.GTemulation_step, *collectAlgorithmPaths(process), process.pGToutput, process.endjob_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
