@@ -77,6 +77,6 @@ PuppiHT400 = l1tGTSingleObjectCond.clone(
 pPuppiHT400 = cms.Path(PuppiHT400)
 
 
-#algorithms.append(cms.PSet(name=cms.string("pPuppiHT400_pQuadJet70_55_40_40"),
-#                       expression=cms.string("pPuppiHT400 and pQuadJet70_55_40_40")))
+algorithms.append(cms.PSet(name=cms.string("pPuppiHT400_pQuadJet70_55_40_40"),
+                       expression=cms.string("pPuppiHT400 and pQuadJet70_55_40_40")))
 
