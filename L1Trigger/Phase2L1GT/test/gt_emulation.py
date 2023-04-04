@@ -1,8 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-from Configuration.Eras.Era_Phase2_cff import Phase2
+from Configuration.Eras.Era_Phase2C17I13M9_cff import Phase2C17I13M9
 
-process = cms.Process('L1TEmulation', Phase2)
+process = cms.Process('L1TEmulation', Phase2C17I13M9)
+
 
 ############################################################
 # import standard configurations
@@ -17,7 +18,8 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '125X_mcRun4_realistic_v2', '')
+
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(0)  # default: 0
@@ -32,7 +34,7 @@ process.options = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring(
-                                '/store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/MinBias_TuneCP5_14TeV-pythia8/FEVT/PU200_111X_mcRun4_realistic_T15_v1-v1/110000/0016DCDC-FCE4-BC47-89AC-43EB1BB82D46.root',
+                                '/store/mc/Phase2Fall22DRMiniAOD/MinBias_TuneCP5_14TeV-pythia8/GEN-SIM-DIGI-RAW-MINIAOD/PU200_125X_mcRun4_realistic_v2-v1/30007/017df0e0-4fae-4f31-aae6-2c4915423b0c.root',
                             ),
                             inputCommands = cms.untracked.vstring("keep *","drop l1tTkPrimaryVertexs_L1TkPrimaryVertex_*_*")
 )
