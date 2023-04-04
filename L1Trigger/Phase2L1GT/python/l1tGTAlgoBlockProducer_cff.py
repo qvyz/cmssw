@@ -12,7 +12,8 @@ def collectAlgorithmPaths(process) -> tuple[cms.Path]:
     str_paths = set()
     for algorithm in algorithms:
         algo_paths = re.findall(r"(?i)(?!(?:not|and|or|xor))\b\w+", algorithm.expression.value())
-        str_paths.add(*algo_paths)
+        for algo_path in algo_paths:
+            str_paths.add(algo_path)
 
     paths = set()
 
