@@ -103,7 +103,6 @@ SingleIsoTkEle28EndcapPos = l1tGTSingleObjectCond.clone(
     minPt = cms.double(23),
     minEta = cms.double(1.479),
     maxEta = cms.double(2.4),
-    qual = cms.vuint32(0b0010),
     maxIso = cms.double(0.28)
 )
 pSingleIsoTkEle28EndcapPos = cms.Path(SingleIsoTkEle28EndcapPos) 
@@ -115,17 +114,31 @@ SingleIsoTkEle28EndcapNeg = l1tGTSingleObjectCond.clone(
     minPt = cms.double(23),
     minEta = cms.double(-2.4), 
     maxEta = cms.double(-1.479),
-    qual = cms.vuint32(0b0010),
     maxIso = cms.double(0.28)
 
 )
+
+
+
+SingleIsoTkEle28EndcapAbs = l1tGTSingleObjectCond.clone(
+    tag = cms.InputTag("l1tGTProducer", "CL2Electrons"),
+    minPt = cms.double(23),
+    minEtaAbs = cms.double(1.479),
+    maxEtaAbs = cms.double(2.4),
+    maxIso = cms.double(0.28)
+
+)
+
+pSingleIsoTkEle28EndcapAbs = cms.Path(SingleIsoTkEle28EndcapAbs) 
 pSingleIsoTkEle28EndcapNeg = cms.Path(SingleIsoTkEle28EndcapNeg) 
 algorithms.append(cms.PSet(expression = cms.string("pSingleIsoTkEle28EndcapNeg")))
 
 
-algorithms.append(cms.PSet(name=cms.string("pSingleIsoTkEle28"),
-                       expression=cms.string("pSingleIsoTkEle28Barrel or pSingleIsoTkEle28EndcapPos or pSingleIsoTkEle28EndcapNeg")))
+algorithms.append(cms.PSet(expression = cms.string("pSingleIsoTkEle28EndcapNeg")))
 
+algorithms.append(cms.PSet(expression=cms.string("pSingleIsoTkEle28Barrel or (pSingleIsoTkEle28EndcapNeg or pSingleIsoTkEle28EndcapPos)")))
+
+algorithms.append(cms.PSet(expression=cms.string("pSingleIsoTkEle28Barrel or pSingleIsoTkEle28EndcapAbs")))
 
 
 SingleIsoTkPho36Barrel = l1tGTSingleObjectCond.clone(
@@ -243,5 +256,5 @@ SingleIsoTkPho12EndcapNeg = l1tGTSingleObjectCond.clone(
 )
 pSingleIsoTkPho12EndcapNeg = cms.Path(SingleIsoTkPho12EndcapNeg) 
 
-algorithms.append(cms.PSet(name=cms.string("pDoubleTkIsoPho22_12"),
+algorithms.append(cms.PSet(name=cms.string("pDoubleTkIsoPho2212"),
                        expression=cms.string("(pSingleIsoTkPho22Barrel or pSingleIsoTkPho22EndcapPos or pSingleIsoTkPho22EndcapNeg) and (pSingleIsoTkPho12Barrel or pSingleIsoTkPho12EndcapPos or pSingleIsoTkPho12EndcapNeg)")))

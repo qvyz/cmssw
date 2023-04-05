@@ -14,6 +14,7 @@ def collectAlgorithmPaths(process) -> tuple[cms.Path]:
         algo_paths = re.sub(r'[()]'," " , algorithm.expression.value()).split()
         for algo in algo_paths:
             if algo in process.pathNames() :
+                print(algo)
                 str_paths.add(algo)
     paths = set()
 
