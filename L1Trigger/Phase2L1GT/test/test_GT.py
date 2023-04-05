@@ -29,7 +29,7 @@ process.source = cms.Source("PoolSource",
                             ),
 )
 
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(100))
 
 
 process.options = cms.untracked.PSet(
@@ -98,10 +98,19 @@ process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
 process.load('L1Trigger.Configuration.GTemulator_cff')
 process.GTemulation_step = cms.Path(process.GTemulator)
 
-from L1Trigger.Configuration.customisePhase2 import runGTemulator
-process = runGTemulator(process)
-
+process.load('L1Trigger.Phase2L1GT.l1tGTMenu_cff')
 from L1Trigger.Phase2L1GT.l1tGTAlgoBlockProducer_cff import collectAlgorithmPaths
+
+
+process.GToutput = cms.OutputModule("PoolOutputModule",
+    outputCommands = cms.untracked.vstring('drop *',
+       'keep *P2GT*_*_*_L1TEmulation',
+    ),
+    fileName=cms.untracked.string("l1t_emulation.root")
+    )
+
+process.pGToutput = cms.EndPath(process.GToutput) 
+
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.L1simulation_step,process.GTemulation_step, *collectAlgorithmPaths(process), process.pGToutput, process.endjob_step)
